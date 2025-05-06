@@ -27,7 +27,7 @@ const ServerStatus = ({className })  => {
   useEffect(() => {
     const checkServer = async () => {
       try {
-        const response = await axios.get('https://gestor-back-production.up.railway.app/api/health', {
+        const response = await axios.get('https://colmel-back-production.up.railway.app/api/health', {
           withCredentials: true,
 
         });

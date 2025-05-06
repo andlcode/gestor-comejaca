@@ -280,6 +280,7 @@ const Atualizar = () => {
   const [formData, setFormData] = useState({
     nomeCompleto: '',
     dataNascimento: '',
+    nomeCracha: '',
     sexo: '',
     email: '',
     telefone: '',

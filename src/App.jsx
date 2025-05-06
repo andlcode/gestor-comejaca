@@ -59,8 +59,8 @@ function App() {
           <AppContent />
         </AuthProvider>
 
-     <ServerStatus lassName="no-print-footer" /> 
-
+{/*      <ServerStatus lassName="no-print-footer" /> 
+ */}
       </div>
     </>
   );
