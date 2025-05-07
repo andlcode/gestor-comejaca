@@ -359,8 +359,8 @@ const getToken = () => {
    <Header>
         <img src="/favicon.png" alt="Logo COMEJACA" />
         <div>
-          <h1>CONMEL 2025</h1>
-          <h2>Confraternização das Mocidades Espíritas da Leopoldiona</h2>
+          <h1>COMEJACA 2025</h1>
+          <h2>Confraternização das Mocidades Espíritas de Jacarepaguá</h2>
         </div>
       </Header>
         <Section>
