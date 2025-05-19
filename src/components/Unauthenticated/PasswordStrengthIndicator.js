@@ -11,7 +11,7 @@ const List = styled.ul`
 const ListItem = styled.li`
   display: flex;
   align-items: center;
-  color: ${(props) => (props.valid ? "green" : "red")};
+  color: ${(props) => (props.$valid ? "green" : "red")}; // Alterado para $valid
   margin-bottom: 5px;
   font-size: 14px;
 
@@ -21,7 +21,7 @@ const ListItem = styled.li`
 `;
 
 const PasswordStrengthIndicator = ({ password }) => {
-  const safePassword = password || ''; // garante que nunca será null ou undefined
+  const safePassword = password || '';
 
   const rules = [
     {
@@ -42,7 +42,7 @@ const PasswordStrengthIndicator = ({ password }) => {
     },
     {
       label: "Caractere especial",
-      test: (pw) => /[!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\]/.test(pw),
+      test: (pw) => /[!@#$%^&*(),.?":{}|<>_+=~`[\]\\-]/.test(pw), // Regex corrigida
     },
   ];
 
@@ -51,7 +51,7 @@ const PasswordStrengthIndicator = ({ password }) => {
       {rules.map((rule, index) => {
         const isValid = rule.test(safePassword);
         return (
-          <ListItem key={index} valid={isValid}>
+          <ListItem key={index} $valid={isValid}> {/* Usando $valid para evitar avisos */}
             {isValid ? <FaCheckCircle /> : <FaTimesCircle />}
             {rule.label}
           </ListItem>
