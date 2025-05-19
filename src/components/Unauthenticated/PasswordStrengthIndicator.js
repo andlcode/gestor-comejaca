@@ -21,6 +21,8 @@ const ListItem = styled.li`
 `;
 
 const PasswordStrengthIndicator = ({ password }) => {
+  const safePassword = password || ''; // garante que nunca será null ou undefined
+
   const rules = [
     {
       label: "Pelo menos 8 caracteres",
@@ -47,7 +49,7 @@ const PasswordStrengthIndicator = ({ password }) => {
   return (
     <List>
       {rules.map((rule, index) => {
-        const isValid = rule.test(password);
+        const isValid = rule.test(safePassword);
         return (
           <ListItem key={index} valid={isValid}>
             {isValid ? <FaCheckCircle /> : <FaTimesCircle />}
