@@ -335,82 +335,90 @@ const Register = () => {
   };
   
   return (
-    <AuthContainer>
-      <AuthWrapper>
-        <Title>NOVA CONTA</Title>
-        <Form onSubmit={handleSubmit}>
-          <InputWrapper>
-            <Icon><FiUser /></Icon>
-            <Input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Nome completo"
-              required
-              aria-label="Nome completo"
-            />
-          </InputWrapper>
-          <InputWrapper>
-            <Icon><FiMail /></Icon>
-            <Input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="E-mail"
-              required
-              aria-label="E-mail"
-            />
-          </InputWrapper>
-          <InputWrapper>
-            <Icon><FiLock /></Icon>
-            <Input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChangePassword}
-              placeholder="Senha"
-              required
-              maxLength={8}
-              aria-label="Senha"
-                  className={ErrorMessage ? 'error' : ''}
-                  onFocus={() => setIsPasswordFocused(true)}
-                  onBlur={() => setIsPasswordFocused(false)}
-            />
-          </InputWrapper>
+<AuthContainer>
+  <AuthWrapper>
+    <Title>NOVA CONTA</Title>
+    <Form onSubmit={handleSubmit}>
+      <InputWrapper>
+        <Icon><FiUser /></Icon>
+        <Input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Nome completo"
+          required
+          aria-label="Nome completo"
+        />
+      </InputWrapper>
 
+      <InputWrapper>
+        <Icon><FiMail /></Icon>
+        <Input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="E-mail"
+          required
+          aria-label="E-mail"
+        />
+      </InputWrapper>
 
+      <InputWrapper>
+        <Icon><FiLock /></Icon>
+        <Input
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChangePassword}
+          placeholder="Senha"
+          required
+          maxLength={8}
+          aria-label="Senha"
+          className={errorMessage ? 'error' : ''}
+          onFocus={() => setIsPasswordFocused(true)}
+          onBlur={() => setIsPasswordFocused(false)}
+        />
+      </InputWrapper>
 
+      <InputWrapper>
+        <Icon><FiLock /></Icon>
+        <Input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChangePassword}
+          placeholder="Confirmar senha"
+          required
+          maxLength={8}
+          aria-label="Confirmar senha"
+          className={errorMessage ? 'error' : ''}
+          onFocus={() => setIsPasswordFocused(true)}
+          onBlur={() => setIsPasswordFocused(false)}
+        />
+      </InputWrapper>
 
-          <InputWrapper>
-            <Icon><FiLock /></Icon>
-            <Input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChangePassword}
-              placeholder="Confirmar senha"
-              required
-              maxLength={8}
-              aria-label="Confirmar senha"
-              className={confirmPasswordError ? 'error' : ''}
-              onFocus={() => setIsPasswordFocused(true)}
-              onBlur={() => setIsPasswordFocused(false)}
-            />
-          </InputWrapper>
+      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+      {isPasswordFocused && (
+        <PasswordStrengthIndicator password={formData.password} />
+      )}
 
-          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-          {isPasswordFocused && (
-  <PasswordStrengthIndicator password={formData.password} />
-)}         <Button disabled={!isFormValid() || loading} type="submit">
-{!isFormValid() ? 'Preencha tudo corretamente' : loading ? 'Registrando...' : 'Registrar'}
-</Button>
-        </Form>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        <StyledLink to="/">Já tem uma conta? Faça login aqui.</StyledLink>
-      </AuthWrapper>
-    </AuthContainer>
+      <Button disabled={!isFormValid() || loading} type="submit">
+        {loading
+          ? 'Registrando...'
+          : !isFormValid()
+          ? 'Preencha tudo corretamente'
+          : 'Registrar'}
+      </Button>
+    </Form>
+
+    {error && <ErrorMessage>{error}</ErrorMessage>}
+
+    <StyledLink to="/">Já tem uma conta? Faça login aqui.</StyledLink>
+  </AuthWrapper>
+</AuthContainer>
+
   );
 };
 

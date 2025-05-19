@@ -32,7 +32,7 @@ const LoadingSpinner = styled.div`
 `;
 const themes = {
   professional: {
-    background: 'linear-gradient(135deg, #0d1b2a, #0d1b2a, #0d1b2a)',
+    background: 'linear-gradient(135deg, #e7ecef, #e7ecef, #e7ecef)',
     cardBackground: '#e7ecef',
     textColor: '#22223b',
     buttonBackground: 'linear-gradient(135deg, #0d1b2a, #0d1b2a)',
@@ -81,9 +81,9 @@ const Container = styled.div`
 const EmptyStateMessage = styled.div`
   text-align: center;
   padding: 2rem;
-  background: ${({ theme }) => theme.cardBackground};
+  background: #0d1b2a;
+  color:#fff;
   border-radius: 0.5rem;
-  color: ${({ theme }) => theme.textColor};
   font-size: 1.1rem;
   font-weight: 400;
   margin-top: 2rem;
@@ -109,7 +109,6 @@ const FormCard = styled.div`
   background: ${({ theme }) => theme.cardBackground};
   border-radius: 5px;
   padding: 1.5rem;
-  box-shadow: ${({ theme }) => theme.shadow};
   position: relative;
   width: 100%;
   max-width: calc(100vw - 2rem);
@@ -507,7 +506,7 @@ useEffect(() => {
     </EmptyStateMessage>
   ) :  inscricoes.length === 0 ? (
     <EmptyStateMessage>
-      <FiPlus size={24} />
+     {/*  <FiPlus size={24} /> */}
       Estamos aguardando sua primeira inscrição
     </EmptyStateMessage>
   ) : filteredData.length === 0 ? (
