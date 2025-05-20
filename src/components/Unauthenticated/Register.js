@@ -371,7 +371,7 @@ const Register = () => {
           type="password"
           name="password"
           value={formData.password}
-          onChange={handleChangePassword}
+         // onChange={handleChangePassword}
           placeholder="Senha"
           required
           maxLength={8}
@@ -388,7 +388,7 @@ const Register = () => {
           type="password"
           name="confirmPassword"
           value={formData.confirmPassword}
-          onChange={handleChangePassword}
+       //   onChange={handleChangePassword}
           placeholder="Confirmar senha"
           required
           maxLength={8}
@@ -399,11 +399,11 @@ const Register = () => {
         />
       </InputWrapper>
 
-      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+{/*       {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
       {isPasswordFocused && (
         <PasswordStrengthIndicator password={formData.password} />
       )}
-
+ */}
       <Button disabled={!isFormValid() || loading} type="submit">
         {loading
           ? 'Registrando...'
