@@ -22,6 +22,12 @@ const AuthContainer = styled.div`
   animation: ${gradientAnimation} 15s ease infinite;
   box-sizing: border-box;
   background: #e7ecef;
+    background-size: 100% 100%; /* ← Reduza o tamanho */
+  animation: none; /* ← Desative a animação no mobile */
+
+  @media (max-width: 768px) {
+    animation: none;
+  }
 `;
 
 const AuthWrapper = styled.div`
@@ -32,6 +38,10 @@ const AuthWrapper = styled.div`
   background: #e7ecef;
   backdrop-filter: blur(20px);
   border-radius: 5px;
+
+    @media (max-width: 768px) {
+    backdrop-filter: none; 
+  }
 `;
 
 const Title = styled.h1`
@@ -52,16 +62,18 @@ const InputWrapper = styled.div`
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 12px;
-  transition: border-color 0.3s ease;
+  transition: none;
 
   &:focus-within {
     border-color: #4a4e69;
-    box-shadow: 0 0 3px rgba(74, 78, 105, 0.5);
+    /* Evite box-shadow no mobile */
+    box-shadow: none;
   }
 
   &:hover {
     border: #0d1b2a 1px solid;
   }
+  
 `;
 
 const Input = styled.input`
@@ -70,7 +82,7 @@ const Input = styled.input`
   font-size: 1rem;
   border: none;
   outline: none;
-  background: transparent;
+  background: #fff;
   color: #333;
   font-family: 'Poppins', sans-serif;
 
