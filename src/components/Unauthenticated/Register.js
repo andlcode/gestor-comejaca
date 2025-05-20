@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 import { toast } from "react-toastify";
-import PasswordStrengthIndicator from "./PasswordStrengthIndicator";
 
 // Animação de fundo
 const gradientAnimation = keyframes`
@@ -30,6 +29,10 @@ const AuthContainer = styled.div`
   }
 `;
 
+const span = styled.div`
+ font-size: 0.7rem;
+  
+`;
 const AuthWrapper = styled.div`
   width: 100%;
   max-width: 480px;
@@ -151,6 +154,52 @@ const Icon = styled.span`
   color: #4a4e69;
 `;
 
+const PasswordCriteriaList = styled.ul`
+  list-style: none;
+  padding-left: 0;
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 0.5rem;
+  text-align: left;
+`;
+
+const PasswordCriteriaItem = styled.li`
+  color: ${(props) => (props.met ? '#27ae60' : '#999')};
+  margin-bottom: 0.3rem;
+  font-weight: ${(props) => (props.met ? '600' : '400')};
+  &:before {
+    content: '${(props) => (props.met ? '✔' : '✖')}';
+    display: inline-block;
+    width: 1em;
+    margin-right: 0.5em;
+    color: ${(props) => (props.met ? '#27ae60' : '#999')};
+  }
+`;
+
+// Critérios de senha
+const passwordCriteria = {
+  length: {
+    test: (pw) => pw.length === 8,
+    label: "Exatamente 8 caracteres",
+  },
+  uppercase: {
+    test: (pw) => /[A-Z]/.test(pw),
+    label: "Pelo menos 1 letra maiúscula",
+  },
+  lowercase: {
+    test: (pw) => /[a-z]/.test(pw),
+    label: "Pelo menos 1 letra minúscula",
+  },
+  number: {
+    test: (pw) => /[0-9]/.test(pw),
+    label: "Pelo menos 1 número",
+  },
+  specialChar: {
+    test: (pw) => /[!@#$%^&*(),.?":{}|<>]/.test(pw),
+    label: "Pelo menos 1 caractere especial",
+  },
+};
+
 const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -158,19 +207,33 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Verifica os critérios da senha e retorna um objeto com booleanos
+  const checkCriteria = (pw) => {
+    const results = {};
+    for (const key in passwordCriteria) {
+      results[key] = passwordCriteria[key].test(pw);
+    }
+    return results;
+  };
+
+  const criteriaResults = checkCriteria(formData.password);
+
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const isFormValid = () => {
     const { name, email, password, confirmPassword } = formData;
+    // Ajustei a condição para validar todos os critérios
+    const allCriteriaMet = Object.values(criteriaResults).every(Boolean);
     return (
       name.trim() !== '' &&
       isValidEmail(email) &&
-      password.length === 8 &&
+      allCriteriaMet &&
       confirmPassword === password
     );
   };
@@ -191,16 +254,11 @@ const Register = () => {
     setFormData((prevData) => {
       const updatedData = { ...prevData, [name]: value };
 
-      if (name === 'password' && value.length !== 8) {
+      // Mensagem dinâmica conforme critérios
+      if (!passwordCriteria.length.test(updatedData.password)) {
         setErrorMessage('A senha deve ter exatamente 8 caracteres.');
-      } else if (name === 'confirmPassword') {
-        if (value !== updatedData.password) {
-          setErrorMessage('A confirmação da senha deve ser igual à senha.');
-        } else if (value.length !== 8) {
-          setErrorMessage('A confirmação da senha deve ter exatamente 8 caracteres.');
-        } else {
-          setErrorMessage('');
-        }
+      } else if (updatedData.confirmPassword && updatedData.confirmPassword !== updatedData.password) {
+        setErrorMessage('A confirmação da senha deve ser igual à senha.');
       } else {
         setErrorMessage('');
       }
@@ -210,8 +268,8 @@ const Register = () => {
   };
 
   const handleSubmit = async (e) => {
-    localStorage.clear();
     e.preventDefault();
+    localStorage.clear();
 
     if (formData.password !== formData.confirmPassword) {
       setError('As senhas não coincidem.');
@@ -220,6 +278,12 @@ const Register = () => {
 
     if (!isValidEmail(formData.email)) {
       setError('Por favor, insira um e-mail válido.');
+      return;
+    }
+
+    const allCriteriaMet = Object.values(criteriaResults).every(Boolean);
+    if (!allCriteriaMet) {
+      setError('A senha não atende todos os critérios.');
       return;
     }
 
@@ -297,8 +361,18 @@ const Register = () => {
               placeholder="Senha (8 caracteres)"
               value={formData.password}
               onChange={handleChangePassword}
+              maxLength={8}
             />
           </InputWrapper>
+
+          {/* Lista dinâmica de critérios da senha */}
+          <PasswordCriteriaList>
+            {Object.entries(passwordCriteria).map(([key, { label }]) => (
+              <PasswordCriteriaItem key={key} met={criteriaResults[key]}>
+                {label}
+              </PasswordCriteriaItem>
+            ))}
+          </PasswordCriteriaList>
 
           <InputWrapper>
             <Icon><FiLock /></Icon>
@@ -308,13 +382,12 @@ const Register = () => {
               placeholder="Confirmar senha"
               value={formData.confirmPassword}
               onChange={handleChangePassword}
+              maxLength={8}
             />
           </InputWrapper>
 
-{/*           <PasswordStrengthIndicator password={formData.password} /> */}
-
-          {errorMessage && <ErrorMessage hasError>{errorMessage}</ErrorMessage>}
-          {error && <ErrorMessage hasError>{error}</ErrorMessage>}
+          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
 
           <Button type="submit" disabled={!isFormValid() || loading}>
             {loading ? 'Registrando...' : 'Registrar'}
