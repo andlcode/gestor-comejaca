@@ -1,33 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 import { toast } from "react-toastify";
 import PasswordStrengthIndicator from "./PasswordStrengthIndicator";
-
-// Animação de fundo
-const gradientAnimation = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
 
 const AuthContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 95vh;
-  background-size: 400% 400%;
-  animation: ${gradientAnimation} 15s ease infinite;
+  background: white;
   box-sizing: border-box;
-  background: #e7ecef;
-    background-size: 100% 100%; /* ← Reduza o tamanho */
-  animation: none; /* ← Desative a animação no mobile */
-
-  @media (max-width: 768px) {
-    animation: none;
-  }
 `;
 
 const AuthWrapper = styled.div`
@@ -39,7 +24,7 @@ const AuthWrapper = styled.div`
   backdrop-filter: blur(20px);
   border-radius: 5px;
 
-    @media (max-width: 768px) {
+  @media (max-width: 768px) {
     backdrop-filter: none; 
   }
 `;
@@ -66,14 +51,12 @@ const InputWrapper = styled.div`
 
   &:focus-within {
     border-color: #4a4e69;
-    /* Evite box-shadow no mobile */
     box-shadow: none;
   }
 
   &:hover {
     border: #0d1b2a 1px solid;
   }
-  
 `;
 
 const Input = styled.input`
@@ -111,10 +94,9 @@ const Button = styled.button`
   font-weight: 600;
   background: linear-gradient(135deg, #22223b 0%, #22223b 100%);
   margin-top: 1.5rem;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease;
 
   &:hover {
-    transform: translateY(-2px);
     background: linear-gradient(135deg, #f39c12 0%, #f39c12 100%);
   }
 
@@ -313,8 +295,8 @@ const Register = () => {
 
           <PasswordStrengthIndicator password={formData.password} />
 
-          {errorMessage && <ErrorMessage hasError>{errorMessage}</ErrorMessage>}
-          {error && <ErrorMessage hasError>{error}</ErrorMessage>}
+          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
 
           <Button type="submit" disabled={!isFormValid() || loading}>
             {loading ? 'Registrando...' : 'Registrar'}
