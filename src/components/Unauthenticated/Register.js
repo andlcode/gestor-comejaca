@@ -292,8 +292,8 @@ const Register = () => {
               onChange={handleChangePassword}
             />
           </InputWrapper>
-
-          <PasswordStrengthIndicator password={formData.password} />
+{/* 
+          <PasswordStrengthIndicator password={formData.password} /> */}
 
           {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
           {error && <ErrorMessage>{error}</ErrorMessage>}
