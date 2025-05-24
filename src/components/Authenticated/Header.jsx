@@ -295,7 +295,7 @@ const HeaderMain = ({className }) => {
       <Container>
         <Header className={className}>
           <Wrapper><ImagemResponsiva src="/favicon.png" alt="Banner do evento" />
-          <Title>INSCRIÇÕES 2025</Title>
+          <Title>46º COMEJACA 2025</Title>
     </Wrapper>          <Nav>
 
 

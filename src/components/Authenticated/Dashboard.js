@@ -534,7 +534,7 @@ useEffect(() => {
  <TableCell data-label="Nome Completo">{item.nomeCompleto}</TableCell>
 
  <TableCell data-label="Status">
-   <StatusPill $status={item.status}>{item.statusPagamento || 'Carregando...'}</StatusPill>
+   <StatusPill $status={item.status}>{item.statusPagamento || 'Carregando'}</StatusPill>
  </TableCell>
  <TableCell data-label="Data">
    {new Date(item.createdAt).toLocaleDateString('pt-BR')}
