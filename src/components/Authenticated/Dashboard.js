@@ -76,6 +76,27 @@ const Container = styled.div`
   }
 `;
 
+const MobileOnlyButton = styled.button`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: inline-block;
+    padding: 10px 24px;
+    background-color: #d64042;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #d64042;
+    }
+  }
+`;
  
 
 const EmptyStateMessage = styled.div`
@@ -451,7 +472,10 @@ const handlePagamento = async (item) => {
     localStorage.removeItem('isVerified');
     navigate('/');
   };
+    const handleInscrever = () => {
+ window.location.href = 'https://comejaca.org.br/inscrever';
 
+  };
   const handleSearch = (e) => setSearch(e.target.value);
 
   const filteredData = Array.isArray(inscricoes) 
@@ -484,7 +508,10 @@ useEffect(() => {
     <ThemeProvider theme={themes[theme]}>
       <Container>
 
-
+       <br></br><br></br>
+     <MobileOnlyButton onClick={handleInscrever}>
+        Inscrever
+      </MobileOnlyButton>
         <ContentWrapper>
           <FormCard>
    
