@@ -82,7 +82,7 @@ const MobileOnlyButton = styled.button`
   @media (max-width: 768px) {
     display: inline-block;
     padding: 10px 24px;
-    background-color: #d64042;
+    background-color: #0d1b2a;
     color: white;
     border: none;
     border-radius: 10px;
