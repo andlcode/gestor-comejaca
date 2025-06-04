@@ -106,7 +106,7 @@ const { confraternistas, trabalhadores } = getTipoParticipacaoCounts();
       <ContentWrapper>
         <FormCard>
           <Header>
-            <Title>HISTORICO DE PAGAMENTOS</Title>
+            <Title> GESTÃO DE INSCRITOS</Title>
           </Header>
           <FilterWrapper>
             <label>Filtrar por Instituição Espírita:</label>
