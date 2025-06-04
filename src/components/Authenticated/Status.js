@@ -71,6 +71,22 @@ const ListaParticipantes = () => {
     return { pago, pendente, N_A };
   };
   const { pago, pendente, N_A } = getStatusCounts();
+const getTipoParticipacaoCounts = () => {
+  let confraternistas = 0;
+  let trabalhadores = 0;
+
+  participantes.forEach((p) => {
+    if (p.tipoParticipacao === 'Confraternista') {
+      confraternistas++;
+    } else if (p.tipoParticipacao === 'Trabalhador') {
+      trabalhadores++;
+    }
+  });
+
+  return { confraternistas, trabalhadores };
+};
+
+const { confraternistas, trabalhadores } = getTipoParticipacaoCounts();
 
   
   return (
@@ -94,12 +110,42 @@ const ListaParticipantes = () => {
           ) : (
 
             <>
-            <StatusCounts>
-            <p>Total de Inscritos: {participantes.length}</p>
-            <p>Total Pagos: {pago}</p>
-            <p>Total Pendentes: {pendente}</p>
-            <p>Total N/A: {N_A}</p>
-          </StatusCounts>
+          <SummaryTable>
+  <thead>
+    <tr>
+      <TableHeader>Total</TableHeader>
+      <TableHeader>Quantidade</TableHeader>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <TableCell>Total de Inscritos</TableCell>
+      <TableCell>{participantes.length}</TableCell>
+    </tr>
+     <tr>
+      <TableCell>Total de Confraternistas</TableCell>
+      <TableCell>{confraternistas}</TableCell>
+    </tr>
+    <tr>
+      <TableCell>Total de Trabalhadores</TableCell>
+      <TableCell>{trabalhadores}</TableCell>
+    </tr>
+    <tr>
+      <TableCell>Total Pagos</TableCell>
+      <TableCell>{pago}</TableCell>
+    </tr>
+    <tr>
+      <TableCell>Total Pendentes</TableCell>
+      <TableCell>{pendente}</TableCell>
+    </tr>
+    <tr>
+      <TableCell>Total N/A</TableCell>
+      <TableCell>{N_A}</TableCell>
+    </tr>
+   
+  </tbody>
+</SummaryTable>
+
             
             <TableContainer>
               <Table>
@@ -107,6 +153,7 @@ const ListaParticipantes = () => {
                   <TableRow>
                     <TableHeaderCell>Nome</TableHeaderCell>
                     <TableHeaderCell>Instituição Espirita</TableHeaderCell>
+                    <TableHeaderCell>Comissão</TableHeaderCell>
                     <TableHeaderCell>Status Pagamento</TableHeaderCell>
                     <TableHeaderCell>Link</TableHeaderCell>
                   </TableRow>
@@ -116,6 +163,8 @@ const ListaParticipantes = () => {
     <TableRow key={index}>
       <TableCell>{p.nomeCompleto}</TableCell>
       <TableCell>{p.IE}</TableCell>
+            <TableCell>{p.tipoParticipacao}</TableCell>
+
       <TableCell>
         <select
           value={p.statusPagamento || 'N/A'}
@@ -266,14 +315,7 @@ const TableHeaderCell = styled.th`
   }
 `;
 
-const TableCell = styled.td`
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e9ecef;
 
-  @media (max-width: 768px) {
-    padding: 0.8rem;
-  }
-`;
 
 const FilterWrapper = styled.div`
   margin-bottom: 1rem;
@@ -299,4 +341,30 @@ const StatusCounts = styled.div`
     color: #333;
     font-weight: 500;
   }
+`;
+const SummaryTable = styled.table`
+  width: 100%;
+  max-width: 400px;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+`;
+
+const TableHeader = styled.th`
+  background-color: #0d1b2a;
+  color: white;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 1rem;
+`;
+
+const TableCell = styled.td`
+  border-bottom: 1px solid #e9ecef;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #333;
 `;
