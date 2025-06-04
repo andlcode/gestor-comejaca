@@ -52,6 +52,18 @@ const ListaParticipantes = () => {
   const participantesFiltrados = participantes.filter((p) =>
     p.IE.toLowerCase().includes(filtroIE.toLowerCase())
   );
+const getContagemPorIE = () => {
+  const contagem = {};
+
+  participantes.forEach((p) => {
+    const instituicao = p.IE || 'N/A';
+    contagem[instituicao] = (contagem[instituicao] || 0) + 1;
+  });
+
+  return contagem;
+};
+
+const contagemPorIE = getContagemPorIE();
 
   const getStatusCounts = () => {
     let pago = 0;
@@ -146,7 +158,27 @@ const { confraternistas, trabalhadores } = getTipoParticipacaoCounts();
   </tbody>
 </SummaryTable>
 
-            
+         
+  {/* Espaçamento */}
+  <div style={{ height: '2rem' }} />
+
+  {/* Tabela por IE */}
+  <SummaryTable>
+    <thead>
+      <tr>
+        <TableHeader>Instituição Espírita</TableHeader>
+        <TableHeader>Quantidade</TableHeader>
+      </tr>
+    </thead>
+    <tbody>
+      {Object.entries(contagemPorIE).map(([ie, qtd], index) => (
+        <tr key={index}>
+          <TableCell>{ie}</TableCell>
+          <TableCell>{qtd}</TableCell>
+        </tr>
+      ))}
+    </tbody>
+  </SummaryTable>   
             <TableContainer>
               <Table>
                 <TableHead>
@@ -167,7 +199,7 @@ const { confraternistas, trabalhadores } = getTipoParticipacaoCounts();
 
       <TableCell>
         <select
-          value={p.statusPagamento || 'N/A'}
+          value={p.statusPagamento }
           onChange={(e) => handleStatusChange(p.id, e.target.value)}
         >
           <option value="pendente">Pendente</option>
@@ -297,6 +329,7 @@ const TableHead = styled.thead`
 `;
 
 const TableRow = styled.tr`
+width: 800px;
   &:nth-child(even) {
     background-color: #f8f9fa;
   }
@@ -361,10 +394,13 @@ const TableHeader = styled.th`
   font-weight: 600;
   font-size: 1rem;
 `;
-
 const TableCell = styled.td`
   border-bottom: 1px solid #e9ecef;
   padding: 0.75rem 1rem;
   font-size: 1rem;
   color: #333;
+  white-space: nowrap; /* 👈 evita quebra de linha */
+  overflow: hidden;
+  text-overflow: ellipsis; /* opcional: adiciona "..." se o texto for muito longo */
+  max-width: 250px; /* opcional: limite de largura */
 `;
