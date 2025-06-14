@@ -575,14 +575,43 @@ const getToken = () => {
     </FieldRow> */}
 
     {/* Linha para assinatura */}
-    <FieldRow>
+{/*     <FieldRow>
       <FieldLabel>Autorização coordenador DIJ</FieldLabel>
       <FieldValue>
         <div style={{ borderTop: "1px solid #fff", width: "100%", height: "15px" }}></div>
         <span style={{ fontSize: "12px", color: "#666" }}>Assinatura/data: _________________________________</span><br></br>
       </FieldValue>
     </FieldRow>
+ */}
+             <SectionTitle>Ficha de autorização para menores de idade</SectionTitle>
+
+        <FieldRow>
+
+      <FieldLabel>Autorização para menor de idade</FieldLabel>
+      <FieldValue>
+        <div style={{ textAlign: "justify", borderTop: "1px solid #fff", width: "100%", height: "15px" }}></div>
+        <span style={{ display:"block", textAlign: "justify", fontSize: "12px", color: "#666" }}>Eu, __________________________________________, portador(a) do documento de identidade nº ______________________, responsável legal pelo(a) menor __________________________________________,
+autorizo sua participação na 46ª COMEJACA – Confraternização das Mocidades Espíritas de Jacarepaguá, a ser realizada nos dias 19 e 20 de julho de 2025. </span><br></br>
+      </FieldValue>
+    </FieldRow>
+
+            <FieldRow>
+      <FieldLabel>Telefone do responsável</FieldLabel>
+      <FieldValue>
+        <div style={{ borderTop: "1px solid #fff", width: "100%", height: "15px" }}></div>
+        <span style={{ fontSize: "12px", color: "#666" }}> {participant.telefoneResponsavel || "Nenhuma"}</span><br></br>
+      </FieldValue>
+    </FieldRow>
+
+                <FieldRow>
+      <FieldLabel>Assinatura e data</FieldLabel>
+      <FieldValue>
+        <div style={{ borderTop: "1px solid #fff", width: "100%", height: "15px" }}></div>
+        <span style={{ fontSize: "12px", color: "#666" }}>______________________________</span><br></br>
+      </FieldValue>
+    </FieldRow>
   </ResponsiveGrid>
+  
 </Section>
 
 
