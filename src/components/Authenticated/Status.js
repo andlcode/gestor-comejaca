@@ -416,21 +416,31 @@ const Tabs = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
+
+    @media (max-width: 600px) {
+    overflow-x: auto; /* permite scroll horizontal no mobile */
+    -webkit-overflow-scrolling: touch; /* suaviza scroll no iOS */
+    justify-content: flex-start;
+    padding: 0 10px;
+  }
 `;
 
 const TabButton = styled.button`
-  padding: 0.6rem 1.2rem;
+  background: ${({ active }) => (active ? "#6a0dad" : "#eee")};
+  color: ${({ active }) => (active ? "#fff" : "#333")};
   border: none;
-  border-bottom: 3px solid
-    ${({ active }) => (active ? "#0d1b2a" : "transparent")};
-  background: transparent;
-  font-weight: ${({ active }) => (active ? "700" : "400")};
-  color: ${({ active }) => (active ? "#0d1b2a" : "#666")};
+  padding: 10px 16px;
+  margin: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  flex: 1 1 auto; /* deixa os botões flexíveis para ocupar espaço */
+  min-width: 120px; /* garante um tamanho mínimo */
 
-  &:hover {
-    color: #0d1b2a;
+  /* Para telas pequenas, ajustar a largura para que não quebre muito */
+  @media (max-width: 600px) {
+    flex: 0 0 auto; /* tira flexibilidade para que fique do tamanho do conteúdo */
+    min-width: auto;
+    padding: 8px 12px;
   }
 `;
 
@@ -557,3 +567,4 @@ const Titulo = styled.h2`
   margin-bottom: 10px;
   color: #333;
 `;
+
