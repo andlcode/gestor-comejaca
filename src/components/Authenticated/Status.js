@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import styled from "styled-components";
-
+import GraficoTrabalhadoresPorComissao from "./GraficoTrabalhadoresPorComissao"; 
 const ListaParticipantes = () => {
   const [participantes, setParticipantes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,6 +86,28 @@ const ListaParticipantes = () => {
     [participantes, filtroIE]
   );
 
+const trabalhadoresPorComissao = useMemo(() => {
+  const grupos = {};
+  participantes.forEach((p) => {
+    if (p.tipoParticipacao === "Trabalhador") {
+      const comissao = p.comissao || "Sem Comissão";
+      if (!grupos[comissao]) {
+        grupos[comissao] = [];
+      }
+      grupos[comissao].push(p.nomeCompleto);
+    }
+  });
+  return grupos;
+}, [participantes]);
+
+const [filtro, setFiltro] = useState("");
+
+const comissoesFiltradas = useMemo(() => {
+  return Object.entries(trabalhadoresPorComissao).filter(([comissao]) =>
+    comissao.toLowerCase().includes(filtro.toLowerCase())
+  );
+}, [trabalhadoresPorComissao, filtro]);
+
   const contagemPorIE = useMemo(() => {
     const contagem = {};
     participantes.forEach((p) => {
@@ -117,19 +139,12 @@ const ListaParticipantes = () => {
     return { confraternistas, trabalhadores };
   }, [participantes]);
 
-  const trabalhadoresPorComissao = useMemo(() => {
-    const grupos = {};
-    participantes.forEach((p) => {
-      if (p.tipoParticipacao === "Trabalhador") {
-        const comissao = p.comissao || "Sem Comissão";
-        if (!grupos[comissao]) {
-          grupos[comissao] = [];
-        }
-        grupos[comissao].push(p.nomeCompleto);
-      }
-    });
-    return grupos;
-  }, [participantes]);
+const dadosGrafico = Object.entries(trabalhadoresPorComissao).map(
+  ([comissao, nomes]) => ({
+    comissao,
+    quantidade: nomes.length,
+  })
+);
 const listaGFE = useMemo(() => {
   return participantes
     .filter((p) => p.tipoParticipacao === "Confraternista")
@@ -137,7 +152,7 @@ const listaGFE = useMemo(() => {
       const idade = calcularIdadeEmData(p.dataNascimento);
       const gfe = classificarGFE(idade);
       return { ...p, idade, gfe };
-    });
+    });  
 }, [participantes]);
   return (
     <Container>
@@ -306,40 +321,76 @@ const listaGFE = useMemo(() => {
   abaAtiva === "trabalhadores" ? (
             // Aba Trabalhadores por Comissão
             <>
-              {Object.entries(trabalhadoresPorComissao).map(
-                ([comissao, nomes]) => (
-                  <ComissaoGroup key={comissao}>
-                    <ComissaoTitle>{comissao}</ComissaoTitle>
-                    <ul>
-                      {nomes.map((nome, idx) => (
-                        <li key={idx}>{nome}</li>
-                      ))}
-                    </ul>
-                    <ComissaoCount>
-                      Total de trabalhadores nesta comissão: {nomes.length}
-                    </ComissaoCount>
-                  </ComissaoGroup>
-                )
-              )}
+    <GraficoTrabalhadoresPorComissao dados={dadosGrafico} />
+
+
+     <input
+      type="text"
+      placeholder="Filtrar comissões..."
+      value={filtro}
+      onChange={(e) => setFiltro(e.target.value)}
+      style={{
+        marginBottom: "1rem",
+        padding: "0.5rem",
+        fontSize: "1rem",
+        width: "100%",
+        maxWidth: "400px",
+        boxSizing: "border-box",
+      }}
+    />
+
+    {comissoesFiltradas.length === 0 && (
+      <p>Nenhuma comissão encontrada para esse filtro.</p>
+    )}
+
+    {comissoesFiltradas.map(([comissao, nomes]) => (
+      <TableContainer key={comissao} style={{ marginBottom: "2rem" }}>
+        <h3>{comissao}</h3>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeaderCell>Nome do Trabalhador</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <tbody>
+            {nomes.map((nome, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{nome}</TableCell>
+              </TableRow>
+            ))}
+            <TableRow style={{ fontWeight: "bold" }}>
+              <TableCell>
+                Total de trabalhadores nesta comissão: {nomes.length}
+              </TableCell>
+            </TableRow>
+          </tbody>
+        </Table>
+      </TableContainer>
+    ))}
+
+
             </>
           ) : (
             // Aba Quantidade por Instituição Espírita
-            <ResumoTable>
-              <thead>
-                <tr>
-                  <TableHeader>Instituição Espírita</TableHeader>
-                  <TableHeader>Quantidade</TableHeader>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(contagemPorIE).map(([ie, qtd]) => (
-                  <tr key={ie}>
-                    <TableCell>{ie}</TableCell>
-                    <TableCell>{qtd}</TableCell>
-                  </tr>
-                ))}
-              </tbody>
-            </ResumoTable>
+          <TableContainer>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableHeaderCell>Instituição Espírita</TableHeaderCell>
+        <TableHeaderCell>Quantidade</TableHeaderCell>
+      </TableRow>
+    </TableHead>
+    <tbody>
+      {Object.entries(contagemPorIE).map(([ie, qtd]) => (
+        <TableRow key={ie}>
+          <TableCell>{ie}</TableCell>
+          <TableCell>{qtd}</TableCell>
+        </TableRow>
+      ))}
+    </tbody>
+  </Table>
+</TableContainer>
+
           )}
         </FormCard>
       </ContentWrapper>
@@ -426,7 +477,7 @@ const Tabs = styled.div`
 `;
 
 const TabButton = styled.button`
-  background: ${({ active }) => (active ? "#6a0dad" : "#eee")};
+  background: ${({ active }) => (active ? "#0d1b2a" : "#eee")};
   color: ${({ active }) => (active ? "#fff" : "#333")};
   border: none;
   padding: 10px 16px;
@@ -493,7 +544,6 @@ const TableCell = styled.td`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 250px;
 `;
 
 const ResumoTable = styled.table`
