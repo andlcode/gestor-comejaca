@@ -289,7 +289,7 @@ const listaGFE = useMemo(() => {
                   <TableHeaderCell>Nome</TableHeaderCell>
                   <TableHeaderCell>Data de Nascimento</TableHeaderCell>
                   <TableHeaderCell>Idade</TableHeaderCell>
-                  <TableHeaderCell>GFE</TableHeaderCell>
+                  <TableHeaderCell>Instituição Espírita</TableHeaderCell>
                 </TableRow>
               </TableHead>
               <tbody>
@@ -298,7 +298,7 @@ const listaGFE = useMemo(() => {
                     <TableCell>{p.nomeCompleto}</TableCell>
                     <TableCell>{new Date(p.dataNascimento).toLocaleDateString()}</TableCell>
                     <TableCell>{p.idade} anos</TableCell>
-                    <TableCell>{p.gfe}</TableCell>
+                    <TableCell>{p.IE}</TableCell>
                   </TableRow>
                 ))}
 
