@@ -2,12 +2,15 @@ import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import GraficoTrabalhadoresPorComissao from "./GraficoTrabalhadoresPorComissao"; 
+import { useNavigate } from 'react-router-dom';
+
 const ListaParticipantes = () => {
   const [participantes, setParticipantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroIE, setFiltroIE] = useState("");
   const [abaAtiva, setAbaAtiva] = useState("lista"); // 'lista', 'trabalhadores', 'instituicoes'
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchParticipantes = async () => {
@@ -224,6 +227,7 @@ const listaGFE = useMemo(() => {
                       <TableHeaderCell>Comissão</TableHeaderCell>
                       <TableHeaderCell>Status Pagamento</TableHeaderCell>
                       <TableHeaderCell>Link</TableHeaderCell>
+                      <TableHeaderCell>Ficha</TableHeaderCell>
                     </TableRow>
                   </TableHead>
                   <tbody>
@@ -260,7 +264,25 @@ const listaGFE = useMemo(() => {
                           ) : (
                             "N/A"
                           )}
+
                         </TableCell>
+
+   <TableCell>
+                <button
+                  onClick={() => navigate(`/imprimir/${p.id}`)}
+                  style={{
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    border: "none",
+                    backgroundColor: "#0d1b2a",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Imprimir
+                </button>
+              </TableCell>
+                        
                       </TableRow>
                     ))}
                   </tbody>
