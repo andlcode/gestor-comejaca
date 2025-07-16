@@ -47,21 +47,32 @@ const AuthWrapper = styled.div`
 `;
 
 const Title = styled.h2`
-  color: #1b263b;
+  color: #000;
   margin-bottom: 30px;
 `;
 
-const StyledInput = styled.input`
+export const StyledInput = styled.input`
   width: 100%;
   padding: 10px;
   margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
   height: 50px;
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    border-color: #0d1b2a;
+  }
+
+  &:focus {
+    border-color: #0d1b2a;
+    outline: none;
+  }
 `;
 
 const StyledButton = styled.button`
-  background-color: #1b263b;
+  background-color: #0d1b2a;
   color: #fff;
   padding: 10px 20px;
   border: none;

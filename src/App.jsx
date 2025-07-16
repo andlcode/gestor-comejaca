@@ -25,8 +25,8 @@ import PendingPage from './components/Authenticated/PendingPage';
 import FailurePage from './components/Authenticated/FailurePage';
 import SuccessPage from './components/Authenticated/SuccessPage';
 import ListaParticipantes from './components/Authenticated/Status.js';
-import Admin from './components/Authenticated/Admin.js';
 
+import Admin from './components/Authenticated/Admin.js';
 function App() {
   return (
     <>
@@ -75,7 +75,9 @@ function AppContent() {
       <Route path="/registrar" element={<Register />} />
       <Route path="/recuperarsenha" element={<ForgotPassword />} />
       <Route path="/recuperarsenha/route" element={<ChangePassword />} />
+        <Route path="/recuperarsenha" element={<ForgotPassword />} />
 
+    <Route path="/novasenha" element={<ChangePassword />} />
       <Route path="*" element={<NotFound />} />
 
       {/* Rotas Privadas */}
