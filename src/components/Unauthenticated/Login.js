@@ -1,292 +1,332 @@
-import React, { useState, useEffect } from 'react';
-import { faArrowRight, faKey } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import React, { useEffect, useState } from 'react';
+import {
+  faEnvelope,
+  faKey,
+  faLock,
+  faShieldHalved,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
+import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import axios from 'axios';
+import AuthLayout from './auth/AuthLayout';
+import PremiumAuthField from './auth/PremiumAuthField';
+import {
+  AuthButtonSpinner,
+  AuthFlowButtonLabel,
+  AuthFormAlert,
+  AuthLoginActions,
+  AuthLoginFieldStack,
+  AuthLoginForm,
+  AuthPrimaryButton,
+  AuthRememberRow,
+} from './auth/authStyles';
 
-
-const gradientAnimation = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
-
-const AuthContainer = styled.div`
+const LoginContentStack = styled.div`
   display: flex;
-  justify-content: center;
   flex-direction: column;
-  align-items: center;
-  background-size: 400% 400%;
-  height: 90vh;
-  animation: ${gradientAnimation} 15s ease infinite;
-  padding: 2rem;
-  box-sizing: border-box;
-  background: #e7ecef;
-  @media (max-width: 480px) {
-    padding: 0;
+  gap: 0;
+`;
+
+const LoginIntro = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.78);
+
+  @media (min-width: 640px) {
+    padding-bottom: 1.45rem;
   }
 
-  @media (max-width: 480px) {
-    padding: 0 0rem 27px; 
+  @media (max-width: 639px) {
+    gap: 0.72rem;
+    padding-bottom: 1.1rem;
   }
 `;
 
-const Title = styled.h1`
-  font-size: 2.5rem;
-  color: #000;
-  font-family: 'Inter', sans-serif;
+const LoginEyebrow = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.72rem;
+  border-radius: 999px;
+  background: rgba(245, 247, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  box-shadow: 0 8px 20px -22px rgba(15, 23, 42, 0.22);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.734375rem;
   font-weight: 700;
-  margin-bottom: 2rem;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #2a2a2a, #4a4a4a);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-align:center;
-  margin-bottom: 2.5rem;
-  @media (max-width: 768px) {
-    font-size: 2.4rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #556274;
+
+  svg {
+    font-size: 0.75rem;
+    color: #5c54df;
   }
 `;
 
-const Button = styled.button`
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
+const LoginHighlights = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0;
+
+  @media (max-width: 639px) {
+    gap: 0.5rem;
+  }
+`;
+
+const LoginHighlight = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.125rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(248, 250, 255, 0.78);
+  box-shadow: 0 10px 22px -22px rgba(15, 23, 42, 0.22);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.75rem;
   font-weight: 600;
-  background: linear-gradient(135deg, #0d1b2a 0%, #0d1b2a 100%);
-  margin-top: 1rem;
-/*   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, #e36414 0%, #e36414 100%);
-  }
-  @media (max-width: 768px) {
-    position: fixed;
-    zIndex: 9999;
-    bottom: 0;
+  letter-spacing: -0.012em;
+  color: #536172;
+
+  svg {
+    font-size: 0.8125rem;
+    color: #5c54df;
   }
 `;
 
-
-
-
-
-const Form = styled.form`
+const LoginFormShell = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  text-align: center;
-  
+  gap: 0;
+  padding-top: 1.25rem;
+
+  @media (min-width: 640px) {
+    padding-top: 1.45rem;
+  }
+
+  @media (max-width: 639px) {
+    padding-top: 1.1rem;
+  }
 `;
 
-
-const InputWrapper = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr;
+const LoginSupportRow = styled.div`
+  display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: #fff;;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  transition: border-color 0.3s ease;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
 
-/*   &:focus-within {
-    border-color: #4a4a4a;
- 
-  } */
-    &:focus-within {
-    border-color: #4a4e69;
-    box-shadow: 0 0 3px rgba(74, 78, 105, 0.5);
-  }
-  &:hover {
-
-    border: #0d1b2a 1px solid
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.8rem;
-    gap: 0.8rem;
-  }
-`;
-
-
-const AuthWrapper = styled.div`
-  width: 100%;
-  max-width: 480px;
-  overflow: hidden;
-  padding: 2.5rem;
-  margin: 1rem;
-  background: #e7ecef;
-  backdrop-filter: blur(20px);
-  border-radius: 5px;
-
-  @media (max-width: 768px) {
-    padding: 1.5rem;
-    margin: 0;
-    border-radius: 0;
-    height: 100vh; /* Garante que o conteúdo ocupa toda a tela */
-
+  @media (max-width: 639px) {
+    align-items: flex-start;
     flex-direction: column;
-    justify-content: center;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
   }
 `;
 
-
-
-const Input = styled.input`
-  flex: 1;
-  padding: 8px;
-  font-size: 1rem;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: #333;
-  font-family: 'Poppins', sans-serif;
-
-  &::placeholder {
-    color: #aaa;
-  }
-
-  @media (max-width: 600px) {
-    font-size: 0.9rem; 
-  }
-`;
-
-const Icon = styled(FontAwesomeIcon)`
-  color: #0d1b2a;
-  font-size: 1.2rem;
-  margin-right: 10px;
-
-  @media (max-width: 600px) {
-    font-size: 1rem; 
-  }
-`;
-
-
-
-
-
-const ErrorMessage = styled.p`
-  color: #d32f2f;
-  font-size: 0.9rem;
-  font-family: 'Poppins', sans-serif;
-
-  @media (max-width: 600px) {
-    font-size: 0.8rem; 
-  }
-`;
-const AuthLink = styled.a`
-  color: #0d1b2a;
-  font-size: 1rem;
+const LoginInlineLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.15rem 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.828125rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: #556274;
   text-decoration: none;
-  transition: all 0.3s ease;
-  display: block;
-  text-align: center;
+  transition: color 0.18s ease, opacity 0.18s ease;
 
   &:hover {
-    text-decoration: underline;
-    transform: translateX(2px);
-    color: #0f3460
+    color: #111827;
   }
 
-  @media (max-width: 768px) {
-    &:first-child {
-      display: none;
-    }
+  &:focus {
+    outline: none;
   }
 
-
-`;
-
-const AuthLinkConta = styled.a`
-  color: #22223b;
-  font-size: 1rem;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: block;
-  text-align: center;
-
-  &:hover {
-    text-decoration: underline;
-    transform: translateX(2px);
-    color: #0f3460
+  &:focus-visible {
+    color: #3f46a8;
   }
 
-
-  
-`;
-const FloatingButtonContainer = styled.div`
-  @media (max-width: 768px) {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  
-    width: 100vw;
-    background: linear-gradient(135deg, #f8edeb, #403d39, #f8edeb);
-    padding: 0;
-    border-top: 1px solid #e0e0e0;
-    z-index: 1000; /* Garante que o botão fique sempre visível */
+  @media (max-width: 639px) {
+    min-height: 2.5rem;
+    font-size: 0.90625rem;
   }
 `;
-const FloatingButton = styled.button`
-  display: none;
 
-  @media (max-width: 768px) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 1.2rem;
-    font-size: 1rem;
-    font-weight: 500;
-    border: none;
-    border-radius: 0;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    background: linear-gradient(135deg, #003049, #003049, #003049);
-    
-    &:active {
-      transform: translateY(0);
-    }
-    
+const LoginAlert = styled(AuthFormAlert)`
+  color: #7f1d1d;
+  background: linear-gradient(180deg, rgba(255, 249, 249, 0.98) 0%, rgba(254, 242, 242, 0.98) 100%);
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  border-left: 3px solid rgba(239, 68, 68, 0.38);
+  box-shadow: 0 10px 22px -20px rgba(239, 68, 68, 0.3);
+`;
+
+const LoginSubmitButton = styled(AuthPrimaryButton)`
+  position: relative;
+  overflow: hidden;
+  min-height: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: #111827;
+  color: #f8fafc;
+  box-shadow:
+    0 8px 18px -16px rgba(15, 23, 42, 0.34),
+    0 14px 28px -24px rgba(15, 23, 42, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+  transition:
+    background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.18s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    opacity: 1;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 42%);
+    opacity: 0.9;
+  }
+
+  &:hover:not(:disabled) {
+    background: #0f172a;
+    transform: translateY(-1px);
+    box-shadow:
+      0 10px 22px -18px rgba(15, 23, 42, 0.38),
+      0 16px 30px -24px rgba(15, 23, 42, 0.22),
+      0 1px 0 rgba(255, 255, 255, 0.09) inset,
+      0 0 0 1px rgba(15, 23, 42, 0.05);
+  }
+
+  &:active:not(:disabled) {
+    background: #0b1220;
+    transform: translateY(0);
+    box-shadow:
+      0 5px 14px -14px rgba(15, 23, 42, 0.32),
+      0 10px 22px -26px rgba(15, 23, 42, 0.18),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 4px rgba(15, 23, 42, 0.09),
+      0 10px 22px -18px rgba(15, 23, 42, 0.32),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  }
+
+  &:disabled {
+    background: #c7ced8;
+    color: rgba(255, 255, 255, 0.96);
+    box-shadow:
+      0 6px 14px -16px rgba(15, 23, 42, 0.16),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset;
+
     &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+      border-color: rgba(255, 255, 255, 0.08);
     }
-    svg {
-      width: 18px;
-      height: 18px;
+
+    &::after {
+      opacity: 0.52;
     }
+  }
+
+  &[aria-busy='true'] {
+    cursor: wait;
+    background: #0f172a;
+    color: #f8fafc;
+    box-shadow:
+      0 8px 18px -18px rgba(15, 23, 42, 0.34),
+      0 12px 24px -24px rgba(15, 23, 42, 0.2),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset;
+
+    &::after {
+      opacity: 0.7;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.12s;
+
+    &:hover:not(:disabled) {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 639px) {
+    min-height: 52px;
+    height: 52px;
+    border-radius: 15px;
+    font-size: 0.96875rem;
   }
 `;
 
+const LoginButtonContent = styled.span`
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+`;
 
+const LoginFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1.35rem;
+  padding-top: 1.05rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.74);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: #64748b;
 
-
-const LoadingSpinner = styled.div`
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  @media (max-width: 639px) {
+    margin-top: 1.1rem;
+    padding-top: 0.95rem;
+    font-size: 0.90625rem;
   }
-  
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
+`;
+
+const LoginFooterLink = styled(Link)`
+  color: #111827;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: -0.016em;
+  transition: color 0.18s ease;
+
+  &:hover {
+    color: #4f46e5;
+  }
 `;
 
 const Login = () => {
@@ -300,12 +340,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-  const [areFieldsFilled, setAreFieldsFilled] = useState(false);
-
-  useEffect(() => {
-    const filled = formData.email.length > 0 && formData.password.length > 0;
-    setAreFieldsFilled(filled);
-  }, [formData.email, formData.password]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -313,7 +347,7 @@ const Login = () => {
       console.log('Usuário já está logado, redirecionando...');
       navigate('/painel');
     }
-  }, [navigate]); 
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -323,17 +357,7 @@ const Login = () => {
     }));
   };
 
-  useEffect(() => {
-    const emailPreenchido = formData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-    const senhaPreenchida = formData.password && formData.password.length >= 8;
-  
-    if (emailPreenchido && senhaPreenchida) {
-      handleSubmit();
-    }
-  }, [formData.email, formData.password]);
-  
   const handleSubmit = async () => {
-  
     try {
       setLoading(true);
       setError(null);
@@ -374,69 +398,108 @@ const Login = () => {
   
 
   return (
-    <AuthContainer>
-      <AuthWrapper>
-        <Title> ENTRAR</Title>
-        <Form onSubmit={handleSubmit}>
-          <InputWrapper>
-            <Icon icon={faEnvelope} />
-            <Input
-              type="email"
-              name="email"
-              placeholder="Digite seu e-mail"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              autoComplete="username"
-            />
-          </InputWrapper>
-          <InputWrapper>
-            <Icon icon={faLock} />
-            <Input
-type='password'
-               name="password"
-              placeholder="Digite sua senha"
-              value={formData.password}
-              onChange={handleChange}
-              autoComplete="current-password"
-              required
-       
-            />
-          </InputWrapper>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+    <AuthLayout
+      title="Acesse sua conta"
+      subtitle="Entre para acompanhar sua inscrição, consultar atualizações e continuar seu fluxo com clareza."
+      layoutPreset="login"
+      showUtilityActions={false}
+    >
+      <LoginContentStack>
+        <LoginIntro>
+          <LoginEyebrow>
+            <FontAwesomeIcon icon={faShieldHalved} />
+            Acesso autenticado
+          </LoginEyebrow>
+          <LoginHighlights>
+            <LoginHighlight>
+              <FontAwesomeIcon icon={faShieldHalved} />
+              Ambiente seguro
+            </LoginHighlight>
+            <LoginHighlight>
+              <FontAwesomeIcon icon={faKey} />
+              Acesso ao painel
+            </LoginHighlight>
+          </LoginHighlights>
+        </LoginIntro>
 
-<Button type="submit" disabled={loading}>
-  {loading ? <LoadingSpinner  /> : 'Entrar'}
-</Button>
-<div style={{ marginTop: '1.5rem', display: 'grid', gap: '0.75rem' }}>
-            <AuthLink href="/recuperarsenha"> Esqueci a senha</AuthLink>
-            <AuthLinkConta href="/registrar">Nova conta</AuthLinkConta>
-          </div>
-          <FloatingButtonContainer>
-          {areFieldsFilled ? (
-  <FloatingButton primary type="submit" disabled={loading}>
-    {loading ? (
-      <LoadingSpinner />
-    ) : (
-      <>
-        <FontAwesomeIcon  style={{ color: 'white', marginRight: '8px' }}  icon={faKey} />
-        Entrar
-      </>
-    )}
-  </FloatingButton>
-) : (
-<FloatingButton as="a" href="/recuperarsenha">
-  <FontAwesomeIcon 
-    icon={faArrowRight}  
-    style={{ color: 'white', marginRight: '8px' }} 
-  />
-  <span style={{ color: 'white' }}> Esqueci a senha</span>
-</FloatingButton>
-)}
-        </FloatingButtonContainer>
-        </Form>
-      </AuthWrapper>
-    </AuthContainer>
+        <LoginFormShell>
+          <AuthLoginForm
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
+            <AuthLoginFieldStack>
+              <PremiumAuthField
+                id="login-email"
+                type="email"
+                name="email"
+                label="E-mail"
+                icon={faEnvelope}
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                autoComplete="username"
+                inputMode="email"
+                placeholder="nome@dominio.com"
+                error={Boolean(error)}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? 'login-feedback' : undefined}
+              />
+              <PremiumAuthField
+                id="login-password"
+                type="password"
+                name="password"
+                label="Senha"
+                icon={faLock}
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                autoComplete="current-password"
+                placeholder="Digite sua senha"
+                error={Boolean(error)}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? 'login-feedback' : undefined}
+              />
+            </AuthLoginFieldStack>
+
+            <LoginSupportRow>
+              <AuthRememberRow $login>
+                <input
+                  type="checkbox"
+                  name="rememberMe"
+                  checked={formData.rememberMe}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                <span>Manter acesso neste dispositivo</span>
+              </AuthRememberRow>
+              <LoginInlineLink to="/recuperarsenha">Esqueci a senha</LoginInlineLink>
+            </LoginSupportRow>
+
+            {error ? (
+              <LoginAlert id="login-feedback" role="alert">
+                {error}
+              </LoginAlert>
+            ) : null}
+
+            <AuthLoginActions>
+              <LoginSubmitButton type="submit" disabled={loading} $loading={loading}>
+                {loading ? <AuthButtonSpinner /> : null}
+                <AuthFlowButtonLabel>Entrar</AuthFlowButtonLabel>
+              </LoginSubmitButton>
+            </AuthLoginActions>
+          </AuthLoginForm>
+
+          <LoginFooter>
+            Primeiro acesso?
+            <LoginFooterLink to="/registrar">Criar conta</LoginFooterLink>
+          </LoginFooter>
+        </LoginFormShell>
+      </LoginContentStack>
+    </AuthLayout>
   );
 };
 

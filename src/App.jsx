@@ -54,13 +54,13 @@ function App() {
 
       <div className="container">
     {/*     <SessaoInfo /> */}
-        <HeaderMain  className="no-print-header"/>
+  
 
         <AuthProvider>
           <AppContent />
         </AuthProvider>
 
-     <ServerStatus lassName="no-print-footer" /> 
+   
 
       </div>
     </>
