@@ -434,6 +434,7 @@ const AppTextArea = styled.textarea`
   resize: vertical;
   font-family: inherit;
   font-size: 15px;
+  line-height: 1.6;
   transition: all 0.2s ease;
   outline: none;
 
@@ -566,6 +567,7 @@ const ChipsGroup = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  margin-top: 4px;
 
   @media (max-width: 768px) {
     gap: 10px;
@@ -575,21 +577,22 @@ const ChipsGroup = styled.div`
 const ChipLabel = styled.label`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 14px;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 16px;
   border-radius: 5px;
-  background: #f8f8fa;
-  border: 1px solid #e6e6eb;
-  color: #3a3a3c;
+  background: ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.1)" : "#f8f8fa")};
+  border: 1px solid ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.35)" : "#e6e6eb")};
+  color: ${({ $selected }) => ($selected ? "#4c1d95" : "#3a3a3c")};
   font-size: 14px;
-  font-weight: 500;
+  font-weight: ${({ $selected }) => ($selected ? 600 : 500)};
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
     background: #ffffff;
-    border-color: #d6d6dc;
+    border-color: ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.45)" : "#d6d6dc")};
+    transform: translateY(-1px);
   }
 
   input {
@@ -603,12 +606,23 @@ const CheckboxContainer = styled.label`
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: ${({ $final }) => ($final ? "20px" : "18px")};
   cursor: pointer;
+  padding: ${({ $final }) => ($final ? "14px 16px" : "0")};
+  border-radius: ${({ $final }) => ($final ? "14px" : "0")};
+  background: ${({ $final }) => ($final ? "rgba(255, 255, 255, 0.7)" : "transparent")};
+  border: ${({ $final }) => ($final ? "1px solid #e8eaf0" : "none")};
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${({ $final }) => ($final ? "#dcdfea" : "transparent")};
+    background: ${({ $final }) => ($final ? "#ffffff" : "transparent")};
+  }
 
   @media (max-width: 768px) {
     gap: 9px;
-    margin-top: 16px;
+    margin-top: ${({ $final }) => ($final ? "18px" : "16px")};
+    padding: ${({ $final }) => ($final ? "13px 14px" : "0")};
   }
 `;
 
@@ -622,8 +636,9 @@ const CheckboxInput = AppCheckbox;
 
 const CheckboxLabel = styled.span`
   font-size: 14px;
-  color: ${({ theme }) => theme.secondaryText};
+  color: ${({ $final, theme }) => ($final ? theme.textColor : theme.secondaryText)};
   line-height: 1.55;
+  font-weight: ${({ $final }) => ($final ? 500 : 400)};
 
   @media (max-width: 768px) {
     font-size: 13px;
@@ -632,10 +647,10 @@ const CheckboxLabel = styled.span`
 `;
 
 const FooterActions = styled.div`
-  margin-top: 28px;
+  margin-top: 32px;
 
   @media (max-width: 768px) {
-    margin-top: 22px;
+    margin-top: 26px;
   }
 `;
 
@@ -651,11 +666,12 @@ const SubmitButton = styled.button`
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.16s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  box-shadow: 0 6px 14px rgba(17, 17, 17, 0.12);
 
   @media (max-width: 768px) {
     min-height: 50px;
@@ -664,10 +680,13 @@ const SubmitButton = styled.button`
 
   &:hover {
     background: ${({ theme }) => theme.buttonHover};
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(17, 17, 17, 0.16);
   }
 
   &:active {
-    transform: scale(0.99);
+    transform: scale(0.985);
+    box-shadow: 0 4px 10px rgba(17, 17, 17, 0.14);
   }
 
   &:disabled {
@@ -689,10 +708,13 @@ const SubmitButton = styled.button`
 const LinkText = styled.span`
   color: #0a84ff;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
 
   &:hover {
     text-decoration: underline;
+    color: #0668c7;
   }
 `;
 
@@ -1507,20 +1529,7 @@ const Formulario = () => {
                 </SectionHeader>
 
                 <FormGrid>
-                  <InputGroup>
-                    <InputLabel><FiInfo /> Alimentação *</InputLabel>
-                    <Select
-                      name="vegetariano"
-                      value={formData.vegetariano}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Como é sua alimentação?</option>
-                      <option value="Não">Sem restrição vegetariana</option>
-                      <option value="Vegetariano">Vegetariana</option>
-                      <option value="Vegano">Vegana</option>
-                    </Select>
-                  </InputGroup>
+            
 
                   <InputGroup>
                     <InputLabel><FiInfo /> Alergias ou restrições alimentares</InputLabel>
@@ -1546,7 +1555,7 @@ const Formulario = () => {
                     <InputGroup>
                       <InputLabel><FiInfo /> Existe alguma condição que você gostaria que soubéssemos?</InputLabel>
                       <ChipsGroup>
-                        <ChipLabel>
+                        <ChipLabel $selected={formData.deficienciaAuditiva}>
                           <input
                             type="checkbox"
                             name="deficienciaAuditiva"
@@ -1556,7 +1565,7 @@ const Formulario = () => {
                           Auditiva
                         </ChipLabel>
 
-                        <ChipLabel>
+                        <ChipLabel $selected={formData.deficienciaAutismo}>
                           <input
                             type="checkbox"
                             name="deficienciaAutismo"
@@ -1566,7 +1575,7 @@ const Formulario = () => {
                           Autismo
                         </ChipLabel>
 
-                        <ChipLabel>
+                        <ChipLabel $selected={formData.deficienciaIntelectual}>
                           <input
                             type="checkbox"
                             name="deficienciaIntelectual"
@@ -1576,7 +1585,7 @@ const Formulario = () => {
                           Intelectual
                         </ChipLabel>
 
-                        <ChipLabel>
+                        <ChipLabel $selected={formData.deficienciaParalisiaCerebral}>
                           <input
                             type="checkbox"
                             name="deficienciaParalisiaCerebral"
@@ -1586,7 +1595,7 @@ const Formulario = () => {
                           Paralisia cerebral
                         </ChipLabel>
 
-                        <ChipLabel>
+                        <ChipLabel $selected={formData.deficienciaVisual}>
                           <input
                             type="checkbox"
                             name="deficienciaVisual"
@@ -1596,7 +1605,7 @@ const Formulario = () => {
                           Visual
                         </ChipLabel>
 
-                        <ChipLabel>
+                        <ChipLabel $selected={formData.deficienciaFisica}>
                           <input
                             type="checkbox"
                             name="deficienciaFisica"
@@ -1606,7 +1615,7 @@ const Formulario = () => {
                           Física
                         </ChipLabel>
 
-                        <ChipLabel>
+                        <ChipLabel $selected={formData.deficienciaOutra}>
                           <input
                             type="checkbox"
                             name="deficienciaOutra"
@@ -1645,15 +1654,30 @@ const Formulario = () => {
                       />
                     </InputGroup>
                   </FullWidth>
+
+                        <InputGroup>
+                    <InputLabel><FiInfo /> Alimentação *</InputLabel>
+                    <Select
+                      name="vegetariano"
+                      value={formData.vegetariano}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Como é sua alimentação?</option>
+                      <option value="Não">Sem restrição vegetariana</option>
+                      <option value="Vegetariano">Vegetariana</option>
+                      <option value="Vegano">Vegana</option>
+                    </Select>
+                  </InputGroup>
                 </FormGrid>
               </Section>
 
               <Section>
        {/*  */}
 
-                <CheckboxContainer>
+                <CheckboxContainer $final>
                   <CheckboxInput type="checkbox" required />
-                  <CheckboxLabel>
+                  <CheckboxLabel $final>
                     Li e estou de acordo com as orientações do{" "}
                     <LinkText onClick={() => setModalOpen(true)}>plano geral</LinkText> da XLVI
                     COMEJACA. *
