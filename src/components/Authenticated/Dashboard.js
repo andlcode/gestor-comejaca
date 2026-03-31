@@ -1,12 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
+import { FaInstagram } from 'react-icons/fa';
 import {
+  FiBarChart2,
   FiChevronDown,
   FiEdit,
   FiLoader,
+  FiMenu,
   FiPlus,
   FiPrinter,
   FiSearch,
+  FiX,
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -37,9 +41,10 @@ const Content = styled.div`
 
 const TopBar = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto auto;
   gap: 10px;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
 
   @media (max-width: 768px) {
@@ -49,8 +54,23 @@ const TopBar = styled.div`
   }
 `;
 
+const DesktopOnly = styled.div`
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+`;
+
+const MobileOnly = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
 const SearchWrapper = styled.div`
   position: relative;
+  margin-bottom: 16px;
 `;
 
 const SearchIcon = styled(FiSearch)`
@@ -114,9 +134,31 @@ const PrimaryButton = styled.button`
   }
 `;
 
+const SecondaryButton = styled.button`
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #e2e2e7;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #3a3a3c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: #ffffff;
+    border-color: #d6d6dc;
+  }
+`;
+
 const StateCard = styled.div`
   min-height: 140px;
-  border-radius: 22px;
+  border-radius: 5px;
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(229, 229, 234, 0.9);
   display: flex;
@@ -142,10 +184,13 @@ const SectionHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ececf1;
 
   @media (max-width: 768px) {
     margin-bottom: 12px;
+    padding-bottom: 10px;
   }
 `;
 
@@ -154,6 +199,12 @@ const TitleRow = styled.div`
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+`;
+
+const SectionHeaderMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
 `;
 
 const Title = styled.h2`
@@ -181,6 +232,23 @@ const CountBadge = styled.span`
   color: #6e6e73;
   font-size: 12px;
   font-weight: 600;
+`;
+
+const HeaderMenuButton = styled.button`
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e6e6eb;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #3a3a3c;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    display: inline-flex;
+  }
 `;
 
 const ActiveGrid = styled.div`
@@ -267,7 +335,7 @@ const Actions = styled.div`
 const Button = styled.button`
   min-height: 36px;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: 5px;
   border: 1px solid
     ${({ $variant }) =>
       $variant === 'primary' ? 'transparent' : '#e5e5ea'};
@@ -401,6 +469,125 @@ const ArchiveBadge = styled.span`
   letter-spacing: 0.03em;
 `;
 
+const DrawerOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(29, 29, 31, 0.22);
+  opacity: ${({ $open }) => ($open ? 1 : 0)};
+  pointer-events: ${({ $open }) => ($open ? 'auto' : 'none')};
+  transition: opacity 0.2s ease;
+  z-index: 40;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+`;
+
+const DrawerPanel = styled.aside`
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(86vw, 320px);
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  border-left: 1px solid rgba(236, 236, 241, 0.9);
+  padding: 16px 14px;
+  transform: translateX(${({ $open }) => ($open ? '0' : '100%')});
+  transition: transform 0.22s ease;
+  box-shadow: -10px 0 24px rgba(0, 0, 0, 0.06);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+`;
+
+const DrawerHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f1f4;
+`;
+
+const DrawerTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1d1d1f;
+`;
+
+const DrawerCloseButton = styled.button`
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ececf1;
+  border-radius: 12px;
+  background: #fafafc;
+  color: #636366;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+`;
+
+const DrawerNav = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const DrawerNavButton = styled.button`
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: #f8f8fa;
+  color: #1d1d1f;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: #ffffff;
+    border-color: #ececf1;
+  }
+`;
+
+const DrawerFooter = styled.div`
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #f1f1f4;
+`;
+
+const DrawerInstagramLink = styled.a`
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: transparent;
+  color: #6e6e73;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: #f8f8fa;
+    color: #1d1d1f;
+  }
+`;
+
 const Spinner = styled(FiLoader)`
   animation: spin 1s linear infinite;
 
@@ -447,9 +634,18 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [loadingItemId, setLoadingItemId] = useState(null);
   const [isArchivedExpanded, setIsArchivedExpanded] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const isAdmin = useMemo(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      return storedUser?.role === 'admin' || localStorage.getItem('role') === 'admin';
+    } catch {
+      return localStorage.getItem('role') === 'admin';
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -532,24 +728,70 @@ const Dashboard = () => {
     );
   }, [filteredData]);
 
+  const handleNavigateToStats = () => {
+    setIsMobileMenuOpen(false);
+    navigate('/pagamentos');
+  };
+
   return (
     <Container>
+      <DrawerOverlay $open={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
+      <DrawerPanel $open={isMobileMenuOpen}>
+        <DrawerHeader>
+          <DrawerTitle>Menu</DrawerTitle>
+          <DrawerCloseButton type="button" onClick={() => setIsMobileMenuOpen(false)}>
+            <FiX size={18} />
+          </DrawerCloseButton>
+        </DrawerHeader>
+
+        <DrawerNav>
+          {isAdmin && (
+            <DrawerNavButton type="button" onClick={handleNavigateToStats}>
+              <FiBarChart2 size={16} />
+              Estatísticas
+            </DrawerNavButton>
+          )}
+        </DrawerNav>
+
+        <DrawerFooter>
+          <DrawerInstagramLink
+            href={process.env.REACT_APP_INSTAGRAM_URL || 'https://www.instagram.com/comejaca'}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <FaInstagram size={16} />
+            Instagram
+          </DrawerInstagramLink>
+        </DrawerFooter>
+      </DrawerPanel>
+
       <Content>
         <TopBar>
-          <SearchWrapper>
-            <SearchIcon size={18} />
-            <SearchInput
-              type="text"
-              placeholder="Pesquisar por nome, IE ou e-mail"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </SearchWrapper>
+          <DesktopOnly>
+            <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
+              <FiPlus size={16} />
+              Nova Inscrição
+            </PrimaryButton>
+          </DesktopOnly>
 
-          <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
-            <FiPlus size={16} />
-            Nova Inscrição
-          </PrimaryButton>
+          <DesktopOnly>
+            {isAdmin ? (
+              <SecondaryButton type="button" onClick={handleNavigateToStats}>
+                <FiBarChart2 size={16} />
+                Estatísticas
+              </SecondaryButton>
+            ) : (
+              <div />
+            )}
+          </DesktopOnly>
+
+          <MobileOnly>
+            <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
+              <FiPlus size={16} />
+              Nova Inscrição
+            </PrimaryButton>
+          </MobileOnly>
         </TopBar>
 
         {loading ? (
@@ -561,22 +803,42 @@ const Dashboard = () => {
           <StateCard>{error}</StateCard>
         ) : inscricoes.length === 0 ? (
           <StateCard>Estamos aguardando sua primeira inscrição</StateCard>
-        ) : filteredData.length === 0 ? (
-          <StateCard>
-            <FiSearch size={18} />
-            Nenhum resultado encontrado
-          </StateCard>
         ) : (
           <>
             <Section>
               <SectionHeader>
-                <TitleRow>
-                  <Title>Inscrições {ACTIVE_REGISTRATION_YEAR}</Title>
-                  <CountBadge>{groupedSections.active.length}</CountBadge>
-                </TitleRow>
+                <SectionHeaderMeta>
+                  <TitleRow>
+                    <Title>INSCRIÇÕES {ACTIVE_REGISTRATION_YEAR}</Title>
+                    <CountBadge>{groupedSections.active.length}</CountBadge>
+                  </TitleRow>
+                </SectionHeaderMeta>
+
+                <HeaderMenuButton
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  aria-label="Abrir menu"
+                >
+                  <FiMenu size={18} />
+                </HeaderMenuButton>
               </SectionHeader>
 
-              {groupedSections.active.length > 0 ? (
+     {/*          <SearchWrapper>
+                <SearchIcon size={18} />
+                <SearchInput
+                  type="text"
+                  placeholder="Pesquisar por nome, IE ou e-mail"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </SearchWrapper> */}
+
+              {filteredData.length === 0 ? (
+                <StateCard>
+                  <FiSearch size={18} />
+                  Nenhum resultado encontrado
+                </StateCard>
+              ) : groupedSections.active.length > 0 ? (
                 <ActiveGrid>
                   {groupedSections.active.map((item) => {
                     const statusPagamento = getDisplayStatus(item.statusPagamento);

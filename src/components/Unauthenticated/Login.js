@@ -405,7 +405,7 @@ const Login = () => {
       showUtilityActions={false}
     >
       <LoginContentStack>
-        <LoginIntro>
+{/*         <LoginIntro>
           <LoginEyebrow>
             <FontAwesomeIcon icon={faShieldHalved} />
             Acesso autenticado
@@ -420,7 +420,7 @@ const Login = () => {
               Acesso ao painel
             </LoginHighlight>
           </LoginHighlights>
-        </LoginIntro>
+        </LoginIntro> */}
 
         <LoginFormShell>
           <AuthLoginForm

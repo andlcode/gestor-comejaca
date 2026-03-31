@@ -1,269 +1,677 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import  styled, { ThemeProvider, keyframes } from "styled-components";
+import { useNavigate } from "react-router-dom";
+import styled, { ThemeProvider, keyframes, css } from "styled-components";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { FiClock, FiUser, FiMail, FiMapPin, FiCalendar, FiInfo, FiPhone , FiChevronLeft, FiFileText, FiShoppingBag, FiLoader } from "react-icons/fi";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { ptBR } from "date-fns/locale";
-import axios from 'axios';
-import HeaderMain from './Header'
+import {
+  FiArrowLeft,
+  FiClock,
+  FiUser,
+  FiMail,
+  FiMapPin,
+  FiCalendar,
+  FiInfo,
+  FiPhone,
+  FiFileText,
+  FiLoader,
+  FiShield,
+  FiHome,
+  FiHeart,
+} from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
+import { ptBR } from "date-fns/locale";
+import axios from "axios";
 
-const Container = styled.div`
-  background: ${({ theme }) => theme.background};
-    display: flex;
-  justify-content: center;
-  padding: 2rem;
-  font-family: 'Poppins', sans-serif;
-  overflow-y: auto;
-
-  @media (max-width: 768px) {
-    padding: 0;
-    border-radius: 0;
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 `;
 
-const FormWrapper = styled.div`
-  width: 100%;
-  max-width: 800px;
+export const themes = {
+  dashboardLike: {
+    background: "#f5f5f7",
+    cardBackground: "rgba(255, 255, 255, 0.96)",
+    sectionBackground: "rgba(255, 255, 255, 0.88)",
+    textColor: "#1d1d1f",
+    secondaryText: "#6e6e73",
+    subtleText: "#8e8e93",
+    borderColor: "#ececf1",
+    inputBackground: "#ffffff",
+    inputBorder: "#e3e3e8",
+    inputFocus: "#8b5cf6",
+    buttonBackground: "#111111",
+    buttonHover: "#1c1c1e",
+    checkboxAccent: "#0a84ff",
+    dangerSoft: "rgba(255, 59, 48, 0.08)",
+    dangerBorder: "rgba(255, 59, 48, 0.14)",
+    shadow: "0 4px 14px rgba(0, 0, 0, 0.025)",
+    sectionShadow: "0 2px 8px rgba(0, 0, 0, 0.015)",
+    softShadow: "0 6px 16px rgba(0, 0, 0, 0.04)",
+  },
+};
+
+const PAGE_MAX_WIDTH = "980px";
+const TOPBAR_HEIGHT = "64px";
+const TOPBAR_HEIGHT_MOBILE = "58px";
+
+const Container = styled.div`
+  min-height: 100vh;
+  background: ${({ theme }) => theme.background};
+  padding: calc(24px + ${TOPBAR_HEIGHT}) 18px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter",
+    "Segoe UI", sans-serif;
+  color: ${({ theme }) => theme.textColor};
+
+  @media (max-width: 768px) {
+    padding: calc(12px + ${TOPBAR_HEIGHT_MOBILE}) 12px 24px;
+  }
+`;
+
+const Content = styled.div`
+  max-width: ${PAGE_MAX_WIDTH};
+  margin: 0 auto;
+`;
+
+const TopBar = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: ${TOPBAR_HEIGHT};
+  z-index: 50;
+  border-bottom: 1px solid rgba(236, 236, 241, 0.9);
+  background: rgba(245, 245, 247, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  @media (max-width: 768px) {
+    height: ${TOPBAR_HEIGHT_MOBILE};
+    background: rgba(245, 245, 247, 0.86);
+  }
+`;
+
+const TopBarInner = styled.div`
+  height: 100%;
+  max-width: ${PAGE_MAX_WIDTH};
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    padding: 0 12px;
+    gap: 10px;
+  }
 `;
 
 const FormCard = styled.form`
-  background:#e7ecef;
+  background: ${({ theme }) => theme.cardBackground};
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 5px;
-  padding: 2.5rem;
-  
+  padding: 28px;
+  box-shadow: ${({ theme }) => theme.shadow};
+  animation: ${fadeIn} 0.25s ease;
+
   @media (max-width: 768px) {
-    padding: 1.5rem;
-    border-radius: 0rem;
+    padding: 18px 16px;
+    border-radius: 5px;
+    background: ${({ theme }) => theme.cardBackground};
   }
 `;
-const StyledInput = styled.input`
 
-width: 100%;
-    padding: 1rem;
-    border: 1px solid #ddd;
+const Header = styled.header`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
 
-    background: #f9f9f9;
-    color: #22223b;
-    font-family: 'Poppins', sans-serif;
-    transition: all 0.3sease;
+  @media (max-width: 768px) {
+    gap: 8px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+  }
 `;
 
+const BackButton = styled.button`
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.borderColor};
+  background: rgba(255, 255, 255, 0.92);
+  color: ${({ theme }) => theme.secondaryText};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 
-const Header = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    color: ${({ theme }) => theme.textColor};
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    border-color: ${({ theme }) => theme.inputFocus};
+  }
+
+  @media (max-width: 768px) {
+    min-height: 38px;
+    min-width: 38px;
+    border-radius: 11px;
+    padding: 0 10px;
+  }
+`;
+
+const HeaderBadge = styled.span`
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid ${({ theme }) => theme.borderColor};
+  background: rgba(242, 242, 247, 0.95);
+  color: ${({ theme }) => theme.secondaryText};
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 0.68rem;
+  }
 `;
 
 const Title = styled.h1`
-  font-size: 2rem;
-  color: #22223b;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+  color: ${({ theme }) => theme.textColor};
 
   @media (max-width: 768px) {
-    font-size: 1.5rem;
+    font-size: 27px;
+    line-height: 1.15;
+  }
+`;
+
+const Subtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.secondaryText};
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 620px;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+`;
+
+const ErrorBox = styled.div`
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: ${({ theme }) => theme.dangerSoft};
+  border: 1px solid ${({ theme }) => theme.dangerBorder};
+  color: #b42318;
+  text-align: left;
+  font-size: 14px;
+`;
+
+const Section = styled.section`
+  background: ${({ theme }) => theme.sectionBackground};
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 34px;
+  box-shadow: ${({ theme }) => theme.sectionShadow};
+
+  @media (max-width: 768px) {
+    padding: 16px 14px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+  }
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+`;
+
+const SectionIcon = styled.div`
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #f2f2f7;
+  color: #3a3a3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.02rem;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+`;
+
+const SectionTitleWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  margin: 0;
+  font-size: 20px;
+  color: ${({ theme }) => theme.textColor};
+  font-weight: 600;
+  letter-spacing: -0.02em;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+    line-height: 1.3;
+  }
+`;
+
+const SectionDescription = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.secondaryText};
+  font-size: 14px;
+  line-height: 1.55;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    line-height: 1.5;
   }
 `;
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 `;
 
 const InputGroup = styled.div`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 7px;
+  }
+`;
+
+const FullWidth = styled.div`
+  grid-column: 1 / -1;
 `;
 
 const InputLabel = styled.label`
-  display: block;
-  font-size: 0.9rem;
-  color: #22223b;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
+  font-size: 14px;
+  color: ${({ theme }) => theme.secondaryText};
+  margin-bottom: 0;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    line-height: 1.4;
+  }
 `;
 
-const InputField = styled.input`
+const fieldBaseStyles = css`
   width: 100%;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 0.8rem;
-  background: #f9f9f9;
-  color: #22223b;
-  font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
+  min-height: 56px;
+  padding: 0 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: ${({ theme }) => theme.inputBackground};
+  color: #1d1d1f;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+
+  &::placeholder {
+    color: #8e8e93;
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: #d7dbe3;
+  }
 
   &:focus {
-    outline: none;
-    border-color: #4a4e69;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const StyledDatePicker = styled(DatePicker)`
-  width: 100%;
-  
-  .MuiInputBase-root {
-
-    color: #22223b;
-    background: #f9f9f9;
-    border-radius: 0.8rem;
-   
-    border: 1px solid #ddd;
-    font-family: 'Poppins', sans-serif;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 0.8rem;
-  background: #f9f9f9;
-  color: #22223b;
-  font-family: 'Poppins', sans-serif;
-  appearance: none;
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 0.8rem;
-  background: #f9f9f9;
-  color: #22223b;
-  resize: vertical;
-  min-height: 100px;
-  font-family: 'Poppins', sans-serif;
-`;
-
-const CheckboxContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 2rem 0;
-  justify-content: flex-start; 
-  margin-top: 1rem;
-`;
-
-const CheckboxInput = styled.input`
-  width: 18px;
-  height: 18px;
-  accent-color: #4a4e69;
-  margin-right: 0.5rem;
-
-`;
-
-/* const CheckboxLabel = styled.label`
-  font-size: 0.9rem;
-  color: #22223b;
-`; */
-const CheckboxWrapper = styled.div`
-  display: inline-block;
- 
-  padding: 3px;
-  margin: 5px;
-  border-radius: 8px;
-  width: auto;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-
-  &:hover {
-    border-color: #000;
+    border-color: ${({ theme }) => theme.inputFocus};
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
   }
 
-  input[type="checkbox"] {
-    margin-right: 10px;
-    cursor: pointer;
-  }
-`;
-export const themes = {
-  professional: {
-    background: 'linear-gradient(135deg, #e7ecef, #e7ecef, #e7ecef)',
-    cardBackground: '#e7ecef',
-    textColor: '#22223b',
-    buttonBackground: 'linear-gradient(135deg, #22223b, #22223b)',
-    tableHeaderBackground: '#003049',
-    tableHeaderColor: 'white',
-    tableRowEvenBackground: '#f8f9fa',
-    tableRowHoverBackground: '#f1f3f5',
-    shadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-    mobileHeaderHeight: '80px'
-  },
-  minimalista: {
-    background: '#f5f5f5',
-    cardBackground: 'white',
-    textColor: '#333',
-    buttonBackground: '#333',
-    tableHeaderBackground: '#f5f5f5',
-    tableHeaderColor: '#333',
-    tableRowEvenBackground: '#fafafa',
-    tableRowHoverBackground: '#e0e0e0',
-    shadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-    mobileHeaderHeight: '80px'
-  },
-};
-
-const CheckboxLabel = styled.label`
-  font-size: 14px;
-  color: #555;
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.2s ease;
-  
-
-  &:hover {
-    color: #0d1b2a;
-  }
-
-  input:checked {
-    background-color: #0d1b2a;
-    border-color: #0d1b2a;
-  }
-`;const CheckboxesContainer = styled.div`
-border: 1px solid #ddd;
-
-border-radius: 5px;
-background-color: #fff;
-
-min-height: 100px;
-flex-wrap: wrap;
-
-`;
-const SubmitButton = styled.button`
-  width: 100%;
-  padding: 1.2rem;
-  background: #0d1b2a;
-  color: #fff;
-  border: none;
-  border-radius: 0.8rem;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  &:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
+  &[aria-invalid="true"],
+  &[data-error="true"] {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
   }
 
   &:disabled {
-    opacity: 0.7;
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: #e5e7eb;
+    cursor: not-allowed;
+  }
+`;
+
+const AppField = styled.input`
+  ${fieldBaseStyles}
+`;
+
+const InputField = AppField;
+const StyledInput = AppField;
+
+const AppSelect = styled.select`
+  ${fieldBaseStyles}
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+`;
+
+const Select = AppSelect;
+
+const AppTextArea = styled.textarea`
+  width: 100%;
+  min-height: 124px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: ${({ theme }) => theme.inputBackground};
+  color: #1d1d1f;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  outline: none;
+
+  &::placeholder {
+    color: #8e8e93;
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: #d7dbe3;
+  }
+
+  &:focus {
+    border-color: ${({ theme }) => theme.inputFocus};
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  }
+
+  &[aria-invalid="true"],
+  &[data-error="true"] {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+  }
+
+  &:disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: #e5e7eb;
+    cursor: not-allowed;
+  }
+`;
+
+const TextArea = AppTextArea;
+
+const AppDatePicker = styled(DatePicker)`
+  width: 100%;
+
+  .MuiInputBase-root {
+    min-height: 56px;
+    border-radius: 16px;
+    background: ${({ theme }) => theme.inputBackground};
+    border: 1px solid #e5e7eb;
+    font-family: inherit;
+    color: #1d1d1f;
+    transition: all 0.2s ease;
+    padding-right: 12px;
+  }
+
+  .MuiInputBase-root:hover {
+    border-color: #d7dbe3;
+  }
+
+  .MuiInputBase-root.Mui-focused {
+    border-color: ${({ theme }) => theme.inputFocus};
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  }
+
+  .MuiInputBase-root.Mui-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+  }
+
+  .MuiInputBase-root.Mui-disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: #e5e7eb;
+  }
+
+  .MuiOutlinedInput-notchedOutline {
+    border: none;
+  }
+
+  input {
+    padding: 15px 16px;
+    font-size: 15px;
+    color: #1d1d1f;
+    -webkit-text-fill-color: #1d1d1f;
+    opacity: 1;
+  }
+
+  .MuiSvgIcon-root {
+    color: #8e8e93;
+    font-size: 1.1rem;
+  }
+
+  .MuiInputBase-input::placeholder {
+    color: #8e8e93;
+    opacity: 1;
+  }
+`;
+
+const StyledDatePicker = AppDatePicker;
+
+const checkboxBaseStyles = css`
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0;
+
+  &:hover {
+    border-color: #bfc5d0;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    border-color: ${({ theme }) => theme.inputFocus};
+  }
+
+  &:checked {
+    border-color: ${({ theme }) => theme.inputFocus};
+    background: ${({ theme }) => theme.inputFocus};
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+`;
+
+const ChipsGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+  }
+`;
+
+const ChipLabel = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 5px;
+  background: #f8f8fa;
+  border: 1px solid #e6e6eb;
+  color: #3a3a3c;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+
+  &:hover {
+    background: #ffffff;
+    border-color: #d6d6dc;
+  }
+
+  input {
+    ${checkboxBaseStyles}
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const CheckboxContainer = styled.label`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    gap: 9px;
+    margin-top: 16px;
+  }
+`;
+
+const AppCheckbox = styled.input`
+  ${checkboxBaseStyles}
+  margin-top: 1px;
+  flex-shrink: 0;
+`;
+
+const CheckboxInput = AppCheckbox;
+
+const CheckboxLabel = styled.span`
+  font-size: 14px;
+  color: ${({ theme }) => theme.secondaryText};
+  line-height: 1.55;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+`;
+
+const FooterActions = styled.div`
+  margin-top: 28px;
+
+  @media (max-width: 768px) {
+    margin-top: 22px;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  min-height: 52px;
+  padding: 0 24px;
+  background: ${({ theme }) => theme.buttonBackground};
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    min-height: 50px;
+    font-size: 15px;
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.buttonHover};
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.65;
     cursor: not-allowed;
   }
 
@@ -272,170 +680,133 @@ const SubmitButton = styled.button`
   }
 
   @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;
 
+const LinkText = styled.span`
+  color: #0a84ff;
+  cursor: pointer;
+  font-weight: 500;
 
-
-
-// ANIMAÇÃO DE ENTRADA
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-`;
-
-const fadeOut = keyframes`
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95);
+  &:hover {
+    text-decoration: underline;
   }
 `;
 
 const ModalOverlay = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.5);
-  display: ${({ isVisible }) => (isVisible ? 'flex' : 'none')};
-  
+  inset: 0;
+  background: rgba(29, 29, 31, 0.22);
+  display: ${({ isVisible }) => (isVisible ? "flex" : "none")};
   align-items: center;
   justify-content: center;
-
-  width: 100vw;
-  height: 100vh;
   z-index: 1000;
-  @media (max-width: 768px) {
-    align-items: flex-start;
-    justify-content: flex-start;
-width: 100%
 
+  @media (max-width: 768px) {
+    align-items: stretch;
+    justify-content: stretch;
   }
 `;
 
 const ModalContent = styled.div`
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
- width: 100%;
-  height:80vh;
-  margin: 32px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #ececf1;
+  border-radius: 24px;
+  width: min(920px, calc(100vw - 32px));
+  height: min(86vh, 900px);
+  padding: 28px;
   position: relative;
-  animation: ${({ isVisible }) => (isVisible ? fadeIn : fadeOut)} 0.3s ease forwards;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem; // espaçamento entre seções principais
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+
   h2 {
-    font-size: 1.8rem;
+    font-size: 28px;
     margin-bottom: 0.5rem;
+    color: #1d1d1f;
+    letter-spacing: -0.03em;
   }
 
   h3 {
-    font-size: 1.4rem;
+    font-size: 18px;
     margin-bottom: 0.5rem;
-    color: #333;
+    color: #1d1d1f;
+    letter-spacing: -0.02em;
   }
 
   h4 {
-    font-size: 1.2rem;
+    font-size: 16px;
     margin-top: 1rem;
     margin-bottom: 0.5rem;
+    color: #1d1d1f;
   }
 
-  p {
-    margin: 0.5rem 0;
-    line-height: 1.6;
-  }
-
-  ul {
-    margin: 0.5rem 0 1rem 1.5rem;
-    padding-left: 1rem;
-    list-style-type: disc;
-  }
-
-  ul li {
-    margin-bottom: 0.5rem;
+  p,
+  li {
+    color: #3c3c43;
+    line-height: 1.65;
+    font-size: 15px;
   }
 
   blockquote {
-    background: #f5f5f5;
-    border-left: 4px solid #ccc;
-    padding: 1rem;
+    background: #f8f8fa;
+    border-left: 4px solid #0a84ff;
+    padding: 1rem 1.2rem;
     margin: 1rem 0;
     font-style: italic;
+    border-radius: 14px;
   }
 
   section {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   @media (max-width: 768px) {
     width: 100vw;
     height: 100vh;
-    max-height: none;
     border-radius: 0;
-    padding: 1rem;
-    margin: 0;
+    padding: 22px 18px;
   }
-
 `;
+
 const ModalTitle = styled.h2`
   text-align: center;
   margin: 0;
-  padding: 0;
 `;
 
 const ModalSubtitle = styled.h3`
   text-align: center;
-  margin: 0;
-  padding: 0;
-  font-weight: normal;
+  margin: 0 0 12px 0;
+  font-weight: 500;
+  color: #6e6e73;
 `;
 
-// BOTÃO DE FECHAR
 const CloseButton = styled.button`
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: #ccc;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-
-`;
-const LinkText = styled.span`
-  color: blue;
-  text-decoration: underline;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid #ececf1;
+  background: #fafafc;
+  color: #636366;
+  font-size: 1rem;
   cursor: pointer;
 `;
-
-
 
 const PlanoGeralModal = ({ isOpen, onClose }) => {
   const [visible, setVisible] = useState(isOpen);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setVisible(true);
     } else {
-      const timeout = setTimeout(() => setVisible(false), 300); // tempo da animação
+      const timeout = setTimeout(() => setVisible(false), 200);
       return () => clearTimeout(timeout);
     }
   }, [isOpen]);
@@ -443,160 +814,134 @@ const PlanoGeralModal = ({ isOpen, onClose }) => {
   return (
     <ModalOverlay isVisible={visible}>
       {visible && (
- <ModalContent isVisible={isOpen}>
- <CloseButton onClick={onClose}>✖</CloseButton>
+        <ModalContent>
+          <CloseButton onClick={onClose}>✕</CloseButton>
 
- <ModalTitle>Plano Geral — XLVI COMEJACA 2025</ModalTitle>
-<ModalSubtitle>Confraternização das Mocidades Espíritas de Jacarepaguá</ModalSubtitle>
+          <ModalTitle>Plano Geral — XLVI COMEJACA 2025</ModalTitle>
+          <ModalSubtitle>
+            Confraternização das Mocidades Espíritas de Jacarepaguá
+          </ModalSubtitle>
 
+          <section>
+            <h3>1. Dados de Identificação</h3>
+            <p>
+              <strong>1.1 Evento:</strong> XLVI COMEJACA – Confraternização das Mocidades
+              Espíritas de Jacarepaguá.
+            </p>
+            <p>
+              <strong>1.2 Promoção e Coordenação Geral:</strong> Área de Educação do 20º CEU I e II / CEERJ
+            </p>
+            <p>
+              <strong>1.3 Período:</strong> 19 e 20 de julho de 2025
+            </p>
+            <ul>
+              <li><strong>Início:</strong> 19/07 (Sábado)</li>
+              <li><strong>Término:</strong> 20/07 (Domingo)</li>
+            </ul>
 
+            <p><strong>1.4 Público-Alvo:</strong></p>
+            <ul>
+              <li><strong>Confraternistas:</strong> Jovens espíritas de 11 a 21 anos completos até a data do evento.</li>
+              <li><strong>Tarefeiros do Bem:</strong> Espíritas de 22 a 26 anos completos até a data do evento.</li>
+              <li><strong>Membros de Equipe:</strong> Espíritas a partir de 18 anos até a data do evento.</li>
+              <li><strong>Pequenos Companheiros:</strong> Filhos de membros de equipe, de 3 a 10 anos.</li>
+              <li><strong>Pais:</strong> Participantes há mais de 1 ano em uma Instituição Espírita.</li>
+              <li><strong>Demais CEUs/CEERJ:</strong> Inscrições aceitas desde que atendam os critérios.</li>
+            </ul>
+          </section>
 
- <section>
-   <h3>1. Dados de Identificação</h3>
-   <p><strong>1.1 Evento:</strong> XLVI COMEJACA – Confraternização das Mocidades Espíritas de Jacarepaguá.</p>
-   <p><strong>1.2 Promoção e Coordenação Geral:</strong> Área de Educação do 20º CEU I e II / CEERJ</p>
-   <p><strong>1.3 Período:</strong> 19 e 20 de julho de 2025</p>
-   <ul>
-     <li><strong>Início:</strong>19/07 (Sábado)</li>
-     <li><strong>Término:</strong>20/07 (Domingo)</li>
-   </ul>
+          <section>
+            <h3>2. Objetivo</h3>
+            <ul>
+              <li>Valorizar o estudo sistemático da Doutrina Espírita.</li>
+              <li>Estimular a vivência dos ensinamentos cristãos.</li>
+              <li>Fortalecer a unificação do Movimento Espírita local.</li>
+            </ul>
+          </section>
 
-   <p><strong>1.4 Público-Alvo:</strong></p>
-   <ul>
-     <li><strong>Confraternistas:</strong> Jovens espíritas de 11 a 21 anos completos até a data do evento, <b>que estejam frequentando as reuniões do Setor de Juventude</b>, de uma Instituição Espírita com pelo menos 1 ano até a data da inscrição com 70% de presença.</li>
-     <li><strong>Tarefeiros do Bem:</strong>  Espíritas de 22 a 26 anos completos até a data do evento, vinculados ao setor de juventude ou a outro setor de uma Instituição Espírita, pelo período mínimo de 1 ano, com 70% de frequência. Este grupo, além das atividades de estudo, poderá participar de atividades nas Equipes, sendo elas: estágio e trabalho voluntário.</li>
-     <li><strong>Membros de Equipe:</strong> Espíritas a partir de 18 anos até a data do evento, que estejam participando ativamente a pelo menos 1 ano de uma Instituição Espírita. Ao se inscrever, convém que o participante liste as tarefas que tem habilidade para desempenhar, colocando-se à disposição da Coordenação Geral, para aproveitamento em alguma equipe. Para participar da equipe de estudos, é necessário que o participante esteja atuando como evangelizador de algum Ciclo de Juventude ou de infância, se for evangelizar Pequenos Companheiros.</li>
-     <li><strong>Pequenos Companheiros:</strong> Filhos de Membros de Equipe, a partir de 3 a 10 anos de idade, na data do evento, poderão participar, cumprindo a programação previamente elaborada em consonância com o tema central.</li>
-     <li><strong>Pais:</strong> Participantes há mais de 1 ano em uma Instituição Espírita e que sejam Pais ou Responsáveis de um jovem presente na Comejaca.</li>
-     <li><strong>Demais CEUs/CEERJ:</strong> Aceitar-se-ão inscrições de outros CEEU's, desde que atendam todos os critérios estabelecidos para Confraternistas, Tarefeiros do bem, Pais e Membros de equipe. A ficha de inscrição deve ser assinada pelo presidente da Instituição Espírita a que pertença.</li>
-   </ul>
- </section>
+          <section>
+            <h3>3. Metodologias de Ação</h3>
+            <ul>
+              <li>Reuniões de estudo</li>
+              <li>Atividades complementares</li>
+              <li>Atividades de desenvolvimento interpessoal</li>
+            </ul>
+          </section>
 
- <section>
-   <h3>2. Objetivo</h3>
-  <p><strong> 2.1	Oferecer aos participantes condições que os levem:</strong></p>
-   <ul>
-     <li>À valorização do estudo sistemático da Doutrina Espírita.</li>
-     <li>À sensibilização para a vivência dos ensinamentos cristãos, consigo mesmo, perante a família, a Instituição Espírita e a sociedade.</li>
-     <li>Fortalecer a unificação do Movimento Espírita local.</li>
-   </ul>
- <p><strong>  2.2	Intensificar a Unificação do Movimento Espírita da região.</strong></p>
- </section>
+          <section>
+            <h3>4. Tema Central</h3>
+            <blockquote>
+              <p><strong>Mediunidade... precisamos conversar!</strong></p>
+              <footer>“Vossos filhos e vossas filhas profetizarão.” — Atos 2:17</footer>
+            </blockquote>
+          </section>
 
- <section>
-   <h3>3. Metodologias de Ação</h3>
-   <ul>
-     <li>REUNIÕES DE ESTUDO</li>
-     <li>ATIVIDADES COMPLEMENTARES</li>
-     <li>ATIVIDADES DE DESENVOLVIMENTO INTERPESSOAL</li>
-   </ul>
- </section>
+          <section>
+            <h3>5. Inscrições</h3>
+            <p><strong>Período:</strong> 13/04/2025 a 15/06/2025</p>
+            <p><strong>Repasse das fichas:</strong> Até 15/06/2025</p>
+            <p><strong>Investimento:</strong> R$ 60,00 ou mais / R$ 45,00 para Pequenos Companheiros</p>
+            <p><strong>PIX:</strong> coordenacaogeral@comejaca.org.br</p>
+            <p><strong>Observação:</strong> A inscrição é pessoal e intransferível.</p>
 
- <section>
-   <h3>4. Tema Central</h3>
-   <blockquote>
-     <p><strong>Mediunidade... precisamos conversar!</strong></p>
-     <footer>“Vossos filhos e vossas filhas profetizarão.” — Atos 2:17</footer>
-   </blockquote>
- </section>
-
- <section>
-   <h3>5. Inscrições</h3>
-
-   <p><strong>5.1 PERÍODO DE INSCRIÇÃO:</strong> 13/04/2025 a 15/06/2025 (Período em que o participante deve preencher a ficha e encaminhar ao Dirigente da Área de Educação da sua Instituição Espírita, para que ele possa colher as assinaturas)</p> 
-   <p><strong>5.2 REPASSE DAS FICHAS PARA A COORDENAÇÃO GERAL DO EVENTO:</strong> Até 15/06/2025 (Data limite para que o Dirigente da Área de Educação da sua Instituição Espírita repasse as fichas para a Coordenação Geral do evento)</p>
-   <p><strong>5.3 IMPORTANTE: O representante da Área de Educação da Instituição Espírita deve assegurar que  todos os dados da Ficha de Inscrição estejam preenchidos corretamente, principalmente a data de nascimento.</strong></p>
-
-   <h4>5.4 Investimento</h4>
-   <ul>
-     <li>R$ 60,00 ou mais — Confraternistas, Tarefeiros, Pais e Membros de Equipe</li>
-     <li>R$ 45,00 — Pequenos Companheiros</li>
-   </ul>
-   <p><em>Observação 1:</em> Este investimento destina-se às despesas de alimentação, material do estudo, material de limpeza e a materiais diversos necessários para a realização da Comejaca.
-
-</p>
-   <p><em>Observação 2:</em>  Todos deverão contribuir com a importância acima mencionada até a data limite da inscrição, e qualquer dificuldade deverá ser resolvida pela Instituição Espírita da qual o participante participe, que então repassará para a Coordenação Geral, através de um comunicado por escrito.</p>
-
-   <h4>5.5 DA CONTRIBUIÇÃO:</h4>
-   <p>PIX (E-mail): coordenacaogeral@comejaca.org.br ou através da Agência: 7151 e Conta Poupança: 08882-5, Banco Itaú (341). Favorecido: Vicente Jose L. Crisostomo. O comprovante deverá ser enviado por e-mail: coordenacaogeral@comejaca.org.br com a informação dos beneficiários deste pagamento. As fichas deverão ser entregues à Coordenação Geral até o dia 15 de junho de 2025 na 4ª RGP.</p>
-
-   <h4>5.6 NÃO SERÃO ACEITAS INSCRIÇÕES APÓS O DIA 15/06/2025, E NEM SERÃO FEITAS INSCRIÇÕES NO LOCAL DO EVENTO. </h4>
-  
-   <h4>5.7 A INSCRIÇÃO É PESSOAL E INTRANSFERÍVEL, NÃO SENDO PERMITIDAS SUBSTITUIÇÕES. </h4>
-
-   <h4>5.8 CONFIRMAÇÃO: </h4>
-
-   <p><strong>5.8.1	CONFIRMAÇÃO: Confraternistas, Tarefeiros do Bem, Peq. Companheiros e Pais:</strong> Através de comunicação da Coordenação Geral diretamente para os participantes via e-mail.
-</p>
-
-<p><strong>	5.8.2	Membros de Equipe:</strong> Através da participação nas Reuniões Gerais e nas reuniões de Equipe.
-</p>
-<p><em>Observação 1:</em> Procurar saber as datas das reuniões das equipes e cuidar de frequentá-las assiduamente (mínimo 70%), garantindo assim o seu direito de participar da COMEJACA.
-
-</p>
-<p style={{ textAlign: 'center', marginTop: '2rem' }}>
-  <a href="#" onClick={onClose}  style={{
-    display: 'inline-block',
-    textDecoration: 'none',
-    color: '#007BFF',
-    cursor: 'pointer',
-    fontWeight: '500',
-    marginBottom: '2rem',
-    textAlign: 'center',
-    width: '100%',
-  }}
->
-    Voltar
-  </a>
-</p>
- </section>
-</ModalContent>
-
-
-  
+            <p style={{ textAlign: "center", marginTop: "2rem" }}>
+              <a
+                href="#"
+                onClick={onClose}
+                style={{
+                  display: "inline-block",
+                  textDecoration: "none",
+                  color: "#0a84ff",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  width: "100%",
+                }}
+              >
+                Voltar
+              </a>
+            </p>
+          </section>
+        </ModalContent>
       )}
     </ModalOverlay>
   );
 };
 
 const Formulario = () => {
-
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
-    nomeCompleto: '',
-    dataNascimento: '',
-    nomeCracha: '',
-    sexo: '',
-    email: '',
-    telefone: '',
-    tipoParticipacao: '',
-    nomeCompletoResponsavel: '',
-    documentoResponsavel: '',
-    telefoneResponsavel: '',
-    comissao: '',
+    nomeCompleto: "",
+    dataNascimento: null,
+    nomeCracha: "",
+    sexo: "",
+    email: "",
+    telefone: "",
+    tipoParticipacao: "",
+    nomeCompletoResponsavel: "",
+    documentoResponsavel: "",
+    telefoneResponsavel: "",
+    comissao: "",
     camisa: false,
-    tamanhoCamisa: '',
-    cep: '',
-    estado: '',
-    cidade: '',
-    bairro: '',
-    logradouro: '',
-    numero: '',
-    complemento: '',
-    medicacao: '',
-    alergia: '',
-    outrasInformacoes: '',
-    IE: '',
-    vegetariano: '',
-    nomeSocial: '',
-    outroGenero: '',
-    otherInstitution: '',
+    tamanhoCamisa: "",
+    cep: "",
+    estado: "",
+    cidade: "",
+    bairro: "",
+    logradouro: "",
+    numero: "",
+    complemento: "",
+    medicacao: "",
+    alergia: "",
+    outrasInformacoes: "",
+    IE: "",
+    vegetariano: "",
+    nomeSocial: "",
+    outroGenero: "",
+    otherInstitution: "",
     primeiraComejaca: false,
-  
-    // ✅ Campos de Deficiência
     deficienciaAuditiva: false,
     deficienciaAutismo: false,
     deficienciaIntelectual: false,
@@ -604,16 +949,14 @@ const Formulario = () => {
     deficienciaVisual: false,
     deficienciaFisica: false,
     deficienciaOutra: false,
-    deficienciaOutraDescricao: '',
+    deficienciaOutraDescricao: "",
   });
-  
-
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
   const [institutions, setInstitutions] = useState([]);
   const [isMinor, setIsMinor] = useState(false);
-  const [theme, setTheme] = useState(themes.professional);
+  const [theme] = useState(themes.dashboardLike);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -625,7 +968,7 @@ const Formulario = () => {
     const fetchInstitutions = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/auth/instituicoes`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         setInstitutions(response.data);
       } catch (error) {
@@ -639,162 +982,97 @@ const Formulario = () => {
   }, [navigate, API_URL]);
 
   const calculateAge = (date) => {
+    if (!date) return 0;
     const today = new Date();
     const birthDate = new Date(date);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
     return age;
+  };
+
+  const formatPhone = (value) => {
+    if (!value) return "";
+    const cleaned = value.replace(/\D/g, "");
+
+    if (cleaned.length > 10) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
+    }
+    if (cleaned.length > 6) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6, 10)}`;
+    }
+    if (cleaned.length > 2) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+    }
+    return cleaned;
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-   
-  
     let formattedValue = value;
-  
-    if (name === "documentoResponsavel" || name === "telefone" || name === "telefoneResponsavel") {
 
-      formattedValue = value.replace(/\D/g, "");
-    }
-  
-  
     if (name === "telefone" || name === "telefoneResponsavel") {
-      formattedValue = formatPhone(value); 
+      formattedValue = formatPhone(value);
     }
-  
+
     if (name === "documentoResponsavel") {
-      if (formattedValue.length === 11) {
-        formattedValue = formattedValue.replace(
-          /(\d{3})(\d{3})(\d{3})(\d{2})/,
-          "$1.$2.$3-$4"
+      const cleaned = value.replace(/\D/g, "");
+
+      if (cleaned.length === 11) {
+        formattedValue = cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+      } else if (cleaned.length >= 9 && cleaned.length <= 10) {
+        formattedValue = cleaned.replace(
+          /(\d{2})(\d{3})(\d{3})(\d{0,2})/,
+          (match, p1, p2, p3, p4) => (p4 ? `${p1}.${p2}.${p3}-${p4}` : `${p1}.${p2}.${p3}`)
         );
-      } else if (formattedValue.length >= 9 && formattedValue.length <= 10) {
-        formattedValue = formattedValue.replace(
-          /(\d{2})(\d{3})(\d{3})(\d{2})?/,
-          (match, p1, p2, p3, p4) => {
-            return p4 ? `${p1}.${p2}.${p3}-${p4}` : `${p1}.${p2}.${p3}`;
-          }
-        );
+      } else {
+        formattedValue = cleaned;
       }
-  
-     
+
       if (formattedValue.replace(/\D/g, "").length > 11) {
-        formattedValue = formattedValue.substring(0, 14); 
+        formattedValue = formattedValue.substring(0, 14);
       }
     }
-  
 
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : formattedValue,
     }));
   };
-  
-  const today = new Date();
-  
 
   const handleDateChange = (date) => {
-    setFormData(prev => ({
+    const isUnderage = calculateAge(date) < 18;
+
+    setFormData((prev) => ({
       ...prev,
       dataNascimento: date,
       ...(calculateAge(date) >= 18 && {
-        nomeCompletoResponsavel: '',
-        documentoResponsavel: '',
-        telefoneResponsavel: ''
-      })
+        nomeCompletoResponsavel: "",
+        documentoResponsavel: "",
+        telefoneResponsavel: "",
+      }),
     }));
-    setIsMinor(calculateAge(date) < 18);
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrors([]);
-
-    try {
-      const token = localStorage.getItem("token");
-
-
-    const dataNascimento = new Date(formData.dataNascimento);
-    if (isNaN(dataNascimento.getTime())) {
-      setErrors([{ message: "Data de nascimento inválida." }]);
-      return;
-    }
-
-      const payload = {
-        ...formData,
-        comissao: String(formData.comissao), 
-        dataNascimento: dataNascimento.toISOString().split('T')[0],
-        telefone: formData.telefone.replace(/\D/g, ''),
-        documentoResponsavel: formData.documentoResponsavel?.replace(/\D/g, ''),
-        telefoneResponsavel: formData.telefoneResponsavel?.replace(/\D/g, ''),
-        cep: formData.cep.replace(/\D/g, ''),
-        id: formData.id,
-        otherInstitution: formData.otherInstitution,
-        primeiraComejaca: formData.primeiraComejaca
-      };
-
-    
-
-      const response = await axios.post(`${API_URL}/api/auth/inscrever`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-
-      if (response.data.success) {
-        navigate('/painel');
-      }
-    } catch (error) {
-
-      const detalhes = error.response?.data.details;
-
- 
-      if (Array.isArray(detalhes)) {
-        setErrors(detalhes);
-      } else {
-        setErrors([{ message: detalhes || 'Erro ao salvar inscrição' }]);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const formatPhone = (value) => {
-    if (!value) return "";
-    
-    // Remove tudo que não for número
-    const cleaned = value.replace(/\D/g, "");
-  
-    // Formata como telefone (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
-    if (cleaned.length > 10) {
-      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
-    } else if (cleaned.length > 6) {
-      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6, 10)}`;
-    } else if (cleaned.length > 2) {
-      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
-    } else {
-      return cleaned;
-    }
+    setIsMinor(isUnderage);
   };
 
   const handleCepChange = async (e) => {
     const cep = e.target.value.replace(/\D/g, "");
     setFormData((prevState) => ({ ...prevState, cep }));
+
     if (cep.length === 8) {
       try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
+
         if (!data.erro) {
           setFormData((prevState) => ({
             ...prevState,
+            cep,
             logradouro: data.logradouro,
             bairro: data.bairro,
             cidade: data.localidade,
@@ -804,544 +1082,605 @@ const Formulario = () => {
           alert("CEP não encontrado");
         }
       } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
       }
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors([]);
+
+    try {
+      const token = localStorage.getItem("token");
+      const dataNascimento = new Date(formData.dataNascimento);
+
+      if (isNaN(dataNascimento.getTime())) {
+        setErrors([{ message: "Escolha uma data de nascimento válida." }]);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        comissao: String(formData.comissao),
+        dataNascimento: dataNascimento.toISOString().split("T")[0],
+        telefone: formData.telefone.replace(/\D/g, ""),
+        documentoResponsavel: formData.documentoResponsavel?.replace(/\D/g, ""),
+        telefoneResponsavel: formData.telefoneResponsavel?.replace(/\D/g, ""),
+        cep: formData.cep.replace(/\D/g, ""),
+        id: formData.id,
+        otherInstitution: formData.otherInstitution,
+        primeiraComejaca: formData.primeiraComejaca,
+      };
+
+      const response = await axios.post(`${API_URL}/api/auth/inscrever`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.data.success) {
+        navigate("/painel");
+      }
+    } catch (error) {
+      const detalhes = error.response?.data?.details;
+
+      if (Array.isArray(detalhes)) {
+        setErrors(detalhes);
+      } else {
+        setErrors([{ message: detalhes || "Não foi possível salvar sua inscrição agora." }]);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/painel");
+  };
+
+  const today = new Date();
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-         
-    <ThemeProvider theme={theme}>      <Container>
-     
-        <FormWrapper>
-   
+      <ThemeProvider theme={theme}>
+        <Container>
+          <TopBar>
+            <TopBarInner>
+              <BackButton type="button" onClick={handleBack} aria-label="Voltar">
+                <FiArrowLeft size={15} />
+              </BackButton>
+              <HeaderBadge>COMEJACA 2026</HeaderBadge>
+            </TopBarInner>
+          </TopBar>
 
-          <FormCard onSubmit={handleSubmit}>
-            
-            <Header>
-              <Title>FORMULÁRIO DE INSCRIÇÃO 2025</Title>
-              <p style={{ color: '#666' }}>Todos os campos marcados com * são obrigatórios</p>
-              {errors.length > 0 && (
-                <div style={{ color: 'red', marginTop: '1rem' }}>
-                  {errors.map((err, index) => (
-                    <div key={index}>⚠️ {err.message}</div>
-                  ))}
-                </div>
-              )}
-            </Header>
+          <Content>
+            <FormCard onSubmit={handleSubmit}>
+              <Header>
+                <Title>INSCRIÇÃO</Title>
 
-            <FormGrid>
-              {/* Campos Pessoais */}
-              <InputGroup>
-                <InputLabel><FiUser /> Nome Completo *</InputLabel>
-                <InputField
-                  name="nomeCompleto"
-                  placeholder="Digite seu nome completo"
-                  value={formData.nomeCompleto}
-                  onChange={handleChange}
-                  required
-                />
-              </InputGroup>
-
-
-              <InputGroup>
-                <InputLabel><FiUser /> Nome social</InputLabel>
-                <InputField
-                  name="nomeSocial"
-                  placeholder="Digite seu nome social"
-                  value={formData.nomeSocial}
-                  onChange={handleChange}
-                  requird
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiUser /> Nome no crachá *</InputLabel>
-                <InputField
-                  name="nomeCracha"
-                  placeholder="Digite o nome que aparecerá no crachá"
-                  value={formData.nomeCracha}
-                  onChange={handleChange}
-                  requird
-                />
-              </InputGroup>
-              <InputGroup>
-                <InputLabel><FiCalendar /> Data de Nascimento *</InputLabel>
-                <StyledDatePicker
-                  value={formData.dataNascimento}
-                  onChange={handleDateChange}
-                  format="dd/MM/yyyy"
-                  maxDate={today}
-                  required
-                  style={{
-                    border: '1px solid black',  // Borda preta de 1px
-                    padding: '10px',
-                    fontSize: '16px',
-                    borderRadius: '4px',  }}// Borda arredondada, caso queira
-                />
-              </InputGroup>
-
-              {isMinor && (
-                <>
-                  <InputGroup>
-                    <InputLabel><FiUser /> Nome do Responsável *</InputLabel>
-                    <InputField
-                      name="nomeCompletoResponsavel"
-                      value={formData.nomeCompletoResponsavel}
-                      onChange={handleChange}
-                      placeholder="Digite seu nome completo do responsável"
-                      
-                    />
-                  </InputGroup>
-
-                  <InputGroup>
-  <InputLabel><FiFileText /> Documento do Responsável *</InputLabel>
-  <InputField
-    name="documentoResponsavel"
-    value={formData.documentoResponsavel || ""}
-    onChange={handleChange}
-    placeholder="Digite o documento do responsável"
-    maxLength={14} 
-  />
-</InputGroup>
-
-
-                  <InputGroup>
-                    <InputLabel><FiPhone /> Telefone do Responsável *</InputLabel>
-                    <InputField
-                      name="telefoneResponsavel"
-                      value={formData.telefoneResponsavel}
-                      onChange={handleChange}
-                      placeholder="Digite o telefone do responsável"
+                <Subtitle>
                
-             
-                      
-                      
+                </Subtitle>
+
+                {errors.length > 0 && (
+                  <ErrorBox>
+                    {errors.map((err, index) => (
+                      <div key={index}>⚠️ {err.message}</div>
+                    ))}
+                  </ErrorBox>
+                )}
+              </Header>
+
+              <Section>
+                <SectionHeader>
+                  <SectionIcon>
+                    <FiUser />
+                  </SectionIcon>
+                  <SectionTitleWrap>
+                    <SectionTitle>Sobre você</SectionTitle>
+                    <SectionDescription>
+                      Vamos começar com suas informações principais.
+                    </SectionDescription>
+                  </SectionTitleWrap>
+                </SectionHeader>
+
+                <FormGrid>
+                  <InputGroup>
+                    <InputLabel><FiUser /> Nome completo *</InputLabel>
+                    <InputField
+                      name="nomeCompleto"
+                      placeholder=""
+                      value={formData.nomeCompleto}
+                      onChange={handleChange}
+                      required
                     />
                   </InputGroup>
-                </>
-              )}
 
-              <InputGroup>
-                <InputLabel><FiUser /> Gênero *</InputLabel>
-                <Select
-                  name="sexo"
-                  value={formData.sexo}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Feminino">Feminino</option>
-                  <option value="prefironaoresponder">Prefiro não responder</option>
-                  <option value="outro">Outro</option>
-              
-                </Select>
-              </InputGroup>
-     {formData.sexo === "outro" && (
-        <InputGroup>
-          <InputLabel>Especifique:</InputLabel>
-          <InputField
-            type="text"
-            name="outroGenero"
-            value={formData.outroGenero}
-            placeholder="Digite seu gênero"
-            onChange={handleChange}
-            required
-          />
-        </InputGroup>
-      )}
-              <InputGroup>
-                <InputLabel><FaWhatsapp /> Telefone (Whats App) *</InputLabel>
-                <InputField
-         name="telefone"
-         value={formData.telefone}
-         onChange={handleChange}
-         placeholder="Digite seu telefone"
-         required
-
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMail /> E-mail *</InputLabel>
-                <InputField
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="email@dominio.com"
-                  required
-                />
-              </InputGroup>
-
-           {/*    <InputGroup>
-                <InputLabel><FiShoppingBag /> Deseja camisa? </InputLabel>
-                <CheckboxContainer>
-                  <CheckboxInput
-                    type="checkbox"
-                    name="camisa"
-                    checked={formData.camisa}
-                    onChange={handleChange}
-                  />
-                  <CheckboxLabel>Sim, desejo comprar a camisa - R$ 20,00</CheckboxLabel>
-                </CheckboxContainer>
-              </InputGroup> */}
-
-              {formData.camisa && (
-                <InputGroup>
-                  <InputLabel>Tamanho da Camisa *</InputLabel>
-                  <Select
-                    name="tamanhoCamisa"
-                    value={formData.tamanhoCamisa}
-                    onChange={handleChange}
-                    
-                  >
-                    <option value="">Selecione</option>
-                    <option value="PP">PP</option>
-                    <option value="P">P</option>
-                    <option value="M">M</option>
-                    <option value="G">G</option>
-                    <option value="GG">GG</option>
-                  </Select>
-                </InputGroup>
-              )}
-
-              <InputGroup>
-                <InputLabel>Tipo de Participação *</InputLabel>
-                <Select
-                  name="tipoParticipacao"
-                  value={formData.tipoParticipacao}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione</option>
-                  <option value="Confraternista">Confraternista</option>
-                  <option value="Trabalhador">Trabalhador</option>
-                </Select>
-              </InputGroup>
-
-              {formData.tipoParticipacao === 'Trabalhador' && (
-                <InputGroup>
-                  <InputLabel>Comissão *</InputLabel>
-                  <Select
-                    name="comissao"
-                    value={formData.comissao}
-                    onChange={handleChange}
-                    
-                  >
-                    <option value="">Selecione</option>
-                    <option value="Alimentação">Alimentação</option>
-                    <option value="Atendimento Fraterno">Atendimento Fraterno</option>
-                    <option value="Coordenação Geral">Coordenação Geral</option>
-                    <option value="Divulgação">Divulgação</option>
-                    <option value="Estudos Doutrinários">Estudos Doutrinários</option>
-                    <option value="Multimeios">Multimeios</option>
-                    <option value="Secretaria">Secretaria</option>
-                    <option value="Serviços Gerais">Serviços Gerais</option>
-                    <option value="Recepção">Recepção</option>
-                  </Select>
-                </InputGroup>
-              )}
-              {/* Endereço */}
-              <InputGroup>
-                <InputLabel><FiMapPin /> CEP *</InputLabel>
-                <InputField
-                  name="cep"
-                  value={formData.cep}
-                  placeholder="Digite seu CEP"
-                  onChange={handleCepChange}
-                  required
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMapPin /> Estado *</InputLabel>
-                <InputField
-                  name="estado"
-       
-                  disabled
-                  value={formData.estado}
-              onChange={handleChange}
-                  required
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMapPin /> Cidade *</InputLabel>
-                <InputField
-                  name="cidade"
-                  disabled
-                  value={formData.cidade}
-                  onChange={handleChange}
-                  required
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMapPin /> Bairro *</InputLabel>
-                <InputField
-                  name="bairro"
-                  disabled
-                  value={formData.bairro}
-                  onChange={handleChange}
-                  required
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMapPin /> Logradouro *</InputLabel>
-                <InputField
-                  name="logradouro"
-                  disabled
-                  value={formData.logradouro}
-                  onChange={handleChange}
-                  required
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMapPin /> Número *</InputLabel>
-                <InputField
-                  name="numero"
-                  value={formData.numero}
-                  onChange={handleChange}
-                  required
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMapPin /> Complemento</InputLabel>
-                <InputField
-                  name="complemento"
-                  value={formData.complemento}
-                  onChange={handleChange}
-                />
-              </InputGroup>
-
-              <InputGroup>
-                <InputLabel><FiMapPin /> Instituição Espírita *</InputLabel>
-                <Select
-                  name="IE"
-                  value={formData.IE}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione</option>
-                  {institutions.map(inst => (
-                    <option key={inst.id} value={inst.nome}>{inst.nome}</option>
-                    
-                  ))}
-                      <option value="outro">Outro</option>
-                </Select>
-              </InputGroup>
-
-              {formData.IE === 'outro' && (
-        <InputGroup>
-          <InputLabel>Nome da Instituição</InputLabel>
-          <InputField
-            type="text"
-            name="otherInstitution"
-            value={formData.otherInstitution}
-            onChange={handleChange}
-            placeholder="Digite o nome da instituição"
-            required
-          />
-        </InputGroup>
-      )}
-              <InputGroup>
-  <InputLabel><FiClock /> É sua primeira COMEJACA? *</InputLabel>
-  <CheckboxContainer>
-    <CheckboxInput
-      type="checkbox"
-      name="primeiraComejaca"
-      checked={formData.primeiraComejaca}
-      onChange={handleChange}
-    />
-    <CheckboxLabel>Sim, esta é minha primeira COMEJACA.</CheckboxLabel>
-  </CheckboxContainer>
-</InputGroup>
-
-              <InputGroup>
-                <InputLabel>
-                  <FiInfo /> Vegetarianismo *
-                </InputLabel>
-                <Select         name="vegetariano"
-        
-                  value={formData.vegetariano}
-                  onChange={handleChange}
-                  required>
-                  <option value="">Faz dieta vegetariana?</option>
-                  <option value="Não">Não</option>
-                  <option value="Vegetariano">Vegetariano</option>
-                  <option value="Vegano">Vegano</option>
-                 
-                </Select>
-              </InputGroup>
-              {/* Informações Adicionais */}
                   <InputGroup>
-                    <InputLabel><FiInfo /> Possui alguma alergia ou restrições alimentares?</InputLabel>
+                    <InputLabel><FiUser /> Nome social</InputLabel>
+                    <InputField
+                      name="nomeSocial"
+                      placeholder=""
+                      value={formData.nomeSocial}
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiUser /> Nome no crachá *</InputLabel>
+                    <InputField
+                      name="nomeCracha"
+                      placeholder=""
+                      value={formData.nomeCracha}
+                      onChange={handleChange}
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiCalendar /> Data de nascimento *</InputLabel>
+                    <StyledDatePicker
+                      value={formData.dataNascimento}
+                      onChange={handleDateChange}
+                      format="dd/MM/yyyy"
+                      maxDate={today}
+                    />
+                  </InputGroup>
+
+                  {isMinor && (
+                    <>
+                      <InputGroup>
+                        <InputLabel><FiShield /> Nome do responsável *</InputLabel>
+                        <InputField
+                          name="nomeCompletoResponsavel"
+                          value={formData.nomeCompletoResponsavel}
+                          onChange={handleChange}
+                          placeholder=""
+                          required={isMinor}
+                        />
+                      </InputGroup>
+
+                      <InputGroup>
+                        <InputLabel><FiFileText /> Documento do responsável *</InputLabel>
+                        <InputField
+                          name="documentoResponsavel"
+                          value={formData.documentoResponsavel || ""}
+                          onChange={handleChange}
+                          placeholder="CPF ou RG"
+                          maxLength={14}
+                          required={isMinor}
+                        />
+                      </InputGroup>
+
+                      <InputGroup>
+                        <InputLabel><FiPhone /> Telefone do responsável *</InputLabel>
+                        <InputField
+                          name="telefoneResponsavel"
+                          value={formData.telefoneResponsavel}
+                          onChange={handleChange}
+                          placeholder="Número para contato"
+                          required={isMinor}
+                        />
+                      </InputGroup>
+                    </>
+                  )}
+
+                  <InputGroup>
+                    <InputLabel><FiUser /> Gênero *</InputLabel>
+                    <Select name="sexo" value={formData.sexo} onChange={handleChange} required>
+                      <option value="">Selecione</option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Feminino">Feminino</option>
+                      <option value="prefironaoresponder">Prefiro não responder</option>
+                      <option value="outro">Outro</option>
+                    </Select>
+                  </InputGroup>
+
+                  {formData.sexo === "outro" && (
+                    <InputGroup>
+                      <InputLabel>Como você prefere se identificar</InputLabel>
+                      <InputField
+                        type="text"
+                        name="outroGenero"
+                        value={formData.outroGenero}
+                        placeholder="Escreva aqui"
+                        onChange={handleChange}
+                        required
+                      />
+                    </InputGroup>
+                  )}
+
+                  <InputGroup>
+                    <InputLabel><FaWhatsapp /> WhatsApp *</InputLabel>
+                    <InputField
+                      name="telefone"
+                      value={formData.telefone}
+                      onChange={handleChange}
+                      placeholder=""
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMail /> E-mail *</InputLabel>
+                    <InputField
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder=""
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel>Como você vai participar? *</InputLabel>
+                    <Select
+                      name="tipoParticipacao"
+                      value={formData.tipoParticipacao}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Selecione</option>
+                      <option value="Confraternista">Confraternista</option>
+                      <option value="Trabalhador">Trabalhador</option>
+                    </Select>
+                  </InputGroup>
+
+                  {formData.tipoParticipacao === "Trabalhador" && (
+                    <InputGroup>
+                      <InputLabel>Em qual equipe você gostaria de atuar? *</InputLabel>
+                      <Select
+                        name="comissao"
+                        value={formData.comissao}
+                        onChange={handleChange}
+                      >
+                        <option value="">Selecione</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Atendimento Fraterno">Atendimento Fraterno</option>
+                        <option value="Coordenação Geral">Coordenação Geral</option>
+                        <option value="Divulgação">Divulgação</option>
+                        <option value="Estudos Doutrinários">Estudos Doutrinários</option>
+                        <option value="Multimeios">Multimeios</option>
+                        <option value="Secretaria">Secretaria</option>
+                        <option value="Serviços Gerais">Serviços Gerais</option>
+                        <option value="Recepção">Recepção</option>
+                      </Select>
+                    </InputGroup>
+                  )}
+
+                  <FullWidth>
+                    <CheckboxContainer>
+                      <CheckboxInput
+                        type="checkbox"
+                        name="primeiraComejaca"
+                        checked={formData.primeiraComejaca}
+                        onChange={handleChange}
+                      />
+                      <CheckboxLabel>
+                        Esta será minha primeira COMEJACA.
+                      </CheckboxLabel>
+                    </CheckboxContainer>
+                  </FullWidth>
+                </FormGrid>
+              </Section>
+
+              <Section>
+                <SectionHeader>
+                  <SectionIcon>
+                    <FiHome />
+                  </SectionIcon>
+                  <SectionTitleWrap>
+                    <SectionTitle>Onde você mora e de onde vem</SectionTitle>
+                    <SectionDescription>
+                      Agora, algumas informações de endereço e instituição.
+                    </SectionDescription>
+                  </SectionTitleWrap>
+                </SectionHeader>
+
+                <FormGrid>
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> CEP *</InputLabel>
+                    <InputField
+                      name="cep"
+                      value={formData.cep}
+                      placeholder="Digite seu CEP"
+                      onChange={handleCepChange}
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> Estado *</InputLabel>
+                    <InputField
+                      name="estado"
+                      disabled
+                      value={formData.estado}
+                      onChange={handleChange}
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> Cidade *</InputLabel>
+                    <InputField
+                      name="cidade"
+                      disabled
+                      value={formData.cidade}
+                      onChange={handleChange}
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> Bairro *</InputLabel>
+                    <InputField
+                      name="bairro"
+                      disabled
+                      value={formData.bairro}
+                      onChange={handleChange}
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> Logradouro *</InputLabel>
+                    <InputField
+                      name="logradouro"
+                      disabled
+                      value={formData.logradouro}
+                      onChange={handleChange}
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> Número *</InputLabel>
+                    <InputField
+                      name="numero"
+                      value={formData.numero}
+                      onChange={handleChange}
+                      placeholder="Número"
+                      required
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> Complemento</InputLabel>
+                    <InputField
+                      name="complemento"
+                      value={formData.complemento}
+                      onChange={handleChange}
+                      placeholder="Apartamento, bloco, referência..."
+                    />
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiMapPin /> Instituição espírita *</InputLabel>
+                    <Select name="IE" value={formData.IE} onChange={handleChange} required>
+                      <option value="">Selecione</option>
+                      {institutions.map((inst) => (
+                        <option key={inst.id} value={inst.nome}>
+                          {inst.nome}
+                        </option>
+                      ))}
+                      <option value="outro">Outra</option>
+                    </Select>
+                  </InputGroup>
+
+                  {formData.IE === "outro" && (
+                    <InputGroup>
+                      <InputLabel>Nome da instituição</InputLabel>
+                      <InputField
+                        type="text"
+                        name="otherInstitution"
+                        value={formData.otherInstitution}
+                        onChange={handleChange}
+                        placeholder="Escreva o nome da instituição"
+                        required
+                      />
+                    </InputGroup>
+                  )}
+                </FormGrid>
+              </Section>
+
+              <Section>
+                <SectionHeader>
+                  <SectionIcon>
+                    <FiHeart />
+                  </SectionIcon>
+                  <SectionTitleWrap>
+                    <SectionTitle>Cuidados e informações importantes</SectionTitle>
+                    <SectionDescription>
+                      Se houver algo que possa nos ajudar a te acolher melhor, conte pra gente.
+                    </SectionDescription>
+                  </SectionTitleWrap>
+                </SectionHeader>
+
+                <FormGrid>
+                  <InputGroup>
+                    <InputLabel><FiInfo /> Alimentação *</InputLabel>
+                    <Select
+                      name="vegetariano"
+                      value={formData.vegetariano}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Como é sua alimentação?</option>
+                      <option value="Não">Sem restrição vegetariana</option>
+                      <option value="Vegetariano">Vegetariana</option>
+                      <option value="Vegano">Vegana</option>
+                    </Select>
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputLabel><FiInfo /> Alergias ou restrições alimentares</InputLabel>
                     <TextArea
                       name="alergia"
-                      placeholder="Descreva se há alergias ou restrições alimentares."
+                      placeholder="Se quiser, conte aqui o que devemos considerar."
                       value={formData.alergia}
                       onChange={handleChange}
                     />
                   </InputGroup>
 
-              <InputGroup>
-                <InputLabel><FiInfo /> Medicação</InputLabel>
-                <TextArea
-                  name="medicacao"
-                  placeholder="Descreva medicações em uso."
-                  value={formData.medicacao}
-                  onChange={handleChange}
-                />
-              </InputGroup>
-              <InputGroup>
-  <InputLabel><FiInfo /> Possui alguma deficiência?</InputLabel>
-  <CheckboxesContainer>
-    <CheckboxWrapper>
-      <CheckboxLabel>
-        <input
-          type="checkbox"
-          name="deficienciaAuditiva"
-          checked={formData.deficienciaAuditiva}
-          onChange={handleChange}
-        />
-        Auditiva
-      </CheckboxLabel>
-    </CheckboxWrapper>
+                  <InputGroup>
+                    <InputLabel><FiInfo /> Uso de medicamento</InputLabel>
+                    <TextArea
+                      name="medicacao"
+                      placeholder="Você faz uso de algum medicamento atualmente? Se quiser, conte aqui."
+                      value={formData.medicacao}
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
 
-    <CheckboxWrapper>
-      <CheckboxLabel>
-        <input
-          type="checkbox"
-          name="deficienciaAutismo"
-          checked={formData.deficienciaAutismo}
-          onChange={handleChange}
-        />
-        Autismo
-      </CheckboxLabel>
-    </CheckboxWrapper>
+                  <FullWidth>
+                    <InputGroup>
+                      <InputLabel><FiInfo /> Existe alguma condição que você gostaria que soubéssemos?</InputLabel>
+                      <ChipsGroup>
+                        <ChipLabel>
+                          <input
+                            type="checkbox"
+                            name="deficienciaAuditiva"
+                            checked={formData.deficienciaAuditiva}
+                            onChange={handleChange}
+                          />
+                          Auditiva
+                        </ChipLabel>
 
-    <CheckboxWrapper>
-      <CheckboxLabel>
-        <input
-          type="checkbox"
-          name="deficienciaIntelectual"
-          checked={formData.deficienciaIntelectual}
-          onChange={handleChange}
-        />
-        Intelectual
-      </CheckboxLabel>
-    </CheckboxWrapper>
+                        <ChipLabel>
+                          <input
+                            type="checkbox"
+                            name="deficienciaAutismo"
+                            checked={formData.deficienciaAutismo}
+                            onChange={handleChange}
+                          />
+                          Autismo
+                        </ChipLabel>
 
-    <CheckboxWrapper>
-      <CheckboxLabel>
-        <input
-          type="checkbox"
-          name="deficienciaParalisiaCerebral"
-          checked={formData.deficienciaParalisiaCerebral}
-          onChange={handleChange}
-        />
-        Paralisia Cerebral
-      </CheckboxLabel>
-    </CheckboxWrapper>
+                        <ChipLabel>
+                          <input
+                            type="checkbox"
+                            name="deficienciaIntelectual"
+                            checked={formData.deficienciaIntelectual}
+                            onChange={handleChange}
+                          />
+                          Intelectual
+                        </ChipLabel>
 
-    <CheckboxWrapper>
-      <CheckboxLabel>
-        <input
-          type="checkbox"
-          name="deficienciaVisual"
-          checked={formData.deficienciaVisual}
-          onChange={handleChange}
-        />
-        Visual
-      </CheckboxLabel>
-    </CheckboxWrapper>
+                        <ChipLabel>
+                          <input
+                            type="checkbox"
+                            name="deficienciaParalisiaCerebral"
+                            checked={formData.deficienciaParalisiaCerebral}
+                            onChange={handleChange}
+                          />
+                          Paralisia cerebral
+                        </ChipLabel>
 
-    <CheckboxWrapper>
-      <CheckboxLabel>
-        <input
-          type="checkbox"
-          name="deficienciaFisica"
-          checked={formData.deficienciaFisica}
-          onChange={handleChange}
-        />
-        Física
-      </CheckboxLabel>
-    </CheckboxWrapper>
+                        <ChipLabel>
+                          <input
+                            type="checkbox"
+                            name="deficienciaVisual"
+                            checked={formData.deficienciaVisual}
+                            onChange={handleChange}
+                          />
+                          Visual
+                        </ChipLabel>
 
-    {/* Opção "Outra" */}
-    <CheckboxWrapper>
-      <CheckboxLabel>
-        <input
-          type="checkbox"
-          name="deficienciaOutra"
-          checked={formData.deficienciaOutra}
-          onChange={handleChange}
-        />
-        Outra
-      </CheckboxLabel>
-    </CheckboxWrapper>
+                        <ChipLabel>
+                          <input
+                            type="checkbox"
+                            name="deficienciaFisica"
+                            checked={formData.deficienciaFisica}
+                            onChange={handleChange}
+                          />
+                          Física
+                        </ChipLabel>
 
-    {/* Input aparece se "Outra" for selecionada */}
-    {formData.deficienciaOutra && (
-      <InputGroup>
-<StyledInput
-  type="text"
-  name="deficienciaOutraDescricao"
-  value={formData.deficienciaOutraDescricao}
-  onChange={handleChange}
-  placeholder="Informe a deficiência"
+                        <ChipLabel>
+                          <input
+                            type="checkbox"
+                            name="deficienciaOutra"
+                            checked={formData.deficienciaOutra}
+                            onChange={handleChange}
+                          />
+                          Outra
+                        </ChipLabel>
+                      </ChipsGroup>
+                    </InputGroup>
+                  </FullWidth>
 
-/>
-      </InputGroup>
-    )}
-  </CheckboxesContainer>
-</InputGroup>
+                  {formData.deficienciaOutra && (
+                    <FullWidth>
+                      <InputGroup>
+                        <InputLabel>Se quiser, explique melhor</InputLabel>
+                        <StyledInput
+                          type="text"
+                          name="deficienciaOutraDescricao"
+                          value={formData.deficienciaOutraDescricao}
+                          onChange={handleChange}
+                          placeholder="Escreva aqui"
+                        />
+                      </InputGroup>
+                    </FullWidth>
+                  )}
 
+                  <FullWidth>
+                    <InputGroup>
+                      <InputLabel><FiInfo /> Algo mais que você queira nos contar?</InputLabel>
+                      <TextArea
+                        name="outrasInformacoes"
+                        placeholder="Esse espaço é seu, caso queira compartilhar alguma informação importante."
+                        value={formData.outrasInformacoes}
+                        onChange={handleChange}
+                      />
+                    </InputGroup>
+                  </FullWidth>
+                </FormGrid>
+              </Section>
 
-              <InputGroup>
-                <InputLabel><FiInfo /> Observações</InputLabel>
-                <TextArea
-                  name="outrasInformacoes"
-                  placeholder="Deseja registrar alguma informação a
-relacionada a sua saúde física,
-mental, emocional?"
-                  value={formData.outrasInformacoes}
-                  onChange={handleChange}
-                />
-              </InputGroup>
+              <Section>
+       {/*  */}
 
-        
-            </FormGrid>
-            <CheckboxContainer>
-        <CheckboxInput type="checkbox" required />
-        <CheckboxLabel>
-          Declaro que li e aceito as orientações contidas no <LinkText onClick={() => setModalOpen(true)}>plano geral</LinkText> da XLVI COMEJACA. *
-        </CheckboxLabel>
-      </CheckboxContainer>
+                <CheckboxContainer>
+                  <CheckboxInput type="checkbox" required />
+                  <CheckboxLabel>
+                    Li e estou de acordo com as orientações do{" "}
+                    <LinkText onClick={() => setModalOpen(true)}>plano geral</LinkText> da XLVI
+                    COMEJACA. *
+                  </CheckboxLabel>
+                </CheckboxContainer>
+              </Section>
 
-      <PlanoGeralModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
-            <SubmitButton type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <FiLoader className="spin" />
-                    Salvando...
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <FiFileText />
-                    Enviar Inscrição
-                  </div>
-                )}
-              </SubmitButton>
-          </FormCard>
-        </FormWrapper>
-      </Container>
+              <PlanoGeralModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
+
+              <FooterActions>
+                <SubmitButton type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <FiLoader className="spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <FiFileText />
+                      Finalizar inscrição
+                    </>
+                  )}
+                </SubmitButton>
+              </FooterActions>
+            </FormCard>
+          </Content>
+        </Container>
       </ThemeProvider>
     </LocalizationProvider>
   );
