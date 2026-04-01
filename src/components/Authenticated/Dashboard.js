@@ -6,6 +6,7 @@ import {
   FiChevronDown,
   FiEdit,
   FiLoader,
+  FiLogOut,
   FiMenu,
   FiPlus,
   FiPrinter,
@@ -18,19 +19,24 @@ import {
   ACTIVE_REGISTRATION_YEAR,
   getInscricaoLifecycle,
 } from '../../utils/subscriptionCycle';
+import { getPaymentStatusVariant, getStatusPagamento } from '../../utils/paymentStatus';
+import AppHeader, {
+  APP_HEADER_HEIGHT,
+  APP_HEADER_HEIGHT_MOBILE,
+} from '../shared/AppHeader';
 
 const PAGE_MAX_WIDTH = '980px';
 
 const Container = styled.div`
   min-height: 100vh;
-  background: #f5f5f7;
-  padding: 28px 18px 40px;
+  background: var(--app-bg);
+  padding: calc(28px + ${APP_HEADER_HEIGHT}) 18px 40px;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
     'Segoe UI', sans-serif;
-  color: #1d1d1f;
+  color: var(--text-primary);
 
   @media (max-width: 768px) {
-    padding: 16px 12px 28px;
+    padding: calc(16px + ${APP_HEADER_HEIGHT_MOBILE}) 12px 28px;
   }
 `;
 
@@ -39,25 +45,42 @@ const Content = styled.div`
   margin: 0 auto;
 `;
 
-const TopBar = styled.div`
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
+const HeaderIdentity = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 `;
 
-const DesktopOnly = styled.div`
-  @media (max-width: 768px) {
-    display: none !important;
-  }
+const HeaderBrand = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8e8e93;
+`;
+
+const HeaderPageTitleRow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+`;
+
+const HeaderPageTitle = styled.h1`
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--text-primary);
+`;
+
+const HeaderPageMeta = styled.span`
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
 `;
 
 const MobileOnly = styled.div`
@@ -65,6 +88,12 @@ const MobileOnly = styled.div`
 
   @media (max-width: 768px) {
     display: block;
+  }
+`;
+
+const DesktopOnly = styled.div`
+  @media (max-width: 768px) {
+    display: none !important;
   }
 `;
 
@@ -105,12 +134,12 @@ const SearchInput = styled.input`
 `;
 
 const PrimaryButton = styled.button`
-  height: 44px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 14px;
-  background: #111111;
-  color: #ffffff;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--btn-primary-bg);
+  border-radius: 13px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -118,10 +147,11 @@ const PrimaryButton = styled.button`
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: #1c1c1e;
+    background: #2a2a2d;
+    border-color: #2a2a2d;
   }
 
   &:active {
@@ -130,16 +160,61 @@ const PrimaryButton = styled.button`
 
   @media (max-width: 768px) {
     width: 100%;
-    height: 46px;
+    height: 42px;
+    min-width: 0;
+    padding: 0 12px;
   }
 `;
 
-const SecondaryButton = styled.button`
-  height: 44px;
+const MobileHeaderButton = styled.button`
+  height: 42px;
+  min-height: 42px;
+  min-width: 42px;
+  width: auto;
+  padding: 0 12px;
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #2c2c2e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: #ffffff;
+    border-color: #cfcfd8;
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+`;
+
+const TopActionBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+`;
+
+const DesktopActionGroup = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const SecondaryActionButton = styled.button`
+  height: 42px;
   padding: 0 14px;
-  border: 1px solid #e2e2e7;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.92);
   color: #3a3a3c;
   display: inline-flex;
   align-items: center;
@@ -152,20 +227,42 @@ const SecondaryButton = styled.button`
 
   &:hover {
     background: #ffffff;
-    border-color: #d6d6dc;
+    border-color: #d4d4dc;
+  }
+`;
+
+const GhostActionButton = styled.button`
+  height: 42px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: #f2f2f7;
+    color: var(--text-primary);
   }
 `;
 
 const StateCard = styled.div`
   min-height: 140px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(229, 229, 234, 0.9);
+  background: var(--card-bg);
+  border: 1px solid var(--btn-secondary-border);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: #6e6e73;
+  color: var(--text-secondary);
   font-size: 15px;
   text-align: center;
   padding: 24px;
@@ -181,8 +278,7 @@ const Section = styled.section`
 
 const SectionHeader = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-end;
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 12px;
@@ -191,14 +287,19 @@ const SectionHeader = styled.div`
   @media (max-width: 768px) {
     margin-bottom: 12px;
     padding-bottom: 10px;
+    align-items: center;
   }
 `;
 
 const TitleRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
 `;
 
 const SectionHeaderMeta = styled.div`
@@ -225,30 +326,12 @@ const CountBadge = styled.span`
   align-items: center;
   justify-content: center;
   min-height: 24px;
-  min-width: 24px;
-  padding: 0 8px;
+  padding: 0 9px;
   border-radius: 999px;
-  background: #f2f2f7;
-  color: #6e6e73;
-  font-size: 12px;
+  background: rgba(242, 242, 247, 0.95);
+  color: #5f616a;
+  font-size: 11px;
   font-weight: 600;
-`;
-
-const HeaderMenuButton = styled.button`
-  width: 36px;
-  height: 36px;
-  border: 1px solid #e6e6eb;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #3a3a3c;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  @media (max-width: 768px) {
-    display: inline-flex;
-  }
 `;
 
 const ActiveGrid = styled.div`
@@ -259,10 +342,17 @@ const ActiveGrid = styled.div`
 
 const RegistrationCard = styled.article`
   padding: 20px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #ececf1;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.025);
+  border-radius: 5px;
+  background: var(--card-bg);
+  border: 1px solid var(--btn-secondary-border);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: #e4e4eb;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.045);
+  }
 
   @media (max-width: 768px) {
     padding: 18px;
@@ -291,18 +381,22 @@ const CardIdentity = styled.div`
 
 const CardName = styled.h3`
   margin: 0;
-  color: #1d1d1f;
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
 `;
 
-const StatusRow = styled.div`
+const StatusChip = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #6e6e73;
-  font-size: 14px;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: ${({ $appearance }) => $appearance?.textColor || '#64748b'};
+  background: ${({ $appearance }) => $appearance?.backgroundColor || 'rgba(148, 163, 184, 0.14)'};
+  font-size: 12px;
   font-weight: 500;
 `;
 
@@ -310,25 +404,40 @@ const StatusDot = styled.span`
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: ${({ $status }) => {
-    switch (($status || '').toLowerCase()) {
-      case 'pago':
-        return '#34c759';
-      case 'falhou':
-        return '#ff3b30';
-      default:
-        return '#ff9f0a';
-    }
-  }};
+  background: ${({ $appearance }) => $appearance?.dotColor || '#94a3b8'};
 `;
 
 const Actions = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const SecondaryActions = styled.div`
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
     width: 100%;
+  }
+`;
+
+const PrimaryAction = styled.div`
+  display: inline-flex;
+  margin-left: auto;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-left: 0;
   }
 `;
 
@@ -338,10 +447,10 @@ const Button = styled.button`
   border-radius: 5px;
   border: 1px solid
     ${({ $variant }) =>
-      $variant === 'primary' ? 'transparent' : '#e5e5ea'};
+      $variant === 'primary' ? 'transparent' : 'var(--btn-secondary-border)'};
   background: ${({ $variant }) =>
-    $variant === 'primary' ? '#1c1c1e' : 'rgba(255, 255, 255, 0.92)'};
-  color: ${({ $variant }) => ($variant === 'primary' ? '#ffffff' : '#3a3a3c')};
+    $variant === 'primary' ? 'var(--btn-primary-bg)' : 'var(--card-bg)'};
+  color: ${({ $variant }) => ($variant === 'primary' ? '#ffffff' : 'var(--text-primary)')};
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -353,9 +462,9 @@ const Button = styled.button`
 
   &:hover {
     background: ${({ $variant }) =>
-      $variant === 'primary' ? '#2c2c2e' : '#f7f7f8'};
+      $variant === 'primary' ? '#2a2a2d' : '#f7f7f8'};
     border-color: ${({ $variant }) =>
-      $variant === 'primary' ? 'transparent' : '#ddddE3'};
+      $variant === 'primary' ? 'transparent' : 'var(--btn-secondary-border)'};
   }
 
   &:disabled {
@@ -372,15 +481,15 @@ const InlineEmpty = styled.div`
   border-radius: 18px;
   border: 1px dashed #d6d6dc;
   padding: 18px;
-  color: #6e6e73;
+  color: var(--text-secondary);
   background: #fafafa;
   font-size: 14px;
 `;
 
 const ArchiveShell = styled.div`
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid #ececf1;
+  border-radius: 5px;
+  background: var(--card-bg);
+  border: 1px solid var(--btn-secondary-border);
   overflow: hidden;
 `;
 
@@ -403,11 +512,23 @@ const ArchiveToggle = styled.button`
 
 const ArchiveTitle = styled.div`
   display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 6px;
+  color: #3a3a3c;
+`;
+
+const ArchiveTitleMain = styled.div`
+  display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #3a3a3c;
   font-size: 15px;
   font-weight: 600;
+`;
+
+const ArchiveHint = styled.span`
+  font-size: 12px;
+  color: #8e8e93;
 `;
 
 const ArchiveCount = styled.span`
@@ -467,6 +588,79 @@ const ArchiveBadge = styled.span`
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+`;
+
+const ArchiveActions = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ArchiveActionButton = styled.button`
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid #e0e2e8;
+  background: rgba(255, 255, 255, 0.92);
+  color: #4b4f5b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: #ffffff;
+    border-color: #d3d7e2;
+  }
+`;
+
+const ConfirmOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(29, 29, 31, 0.22);
+  display: ${({ $open }) => ($open ? 'flex' : 'none')};
+  align-items: center;
+  justify-content: center;
+  z-index: 70;
+  padding: 16px;
+`;
+
+const ConfirmModal = styled.div`
+  width: min(520px, calc(100vw - 24px));
+  border-radius: 18px;
+  border: 1px solid #ececf1;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const ConfirmTitle = styled.h3`
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #1d1d1f;
+`;
+
+const ConfirmText = styled.p`
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #5f616a;
+`;
+
+const ConfirmActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+
+  @media (max-width: 768px) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
 `;
 
 const DrawerOverlay = styled.div`
@@ -568,6 +762,35 @@ const DrawerFooter = styled.div`
   border-top: 1px solid #f1f1f4;
 `;
 
+const DrawerDivider = styled.div`
+  height: 1px;
+  background: #f1f1f4;
+  margin: 10px 0 8px;
+`;
+
+const DrawerLogoutButton = styled.button`
+  min-height: 44px;
+  width: 100%;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #6e6e73;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: #f8f8fa;
+    border-color: #ececf1;
+    color: #1d1d1f;
+  }
+`;
+
 const DrawerInstagramLink = styled.a`
   min-height: 44px;
   padding: 0 14px;
@@ -606,25 +829,67 @@ const getFirstTwoNames = (name = '') =>
     .slice(0, 2)
     .join(' ');
 
-const getDisplayStatus = (status) => {
-  const normalized = String(status || '').trim().toLowerCase();
+const getFirstName = (name = '') =>
+  String(name)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)[0] || 'participante';
 
-  switch (normalized) {
-    case 'approved':
-    case 'aprovado':
-    case 'pago':
-      return 'Pago';
-    case 'rejeitado':
-    case 'rejected':
-    case 'falhou':
-      return 'Falhou';
-    case 'pendente':
-    case 'pending':
-    case '':
-      return 'Pendente';
-    default:
-      return status;
-  }
+const buildReenrollmentPayload = (item = {}) => {
+  const pickValue = (...keys) => {
+    for (const key of keys) {
+      const value = item?.[key];
+      if (value !== undefined && value !== null && value !== '') {
+        return value;
+      }
+    }
+    return '';
+  };
+
+  const toDateOrNull = (value) => {
+    if (!value) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  return {
+    nomeCompleto: pickValue('nomeCompleto', 'nome_completo'),
+    dataNascimento: toDateOrNull(pickValue('dataNascimento', 'data_nascimento', 'nascimento')),
+    nomeCracha: pickValue('nomeCracha', 'nomeCrachá', 'nome_no_cracha', 'nomeNoCracha'),
+    sexo: item.sexo || '',
+    email: item.email || '',
+    telefone: item.telefone || '',
+    tipoParticipacao: item.tipoParticipacao || '',
+    nomeCompletoResponsavel: item.nomeCompletoResponsavel || '',
+    documentoResponsavel: item.documentoResponsavel || '',
+    telefoneResponsavel: item.telefoneResponsavel || '',
+    cep: item.cep || '',
+    estado: item.estado || '',
+    cidade: item.cidade || '',
+    bairro: item.bairro || '',
+    logradouro: item.logradouro || '',
+    numero: item.numero || '',
+    complemento: item.complemento || '',
+    medicacao: item.medicacao || '',
+    alergia: item.alergia || '',
+    outrasInformacoes: item.outrasInformacoes || '',
+    IE: item.IE || '',
+    vegetariano: item.vegetariano || '',
+    nomeSocial: item.nomeSocial || '',
+    outroGenero: item.outroGenero || '',
+    otherInstitution: item.otherInstitution || '',
+    deficienciaAuditiva: Boolean(item.deficienciaAuditiva),
+    deficienciaAutismo: Boolean(item.deficienciaAutismo),
+    deficienciaIntelectual: Boolean(item.deficienciaIntelectual),
+    deficienciaParalisiaCerebral: Boolean(item.deficienciaParalisiaCerebral),
+    deficienciaVisual: Boolean(item.deficienciaVisual),
+    deficienciaFisica: Boolean(item.deficienciaFisica),
+    deficienciaOutra: Boolean(item.deficienciaOutra),
+    deficienciaOutraDescricao: item.deficienciaOutraDescricao || '',
+    // intentionally reset for new cycle / business validation
+    primeiraComejaca: false,
+    comissao: '',
+  };
 };
 
 const Dashboard = () => {
@@ -635,6 +900,8 @@ const Dashboard = () => {
   const [loadingItemId, setLoadingItemId] = useState(null);
   const [isArchivedExpanded, setIsArchivedExpanded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [pendingReenrollmentItem, setPendingReenrollmentItem] = useState(null);
+  const [isReenrollmentLoading, setIsReenrollmentLoading] = useState(false);
 
   const navigate = useNavigate();
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
@@ -733,8 +1000,106 @@ const Dashboard = () => {
     navigate('/pagamentos');
   };
 
+  const handleNavigateToInstitution = () => {
+    setIsMobileMenuOpen(false);
+    navigate('/instituicao');
+  };
+
+  const openReenrollmentConfirm = (item) => {
+    setPendingReenrollmentItem(item);
+  };
+
+  const closeReenrollmentConfirm = () => {
+    setPendingReenrollmentItem(null);
+  };
+
+  const confirmReenrollment = async () => {
+    if (!pendingReenrollmentItem) return;
+
+    try {
+      setIsReenrollmentLoading(true);
+      const token = localStorage.getItem('token');
+
+      const response = await axios.get(
+        `${API_URL}/api/auth/print/${pendingReenrollmentItem.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const sourceData = response?.data?.data || pendingReenrollmentItem;
+      const firstName = getFirstName(sourceData.nomeCompleto || pendingReenrollmentItem.nomeCompleto);
+      const prefillData = buildReenrollmentPayload(sourceData);
+
+      setPendingReenrollmentItem(null);
+      navigate('/inscrever', {
+        state: {
+          reenrollment: {
+            firstName,
+            prefillData,
+          },
+        },
+      });
+    } catch {
+      alert('Não foi possível carregar os dados para reinscrição agora.');
+    } finally {
+      setIsReenrollmentLoading(false);
+    }
+  };
+
   return (
     <Container>
+      <ConfirmOverlay $open={Boolean(pendingReenrollmentItem)} onClick={closeReenrollmentConfirm}>
+        <ConfirmModal onClick={(event) => event.stopPropagation()}>
+          <ConfirmTitle>Inscrever {ACTIVE_REGISTRATION_YEAR}?</ConfirmTitle>
+          <ConfirmText>
+            Deseja usar os dados de {getFirstName(pendingReenrollmentItem?.nomeCompleto)} para
+            iniciar uma nova inscrição em {ACTIVE_REGISTRATION_YEAR}? Você poderá revisar e ajustar as informações
+            antes de confirmar.
+          </ConfirmText>
+          <ConfirmActions>
+            <ArchiveActionButton
+              type="button"
+              onClick={closeReenrollmentConfirm}
+              disabled={isReenrollmentLoading}
+            >
+              Cancelar
+            </ArchiveActionButton>
+            <Button
+              type="button"
+              $variant="primary"
+              onClick={confirmReenrollment}
+              disabled={isReenrollmentLoading}
+            >
+              {isReenrollmentLoading ? 'Carregando...' : 'Continuar'}
+            </Button>
+          </ConfirmActions>
+        </ConfirmModal>
+      </ConfirmOverlay>
+
+      <AppHeader
+        titleContent={
+          <HeaderIdentity>
+            <HeaderBrand>COMEJACA</HeaderBrand>
+            <HeaderPageTitleRow>
+              <HeaderPageTitle>Inscrições {ACTIVE_REGISTRATION_YEAR}</HeaderPageTitle>
+              <HeaderPageMeta>Total: {groupedSections.active.length}</HeaderPageMeta>
+            </HeaderPageTitleRow>
+          </HeaderIdentity>
+        }
+        rightContent={
+          <MobileOnly>
+            <MobileHeaderButton
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Abrir menu"
+            >
+              <FiMenu size={18} />
+            </MobileHeaderButton>
+          </MobileOnly>
+        }
+      />
+
       <DrawerOverlay $open={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
       <DrawerPanel $open={isMobileMenuOpen}>
         <DrawerHeader>
@@ -746,10 +1111,16 @@ const Dashboard = () => {
 
         <DrawerNav>
           {isAdmin && (
-            <DrawerNavButton type="button" onClick={handleNavigateToStats}>
-              <FiBarChart2 size={16} />
-              Estatísticas
-            </DrawerNavButton>
+            <>
+              <DrawerNavButton type="button" onClick={handleNavigateToStats}>
+                <FiBarChart2 size={16} />
+                Estatísticas
+              </DrawerNavButton>
+              <DrawerNavButton type="button" onClick={handleNavigateToInstitution}>
+                <FiPlus size={16} />
+                Adicionar IE
+              </DrawerNavButton>
+            </>
           )}
         </DrawerNav>
 
@@ -763,36 +1134,52 @@ const Dashboard = () => {
             <FaInstagram size={16} />
             Instagram
           </DrawerInstagramLink>
+
+          <DrawerDivider />
+
+          <DrawerLogoutButton type="button" onClick={handleLogout}>
+            <FiLogOut size={16} />
+            Sair
+          </DrawerLogoutButton>
         </DrawerFooter>
       </DrawerPanel>
 
       <Content>
-        <TopBar>
-          <DesktopOnly>
-            <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
-              <FiPlus size={16} />
-              Nova Inscrição
-            </PrimaryButton>
-          </DesktopOnly>
-
-          <DesktopOnly>
-            {isAdmin ? (
-              <SecondaryButton type="button" onClick={handleNavigateToStats}>
-                <FiBarChart2 size={16} />
-                Estatísticas
-              </SecondaryButton>
-            ) : (
-              <div />
-            )}
-          </DesktopOnly>
-
+        <TopActionBar>
           <MobileOnly>
             <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
               <FiPlus size={16} />
-              Nova Inscrição
+              Nova inscrição
             </PrimaryButton>
           </MobileOnly>
-        </TopBar>
+
+          <DesktopOnly>
+            <DesktopActionGroup>
+              <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
+                <FiPlus size={16} />
+                Nova inscrição
+              </PrimaryButton>
+
+              {isAdmin && (
+                <>
+                  <SecondaryActionButton type="button" onClick={handleNavigateToStats}>
+                    <FiBarChart2 size={16} />
+                    Estatísticas
+                  </SecondaryActionButton>
+                  <SecondaryActionButton type="button" onClick={handleNavigateToInstitution}>
+                    <FiPlus size={16} />
+                    Adicionar IE
+                  </SecondaryActionButton>
+                </>
+              )}
+
+              <GhostActionButton type="button" onClick={handleLogout}>
+                <FiLogOut size={16} />
+                Sair
+              </GhostActionButton>
+            </DesktopActionGroup>
+          </DesktopOnly>
+        </TopActionBar>
 
         {loading ? (
           <StateCard>
@@ -806,23 +1193,6 @@ const Dashboard = () => {
         ) : (
           <>
             <Section>
-              <SectionHeader>
-                <SectionHeaderMeta>
-                  <TitleRow>
-                    <Title>INSCRIÇÕES {ACTIVE_REGISTRATION_YEAR}</Title>
-                    <CountBadge>{groupedSections.active.length}</CountBadge>
-                  </TitleRow>
-                </SectionHeaderMeta>
-
-                <HeaderMenuButton
-                  type="button"
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  aria-label="Abrir menu"
-                >
-                  <FiMenu size={18} />
-                </HeaderMenuButton>
-              </SectionHeader>
-
      {/*          <SearchWrapper>
                 <SearchIcon size={18} />
                 <SearchInput
@@ -841,7 +1211,8 @@ const Dashboard = () => {
               ) : groupedSections.active.length > 0 ? (
                 <ActiveGrid>
                   {groupedSections.active.map((item) => {
-                    const statusPagamento = getDisplayStatus(item.statusPagamento);
+                    const statusAppearance = getStatusPagamento(item.statusPagamento, 'dashboard');
+                    const statusVariant = getPaymentStatusVariant(item.statusPagamento);
                     const shortName = getFirstTwoNames(item.nomeCompleto);
 
                     return (
@@ -850,47 +1221,51 @@ const Dashboard = () => {
                           <CardIdentity>
                             <CardName>{shortName || item.nomeCompleto}</CardName>
 
-                            <StatusRow>
-                              <StatusDot $status={statusPagamento} />
-                              <span>{statusPagamento}</span>
-                            </StatusRow>
+                            <StatusChip $appearance={statusAppearance}>
+                              <StatusDot $appearance={statusAppearance} />
+                              <span>{statusAppearance.label}</span>
+                            </StatusChip>
                           </CardIdentity>
                         </CardHeader>
 
                         <Actions>
-                          <Button
-                            type="button"
-                            onClick={() => navigate(`/imprimir/${item.id}`)}
-                          >
-                            <FiPrinter size={14} />
-                            Imprimir
-                          </Button>
+                          <SecondaryActions>
+                            <Button
+                              type="button"
+                              onClick={() => navigate(`/imprimir/${item.id}`)}
+                            >
+                              <FiPrinter size={14} />
+                              Imprimir
+                            </Button>
 
-                          <Button
-                            type="button"
-                            onClick={() => navigate(`/atualizar/${item.id}`)}
-                          >
-                            <FiEdit size={14} />
-                            Editar
-                          </Button>
+                            <Button
+                              type="button"
+                              onClick={() => navigate(`/atualizar/${item.id}`)}
+                            >
+                              <FiEdit size={14} />
+                              Editar
+                            </Button>
+                          </SecondaryActions>
 
                           {item.lifecycle.actions.canPay &&
-                            statusPagamento.toLowerCase() !== 'pago' && (
-                              <Button
-                                type="button"
-                                $variant="primary"
-                                onClick={() => handlePagamento(item.id)}
-                                disabled={loadingItemId === item.id}
-                              >
-                                {loadingItemId === item.id ? (
-                                  <>
-                                    <Spinner size={14} />
-                                    Processando
-                                  </>
-                                ) : (
-                                  'Pagar'
-                                )}
-                              </Button>
+                            statusVariant !== 'pago' && (
+                              <PrimaryAction>
+                                <Button
+                                  type="button"
+                                  $variant="primary"
+                                  onClick={() => handlePagamento(item.id)}
+                                  disabled={loadingItemId === item.id}
+                                >
+                                  {loadingItemId === item.id ? (
+                                    <>
+                                      <Spinner size={14} />
+                                      Processando
+                                    </>
+                                  ) : (
+                                    'Pagar'
+                                  )}
+                                </Button>
+                              </PrimaryAction>
                             )}
                         </Actions>
                       </RegistrationCard>
@@ -914,8 +1289,11 @@ const Dashboard = () => {
                     aria-controls="archived-registrations"
                   >
                     <ArchiveTitle>
-                      <span>Inscrições 2025</span>
-                      <ArchiveCount>{groupedSections.archived.length}</ArchiveCount>
+                      <ArchiveTitleMain>
+                        <span>Inscrições 2025</span>
+                        <ArchiveCount>{groupedSections.archived.length}</ArchiveCount>
+                      </ArchiveTitleMain>
+                      <ArchiveHint>{isArchivedExpanded ? 'Toque para recolher' : 'Toque para expandir'}</ArchiveHint>
                     </ArchiveTitle>
 
                     <ArchiveChevron $expanded={isArchivedExpanded} />
@@ -930,9 +1308,20 @@ const Dashboard = () => {
                         <ArchiveRow key={item.id}>
                           <ArchiveName>{item.nomeCompleto}</ArchiveName>
 
-                          {item.lifecycle.badgeLabel && (
-                            <ArchiveBadge>{item.lifecycle.badgeLabel}</ArchiveBadge>
-                          )}
+                          <ArchiveActions>
+                            {item.lifecycle.cycleYear === 2025 && (
+                              <ArchiveActionButton
+                                type="button"
+                                onClick={() => openReenrollmentConfirm(item)}
+                              >
+                                Inscrever {ACTIVE_REGISTRATION_YEAR}
+                              </ArchiveActionButton>
+                            )}
+
+                            {item.lifecycle.badgeLabel && (
+                              <ArchiveBadge>{item.lifecycle.badgeLabel}</ArchiveBadge>
+                            )}
+                          </ArchiveActions>
                         </ArchiveRow>
                       ))}
                     </ArchiveList>

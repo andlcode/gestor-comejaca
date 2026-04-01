@@ -55,6 +55,8 @@ const AuthLayout = ({
   recoverSpacing = false,
   variant = 'default',
   layoutPreset = 'default',
+  brandMode = 'default',
+  spacingMode = 'default',
   showUtilityActions = true,
   children,
 }) => {
@@ -62,6 +64,8 @@ const AuthLayout = ({
   const withSubtitle = Boolean(subtitle);
   const isSaaS = variant === 'saas';
   const isLogin = layoutPreset === 'login';
+  const isMutedBrand = brandMode === 'muted';
+  const isRecoverySpacing = spacingMode === 'recovery';
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -99,13 +103,13 @@ const AuthLayout = ({
 
   const headerBrandAndActions = (
     <>
-      <AuthBrandBlock>
-        <AuthBrandTitle>
-          <AuthBrandOrdinal>46º</AuthBrandOrdinal>
-          <AuthBrandName>COMEJACA</AuthBrandName>
-          <AuthBrandYear>2025</AuthBrandYear>
+      <AuthBrandBlock $login={isLogin}>
+        <AuthBrandTitle $login={isLogin} $mutedBrand={isMutedBrand}>
+          <AuthBrandOrdinal $login={isLogin} $mutedBrand={isMutedBrand}>46º</AuthBrandOrdinal>
+          <AuthBrandName $login={isLogin} $mutedBrand={isMutedBrand}>COMEJACA</AuthBrandName>
+          <AuthBrandYear $login={isLogin}>2025</AuthBrandYear>
         </AuthBrandTitle>
-        <AuthBrandSubtitle>Sistema de inscrições</AuthBrandSubtitle>
+        <AuthBrandSubtitle $login={isLogin}>Sistema de inscrições</AuthBrandSubtitle>
       </AuthBrandBlock>
       {showUtilityActions ? <AuthHeaderActions>{materiaisMenuButtons}</AuthHeaderActions> : null}
     </>
@@ -145,13 +149,18 @@ const AuthLayout = ({
       <AuthPageTitle
         $saas={isSaaS}
         $login={isLogin}
+        $recoverySpacing={isRecoverySpacing}
         $withSubtitle={withSubtitle}
         $recoverSpacing={recoverSpacing}
       >
         {title}
       </AuthPageTitle>
       {subtitle != null && subtitle !== '' ? (
-        <AuthPageSubtitle $recoverSpacing={recoverSpacing} $login={isLogin}>
+        <AuthPageSubtitle
+          $recoverSpacing={recoverSpacing}
+          $login={isLogin}
+          $recoverySpacing={isRecoverySpacing}
+        >
           {subtitle}
         </AuthPageSubtitle>
       ) : null}
@@ -163,7 +172,7 @@ const AuthLayout = ({
     <AuthCardWrap $saas={isSaaS} $login={isLogin}>
       <AuthCard $login={isLogin}>
         {!isSaaS ? (
-          <AuthCardHeader>{headerBrandAndActions}</AuthCardHeader>
+          <AuthCardHeader $login={isLogin}>{headerBrandAndActions}</AuthCardHeader>
         ) : null}
         <AuthCardBody $saas={isSaaS} $login={isLogin}>
           <AuthContentInner $saas={isSaaS} $login={isLogin}>

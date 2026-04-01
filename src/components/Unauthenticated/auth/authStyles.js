@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 export const authCardEnter = keyframes`
   from {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -123,49 +123,15 @@ export const AuthPageShell = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    background:
-      radial-gradient(
-        ellipse 88% 62% at 50% -14%,
-        rgba(129, 140, 248, 0.2) 0%,
-        transparent 50%
-      ),
-      radial-gradient(
-        ellipse 68% 48% at 100% 86%,
-        rgba(56, 189, 248, 0.08) 0%,
-        transparent 46%
-      ),
-      radial-gradient(
-        ellipse 56% 42% at 6% 58%,
-        rgba(109, 93, 246, 0.09) 0%,
-        transparent 42%
-      ),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 34%),
-      linear-gradient(160deg, #090b13 0%, #111426 46%, #171b31 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
 
     @media (min-width: 1024px) {
-      background:
-        radial-gradient(
-          ellipse 80% 58% at 50% -10%,
-          rgba(129, 140, 248, 0.23) 0%,
-          transparent 52%
-        ),
-        radial-gradient(
-          ellipse 54% 40% at 100% 18%,
-          rgba(56, 189, 248, 0.07) 0%,
-          transparent 46%
-        ),
-        radial-gradient(
-          ellipse 58% 44% at 2% 74%,
-          rgba(109, 93, 246, 0.1) 0%,
-          transparent 44%
-        ),
-        radial-gradient(
-          ellipse 120% 80% at 50% 122%,
-          rgba(0, 0, 0, 0.42) 0%,
-          transparent 56%
-        ),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 36%),
-        linear-gradient(160deg, #090b13 0%, #111426 46%, #171b31 100%);
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
     }
   `}
 
@@ -189,6 +155,8 @@ export const AuthPageShell = styled.div`
     ${({ $login }) =>
       $login &&
       `
+      align-items: center;
+      justify-content: center;
       padding: max(0.9rem, env(safe-area-inset-top, 0px))
         clamp(0.95rem, 4.8vw, 1.15rem)
         max(0.85rem, env(safe-area-inset-bottom, 0px));
@@ -264,45 +232,35 @@ export const AuthAmbient = styled.div`
     `
     background:
       radial-gradient(
-        ellipse 44% 28% at 50% 22%,
-        rgba(255, 255, 255, 0.085) 0%,
-        transparent 64%
+        ellipse 40% 24% at 50% 16%,
+        rgba(255, 255, 255, 0.42) 0%,
+        transparent 68%
       ),
       radial-gradient(
-        ellipse 52% 34% at 50% 30%,
-        rgba(129, 140, 248, 0.12) 0%,
-        transparent 58%
+        ellipse 42% 24% at 50% 24%,
+        rgba(124, 58, 237, 0.03) 0%,
+        transparent 64%
       ),
-      linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.035) 0%,
-        transparent 42%,
-        rgba(0, 0, 0, 0.18) 100%
-      );
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 62%);
 
     @media (min-width: 1024px) {
       background:
         radial-gradient(
-          ellipse 40% 26% at 50% 22%,
-          rgba(255, 255, 255, 0.1) 0%,
+          ellipse 40% 24% at 50% 18%,
+          rgba(255, 255, 255, 0.44) 0%,
           transparent 66%
         ),
         radial-gradient(
-          ellipse 48% 34% at 50% 28%,
-          rgba(129, 140, 248, 0.14) 0%,
+          ellipse 42% 24% at 50% 24%,
+          rgba(124, 58, 237, 0.03) 0%,
           transparent 58%
         ),
         radial-gradient(
-          ellipse 60% 42% at 84% 18%,
-          rgba(56, 189, 248, 0.05) 0%,
+          ellipse 58% 40% at 84% 18%,
+          rgba(99, 102, 241, 0.025) 0%,
           transparent 48%
         ),
-        linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.04) 0%,
-          transparent 44%,
-          rgba(0, 0, 0, 0.2) 100%
-        );
+        linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 58%);
     }
   `}
 `;
@@ -588,12 +546,12 @@ export const AuthCardWrap = styled.div`
       border-radius: 28px;
       background: radial-gradient(
         ellipse at center,
-        rgba(79, 70, 229, 0.22) 0%,
-        rgba(79, 70, 229, 0.1) 38%,
+        rgba(124, 58, 237, 0.12) 0%,
+        rgba(124, 58, 237, 0.04) 40%,
         transparent 74%
       );
-      filter: blur(34px);
-      opacity: 0.5;
+      filter: blur(30px);
+      opacity: 0.18;
       pointer-events: none;
     }
   `}
@@ -678,14 +636,14 @@ export const AuthCard = styled.div`
     0 0 0 1px rgba(255, 255, 255, 0.7) inset,
     0 1px 0 rgba(255, 255, 255, 0.76) inset;
   overflow: hidden;
-  animation: ${authCardEnter} 0.32s ease both;
+  animation: ${authCardEnter} 0.24s ease-out both;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
 
   @media (min-width: 640px) {
-    border-radius: 12px;
+    border-radius: 5px;
     border: 1px solid rgba(15, 23, 42, 0.052);
     box-shadow:
       0 3px 7px rgba(15, 23, 42, 0.038),
@@ -716,13 +674,13 @@ export const AuthCard = styled.div`
       100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
         0.95rem
     );
-    border-radius: 12px;
+    border-radius: 5px;
     border: 1px solid rgba(15, 23, 42, 0.07);
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.65) inset,
       0 4px 20px rgba(15, 23, 42, 0.07),
       0 0 0 1px rgba(15, 23, 42, 0.04);
-    animation: ${authCardEnter} 0.28s ease both;
+    animation: ${authCardEnter} 0.22s ease-out both;
   }
 
   @media (max-width: 639px) and (prefers-reduced-motion: reduce) {
@@ -731,45 +689,29 @@ export const AuthCard = styled.div`
 
   ${({ $login }) =>
     $login &&
-    `
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.97) 100%);
-    backdrop-filter: blur(18px);
-    box-shadow:
-      0 12px 26px -22px rgba(15, 23, 42, 0.14),
-      0 34px 88px -42px rgba(15, 23, 42, 0.24),
-      0 0 0 1px rgba(255, 255, 255, 0.6) inset,
-      0 1px 0 rgba(255, 255, 255, 0.82) inset;
+    css`
+    border-radius: 5px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
 
     @media (min-width: 640px) {
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.52);
-      box-shadow:
-        0 14px 30px -24px rgba(15, 23, 42, 0.13),
-        0 40px 96px -42px rgba(15, 23, 42, 0.22),
-        0 0 0 1px rgba(255, 255, 255, 0.64) inset,
-        0 1px 0 rgba(255, 255, 255, 0.86) inset;
+      border-radius: 5px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
     }
 
     @media (min-width: 1200px) {
-      box-shadow:
-        0 16px 34px -26px rgba(15, 23, 42, 0.14),
-        0 48px 108px -46px rgba(15, 23, 42, 0.22),
-        0 0 0 1px rgba(255, 255, 255, 0.66) inset,
-        0 1px 0 rgba(255, 255, 255, 0.88) inset;
+      box-shadow: 0 20px 44px rgba(17, 24, 39, 0.08);
     }
 
     @media (max-width: 639px) {
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.48);
-      box-shadow:
-        0 10px 22px -20px rgba(15, 23, 42, 0.14),
-        0 28px 52px -36px rgba(15, 23, 42, 0.2),
-        0 0 0 1px rgba(255, 255, 255, 0.56) inset,
-        0 1px 0 rgba(255, 255, 255, 0.82) inset;
+      border-radius: 5px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 14px 30px rgba(17, 24, 39, 0.08);
     }
+
+    animation: ${authCardEnter} 0.22s ease-out both;
   `}
 `;
 
@@ -798,6 +740,20 @@ export const AuthCardHeader = styled.header`
       max(1rem, env(safe-area-inset-left, 0px));
     gap: 0.65rem;
   }
+
+  ${({ $login }) =>
+    $login &&
+    `
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1.2rem 1.45rem 1.08rem;
+
+    @media (min-width: 640px) {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 1.28rem 1.6rem 1.12rem;
+    }
+  `}
 `;
 
 export const AuthBrandBlock = styled.div`
@@ -808,6 +764,12 @@ export const AuthBrandBlock = styled.div`
   justify-content: center;
   flex: 1;
   padding-top: 0.015625rem;
+
+  ${({ $login }) =>
+    $login &&
+    `
+    gap: 0.22rem;
+  `}
 `;
 
 export const AuthBrandTitle = styled.h1`
@@ -818,6 +780,15 @@ export const AuthBrandTitle = styled.h1`
   letter-spacing: -0.032em;
   line-height: 1.2;
   color: #0b1220;
+
+  ${({ $login, $mutedBrand }) =>
+    $login &&
+    `
+    font-size: clamp(0.90625rem, 2.1vw, 1rem);
+    font-weight: ${$mutedBrand ? 700 : 600};
+    letter-spacing: -0.022em;
+    color: #111827;
+  `}
 `;
 
 export const AuthBrandOrdinal = styled.span`
@@ -825,6 +796,13 @@ export const AuthBrandOrdinal = styled.span`
   margin-right: 0.28em;
   color: #5b4cdb;
   letter-spacing: -0.02em;
+
+  ${({ $login, $mutedBrand }) =>
+    $login &&
+    `
+    color: ${$mutedBrand ? '#64748b' : '#7c3aed'};
+    opacity: ${$mutedBrand ? 1 : 0.78};
+  `}
 `;
 
 export const AuthBrandName = styled.span`
@@ -833,6 +811,14 @@ export const AuthBrandName = styled.span`
   text-transform: uppercase;
   font-size: 0.88em;
   color: #0f172a;
+
+  ${({ $login, $mutedBrand }) =>
+    $login &&
+    `
+    color: ${$mutedBrand ? '#111827' : '#1f2937'};
+    letter-spacing: 0.06em;
+    font-weight: ${$mutedBrand ? 800 : 700};
+  `}
 `;
 
 export const AuthBrandYear = styled.span`
@@ -842,6 +828,12 @@ export const AuthBrandYear = styled.span`
   font-variant-numeric: tabular-nums;
   margin-left: 0.35em;
   color: #64748b;
+
+  ${({ $login }) =>
+    $login &&
+    `
+    color: #9ca3af;
+  `}
 `;
 
 export const AuthBrandSubtitle = styled.p`
@@ -854,6 +846,15 @@ export const AuthBrandSubtitle = styled.p`
   line-height: 1.42;
   text-transform: none;
   color: #8e98a8;
+
+  ${({ $login }) =>
+    $login &&
+    `
+    color: #6b7280;
+    font-size: clamp(0.734375rem, 1.8vw, 0.78125rem);
+    margin-top: 0.14rem;
+    opacity: 0.9;
+  `}
 `;
 
 export const AuthHeaderActions = styled.div`
@@ -994,21 +995,20 @@ export const AuthCardBody = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    padding: clamp(2rem, 4.5vw, 2.55rem) clamp(1.7rem, 4vw, 2.25rem)
-      clamp(1.75rem, 3.5vw, 2rem);
+    padding: 26px 28px 22px;
 
     @media (min-width: 640px) {
-      padding: 2.3rem 2.15rem 1.95rem;
+      padding: 28px 32px 24px;
     }
 
     @media (min-width: 1024px) {
-      padding: 2.45rem 2.3rem 2rem;
+      padding: 28px 32px 24px;
     }
 
     @media (max-width: 639px) {
-      padding: 1.45rem max(1.1rem, env(safe-area-inset-right, 0px))
-        max(1.05rem, env(safe-area-inset-bottom, 0px))
-        max(1.1rem, env(safe-area-inset-left, 0px));
+      padding: 22px max(22px, env(safe-area-inset-right, 0px))
+        max(18px, env(safe-area-inset-bottom, 0px))
+        max(22px, env(safe-area-inset-left, 0px));
     }
   `}
 `;
@@ -1096,20 +1096,20 @@ export const AuthPageTitle = styled.h1`
     }
   `}
 
-  ${({ $login }) =>
+  ${({ $login, $recoverySpacing }) =>
     $login &&
     `
-    font-size: clamp(1.9rem, 4.2vw, 2.25rem);
+    font-size: clamp(1.875rem, 4vw, 2.125rem);
     font-weight: 700;
-    letter-spacing: -0.048em;
-    line-height: 1.04;
-    color: #0b1220;
-    margin-bottom: 0.8rem;
+    letter-spacing: -0.038em;
+    line-height: 1.08;
+    color: #111827;
+    margin-bottom: ${$recoverySpacing ? '12px' : '0.44rem'};
 
     @media (max-width: 639px) {
-      font-size: clamp(1.625rem, 6vw, 1.875rem);
-      margin-bottom: 0.75rem;
-      letter-spacing: -0.042em;
+      font-size: clamp(1.5625rem, 5.8vw, 1.8125rem);
+      margin-bottom: ${$recoverySpacing ? '12px' : '0.4rem'};
+      letter-spacing: -0.032em;
     }
   `}
 `;
@@ -1136,19 +1136,19 @@ export const AuthPageSubtitle = styled.p`
       $recoverSpacing ? '0.9375rem' : '0.8984375rem'};
   }
 
-  ${({ $login }) =>
+  ${({ $login, $recoverySpacing }) =>
     $login &&
     `
     max-width: 32rem;
-    margin-bottom: clamp(1.3rem, 3vw, 1.65rem);
-    color: #5f6c7d;
-    font-size: 0.9375rem;
+    margin-bottom: ${$recoverySpacing ? '24px' : '0.38rem'};
+    color: #6b7280;
+    font-size: 0.90625rem;
     line-height: 1.58;
 
     @media (max-width: 639px) {
-      margin-bottom: 1.15rem;
-      font-size: 0.9375rem;
-      line-height: 1.52;
+      margin-bottom: ${$recoverySpacing ? '24px' : '0.34rem'};
+      font-size: 0.90625rem;
+      line-height: 1.54;
     }
   `}
 `;
@@ -1199,47 +1199,47 @@ export const AuthFlowFormSaaS = styled(AuthFlowForm)`
 export const AuthLoginForm = styled(AuthFlowFormSaaS)`
   width: 100%;
   gap: 0;
-  margin-top: 1.2rem;
+  margin-top: 0.92rem;
 
   @media (min-width: 640px) {
-    margin-top: 1.32rem;
+    margin-top: 1rem;
   }
 
   @media (max-width: 639px) {
-    margin-top: 1rem;
+    margin-top: 0.88rem;
   }
 `;
 
 export const AuthLoginFieldStack = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.95rem;
+  gap: 0.92rem;
   width: 100%;
 
   @media (min-width: 640px) {
-    gap: 1rem;
+    gap: 0.94rem;
   }
 
   @media (max-width: 639px) {
-    gap: 0.8125rem;
+    gap: 0.82rem;
   }
 `;
 
 export const AuthLoginActions = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.95rem;
+  gap: 1rem;
   width: 100%;
-  margin-top: 0.5rem;
+  margin-top: 0.68rem;
 
   @media (min-width: 640px) {
-    gap: 1rem;
-    margin-top: 0.62rem;
+    gap: 1.05rem;
+    margin-top: 0.74rem;
   }
 
   @media (max-width: 639px) {
-    gap: 0.875rem;
-    margin-top: 0.42rem;
+    gap: 0.9rem;
+    margin-top: 0.6rem;
   }
 `;
 
@@ -1262,9 +1262,9 @@ export const AuthRememberRow = styled.label`
     `
     margin: 0;
     padding: 0.03125rem 0 0;
-    gap: 0.59375rem;
-    color: #4c5967;
-    font-size: 0.859375rem;
+    gap: 0.5rem;
+    color: #6b7280;
+    font-size: 0.84375rem;
     letter-spacing: -0.01em;
     line-height: 1.35;
   `}
@@ -1285,16 +1285,16 @@ export const AuthRememberRow = styled.label`
       -webkit-appearance: none;
       display: inline-grid;
       place-content: center;
-      width: 1.0625rem;
-      height: 1.0625rem;
+      width: 1rem;
+      height: 1rem;
       margin: 0;
       flex-shrink: 0;
-      border-radius: 0.35rem;
-      border: 1px solid rgba(148, 163, 184, 0.38);
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border-radius: 0.3125rem;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
       box-shadow:
-        0 1px 2px rgba(15, 23, 42, 0.06),
-        0 1px 0 rgba(255, 255, 255, 0.95) inset;
+        0 1px 1px rgba(17, 24, 39, 0.06),
+        0 0 0 1px rgba(255, 255, 255, 0.85) inset;
       transition:
         background 0.2s ease,
         border-color 0.2s ease,
@@ -1313,7 +1313,7 @@ export const AuthRememberRow = styled.label`
     }
 
     input:hover {
-      border-color: rgba(99, 102, 241, 0.34);
+      border-color: #9ca3af;
       box-shadow:
         0 3px 8px -5px rgba(15, 23, 42, 0.22),
         0 1px 0 rgba(255, 255, 255, 0.95) inset;
@@ -1328,8 +1328,8 @@ export const AuthRememberRow = styled.label`
     }
 
     input:checked {
-      border-color: rgba(94, 86, 234, 0.48);
-      background: linear-gradient(180deg, #f8f8ff 0%, #f0efff 100%);
+      border-color: rgba(99, 102, 241, 0.5);
+      background: #eef2ff;
       box-shadow:
         0 0 0 3px rgba(99, 102, 241, 0.08),
         0 3px 8px -5px rgba(94, 86, 234, 0.25);
@@ -1492,15 +1492,18 @@ export const AuthInputRow = styled.div`
     $login &&
     `
     min-height: 52px;
-    padding: 0 1rem 0 0.78rem;
-    gap: 0.5rem;
-    background: linear-gradient(180deg, rgba(252, 252, 255, 0.98) 0%, rgba(247, 248, 252, 0.98) 100%);
-    border: 1px solid rgba(94, 86, 234, 0.1);
-    border-radius: 12px;
+    padding: 0 0.95rem 0 0.78rem;
+    gap: 0.42rem;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 16px;
     box-shadow:
-      0 1px 2px rgba(15, 23, 42, 0.024),
-      0 6px 14px -16px rgba(15, 23, 42, 0.08);
-    transition: all 0.2s ease;
+      0 1px 2px rgba(17, 24, 39, 0.05),
+      0 6px 14px -16px rgba(17, 24, 39, 0.16);
+    transition:
+      border-color 0.16s ease,
+      box-shadow 0.16s ease,
+      background 0.16s ease;
 
     &::before {
       content: '';
@@ -1508,38 +1511,38 @@ export const AuthInputRow = styled.div`
       inset: 0;
       border-radius: inherit;
       pointer-events: none;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, transparent 46%);
-      opacity: 0.7;
+      background: none;
+      opacity: 0;
       transition: all 0.2s ease;
     }
 
     &:hover:not(:focus-within) {
-      background: linear-gradient(180deg, rgba(253, 253, 255, 1) 0%, rgba(248, 249, 253, 1) 100%);
-      border-color: rgba(94, 86, 234, 0.16);
+      background: #ffffff;
+      border-color: #9ca3af;
       box-shadow:
-        0 2px 4px rgba(15, 23, 42, 0.03),
-        0 8px 18px -18px rgba(15, 23, 42, 0.1);
+        0 2px 4px rgba(17, 24, 39, 0.06),
+        0 10px 18px -18px rgba(17, 24, 39, 0.16);
     }
 
     &:focus-within {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(251, 250, 255, 1) 100%);
-      border-color: rgba(94, 86, 234, 0.28);
+      background: #ffffff;
+      border-color: #7c3aed;
       box-shadow:
-        0 0 0 3px rgba(94, 86, 234, 0.055),
-        0 4px 10px -10px rgba(15, 23, 42, 0.1),
-        0 10px 18px -18px rgba(94, 86, 234, 0.1);
+        0 0 0 3px rgba(124, 58, 237, 0.12),
+        0 2px 6px rgba(17, 24, 39, 0.08),
+        0 12px 22px -20px rgba(124, 58, 237, 0.28);
     }
 
     &:focus-within .auth-field-icon {
-      color: rgba(94, 86, 234, 0.82);
-      opacity: 1;
-      transform: translateY(-0.5px);
+      color: #7c3aed;
+      opacity: 0.9;
+      transform: none;
     }
 
     @media (max-width: 639px) {
       min-height: 52px;
-      padding: 0 0.95rem 0 0.72rem;
-      gap: 0.46rem;
+      padding: 0 0.92rem 0 0.74rem;
+      gap: 0.4rem;
     }
   `}
 
@@ -1623,15 +1626,15 @@ export const AuthPremiumFieldIconSlot = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    width: 33px;
-    align-self: stretch;
+    width: 32px;
+    align-self: center;
     position: relative;
     z-index: 1;
-    opacity: 0.58;
-    transition: all 0.2s ease;
+    opacity: 0.56;
+    transition: color 0.16s ease, opacity 0.16s ease;
 
     @media (max-width: 639px) {
-      width: 33px;
+      width: 32px;
     }
   `}
 `;
@@ -1812,18 +1815,19 @@ export const AuthPremiumFieldControl = styled.input`
     font-weight: 500;
     letter-spacing: -0.016em;
     line-height: 1.3;
-    color: #0f172a;
+    color: #111827;
     transition: all 0.2s ease;
 
     &::placeholder {
-      color: rgba(148, 163, 184, 0.84);
+      color: #9ca3af;
       font-weight: 500;
       letter-spacing: -0.013em;
+      opacity: 1;
     }
 
     &:focus::placeholder {
       opacity: 1;
-      color: rgba(148, 163, 184, 0.72);
+      color: #9ca3af;
       font-size: 0.875rem;
     }
   `}
@@ -2098,7 +2102,7 @@ export const AuthPrimaryButton = styled.button`
     font-size: 1rem;
     font-weight: 600;
     letter-spacing: -0.019em;
-    border-radius: 13px;
+  border-radius: 5px;
 
     ${({ $flat }) =>
       $flat
@@ -2135,50 +2139,50 @@ export const AuthPrimaryButton = styled.button`
     $login &&
     `
     margin-top: 0;
-    min-height: 51px;
-    height: 51px;
-    border-radius: 14px;
+    min-height: 52px;
+    height: 52px;
+    border-radius: 5px;
     font-size: 0.96875rem;
     font-weight: 700;
     letter-spacing: -0.024em;
-    background: linear-gradient(180deg, #6860f0 0%, #5750df 100%);
+    background: #1c1c1e;
     box-shadow:
-      0 10px 22px -16px rgba(94, 86, 234, 0.4),
-      0 14px 28px -24px rgba(15, 23, 42, 0.26),
-      0 1px 0 rgba(255, 255, 255, 0.16) inset;
+      0 6px 16px -10px rgba(17, 24, 39, 0.32),
+      0 12px 24px -20px rgba(17, 24, 39, 0.24),
+      0 1px 0 rgba(255, 255, 255, 0.14) inset;
 
     &:hover:not(:disabled) {
-      background: linear-gradient(180deg, #7068f4 0%, #5a53e3 100%);
+      background: #2a2a2d;
       transform: translateY(-1px);
       box-shadow:
-        0 14px 28px -18px rgba(94, 86, 234, 0.44),
-        0 16px 30px -24px rgba(15, 23, 42, 0.28),
+        0 12px 24px -14px rgba(15, 23, 42, 0.32),
+        0 18px 36px -28px rgba(15, 23, 42, 0.22),
         0 1px 0 rgba(255, 255, 255, 0.18) inset;
     }
 
     &:active:not(:disabled) {
-      transform: translateY(0);
-      background: linear-gradient(180deg, #5b54e8 0%, #4f48d6 100%);
+      transform: translateY(1px);
+      background: #141417;
       box-shadow:
-        0 8px 18px -16px rgba(94, 86, 234, 0.38),
-        0 10px 22px -22px rgba(15, 23, 42, 0.22);
+        0 6px 14px -12px rgba(15, 23, 42, 0.28),
+        0 10px 20px -20px rgba(15, 23, 42, 0.18);
     }
 
     &:disabled {
       opacity: 1;
-      color: rgba(250, 251, 253, 0.86);
-      background: linear-gradient(180deg, #b8b4ef 0%, #a8a4df 100%);
+      color: rgba(250, 251, 253, 0.9);
+      background: #b6bcc6;
       box-shadow:
         0 4px 10px -8px rgba(15, 23, 42, 0.12),
         0 1px 0 rgba(255, 255, 255, 0.14) inset;
     }
 
     @media (max-width: 639px) {
-      min-height: 50px;
-      height: 50px;
+      min-height: 52px;
+      height: 52px;
       margin-top: 0;
       padding: 0 1.2rem;
-      border-radius: 14px;
+  border-radius: 5px;
     }
   `}
 `;

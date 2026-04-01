@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled, { ThemeProvider, keyframes, css } from "styled-components";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -22,6 +22,11 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 import { ptBR } from "date-fns/locale";
 import axios from "axios";
+import AppHeader, {
+  APP_HEADER_HEIGHT,
+  APP_HEADER_HEIGHT_MOBILE,
+  AppHeaderBadge,
+} from "../shared/AppHeader";
 
 const fadeIn = keyframes`
   from {
@@ -36,17 +41,17 @@ const fadeIn = keyframes`
 
 export const themes = {
   dashboardLike: {
-    background: "#f5f5f7",
-    cardBackground: "rgba(255, 255, 255, 0.96)",
-    sectionBackground: "rgba(255, 255, 255, 0.88)",
-    textColor: "#1d1d1f",
-    secondaryText: "#6e6e73",
+    background: "#F6F7F9",
+    cardBackground: "#FFFFFF",
+    sectionBackground: "#FFFFFF",
+    textColor: "#111827",
+    secondaryText: "#6B7280",
     subtleText: "#8e8e93",
-    borderColor: "#ececf1",
+    borderColor: "#E5E7EB",
     inputBackground: "#ffffff",
-    inputBorder: "#e3e3e8",
+    inputBorder: "#E5E7EB",
     inputFocus: "#8b5cf6",
-    buttonBackground: "#111111",
+    buttonBackground: "#1C1C1E",
     buttonHover: "#1c1c1e",
     checkboxAccent: "#0a84ff",
     dangerSoft: "rgba(255, 59, 48, 0.08)",
@@ -58,59 +63,23 @@ export const themes = {
 };
 
 const PAGE_MAX_WIDTH = "980px";
-const TOPBAR_HEIGHT = "64px";
-const TOPBAR_HEIGHT_MOBILE = "58px";
 
 const Container = styled.div`
   min-height: 100vh;
   background: ${({ theme }) => theme.background};
-  padding: calc(24px + ${TOPBAR_HEIGHT}) 18px 40px;
+  padding: calc(24px + ${APP_HEADER_HEIGHT}) 18px 40px;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter",
     "Segoe UI", sans-serif;
   color: ${({ theme }) => theme.textColor};
 
   @media (max-width: 768px) {
-    padding: calc(12px + ${TOPBAR_HEIGHT_MOBILE}) 12px 24px;
+    padding: calc(12px + ${APP_HEADER_HEIGHT_MOBILE}) 12px 24px;
   }
 `;
 
 const Content = styled.div`
   max-width: ${PAGE_MAX_WIDTH};
   margin: 0 auto;
-`;
-
-const TopBar = styled.header`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: ${TOPBAR_HEIGHT};
-  z-index: 50;
-  border-bottom: 1px solid rgba(236, 236, 241, 0.9);
-  background: rgba(245, 245, 247, 0.74);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  @media (max-width: 768px) {
-    height: ${TOPBAR_HEIGHT_MOBILE};
-    background: rgba(245, 245, 247, 0.86);
-  }
-`;
-
-const TopBarInner = styled.div`
-  height: 100%;
-  max-width: ${PAGE_MAX_WIDTH};
-  margin: 0 auto;
-  padding: 0 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  @media (max-width: 768px) {
-    padding: 0 12px;
-    gap: 10px;
-  }
 `;
 
 const FormCard = styled.form`
@@ -143,62 +112,53 @@ const Header = styled.header`
   }
 `;
 
-const BackButton = styled.button`
-  min-height: 40px;
-  min-width: 40px;
-  padding: 0 12px;
-  border-radius: 12px;
-  border: 1px solid ${({ theme }) => theme.borderColor};
-  background: rgba(255, 255, 255, 0.92);
-  color: ${({ theme }) => theme.secondaryText};
-  display: inline-flex;
+const StepBackButton = styled.button`
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
+
+  min-height: 52px;
+  width: 100%;
+  gap: 7px;
+  padding: 0 16px;
+  border: 1px solid #e2e2e7;
+  background: #ffffff;
+  border-radius: 16px;
+  color: #4b5563;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
+
+  svg {
+    color: currentColor;
+    font-size: 15px;
+  }
 
   &:hover {
-    background: rgba(255, 255, 255, 1);
-    color: ${({ theme }) => theme.textColor};
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  &:active {
+    transform: scale(0.992);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
     border-color: ${({ theme }) => theme.inputFocus};
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   @media (max-width: 768px) {
-    min-height: 38px;
-    min-width: 38px;
-    border-radius: 11px;
-    padding: 0 10px;
-  }
-`;
-
-const HeaderBadge = styled.span`
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid ${({ theme }) => theme.borderColor};
-  background: rgba(242, 242, 247, 0.95);
-  color: ${({ theme }) => theme.secondaryText};
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-
-  @media (max-width: 768px) {
-    min-height: 28px;
-    padding: 0 10px;
-    font-size: 0.68rem;
+    min-height: 50px;
   }
 `;
 
@@ -240,6 +200,17 @@ const ErrorBox = styled.div`
   font-size: 14px;
 `;
 
+const PrefillNotice = styled.div`
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 5px;
+  border: 1px solid #e7e8ee;
+  background: rgba(255, 255, 255, 0.9);
+  color: ${({ theme }) => theme.secondaryText};
+  font-size: 13px;
+  line-height: 1.55;
+`;
+
 const Section = styled.section`
   background: ${({ theme }) => theme.sectionBackground};
   border-radius: 20px;
@@ -258,11 +229,11 @@ const SectionHeader = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 
   @media (max-width: 768px) {
     gap: 10px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 `;
 
@@ -288,35 +259,36 @@ const SectionIcon = styled.div`
 const SectionTitleWrap = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
 
   @media (max-width: 768px) {
-    gap: 6px;
+    gap: 7px;
   }
 `;
 
 const SectionTitle = styled.h2`
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   color: ${({ theme }) => theme.textColor};
   font-weight: 600;
-  letter-spacing: -0.02em;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 
   @media (max-width: 768px) {
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.3;
   }
 `;
 
 const SectionDescription = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.secondaryText};
+  color: #5f636d;
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.6;
 
   @media (max-width: 768px) {
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.55;
   }
 `;
 
@@ -566,11 +538,11 @@ const checkboxBaseStyles = css`
 const ChipsGroup = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   margin-top: 4px;
 
   @media (max-width: 768px) {
-    gap: 10px;
+    gap: 11px;
   }
 `;
 
@@ -579,7 +551,7 @@ const ChipLabel = styled.label`
   align-items: center;
   gap: 9px;
   min-height: 42px;
-  padding: 0 16px;
+  padding: 0 18px;
   border-radius: 5px;
   background: ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.1)" : "#f8f8fa")};
   border: 1px solid ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.35)" : "#e6e6eb")};
@@ -588,6 +560,7 @@ const ChipLabel = styled.label`
   font-weight: ${({ $selected }) => ($selected ? 600 : 500)};
   cursor: pointer;
   transition: all 0.15s ease;
+  box-shadow: ${({ $selected }) => ($selected ? "0 1px 3px rgba(139, 92, 246, 0.12)" : "none")};
 
   &:hover {
     background: #ffffff;
@@ -606,9 +579,9 @@ const CheckboxContainer = styled.label`
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: ${({ $final }) => ($final ? "20px" : "18px")};
+  margin-top: ${({ $final }) => ($final ? "24px" : "18px")};
   cursor: pointer;
-  padding: ${({ $final }) => ($final ? "14px 16px" : "0")};
+  padding: ${({ $final }) => ($final ? "16px 18px" : "0")};
   border-radius: ${({ $final }) => ($final ? "14px" : "0")};
   background: ${({ $final }) => ($final ? "rgba(255, 255, 255, 0.7)" : "transparent")};
   border: ${({ $final }) => ($final ? "1px solid #e8eaf0" : "none")};
@@ -621,8 +594,8 @@ const CheckboxContainer = styled.label`
 
   @media (max-width: 768px) {
     gap: 9px;
-    margin-top: ${({ $final }) => ($final ? "18px" : "16px")};
-    padding: ${({ $final }) => ($final ? "13px 14px" : "0")};
+    margin-top: ${({ $final }) => ($final ? "20px" : "16px")};
+    padding: ${({ $final }) => ($final ? "14px 14px" : "0")};
   }
 `;
 
@@ -637,7 +610,7 @@ const CheckboxInput = AppCheckbox;
 const CheckboxLabel = styled.span`
   font-size: 14px;
   color: ${({ $final, theme }) => ($final ? theme.textColor : theme.secondaryText)};
-  line-height: 1.55;
+  line-height: 1.6;
   font-weight: ${({ $final }) => ($final ? 500 : 400)};
 
   @media (max-width: 768px) {
@@ -647,10 +620,15 @@ const CheckboxLabel = styled.span`
 `;
 
 const FooterActions = styled.div`
-  margin-top: 32px;
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 
   @media (max-width: 768px) {
-    margin-top: 26px;
+    margin-top: 28px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 `;
 
@@ -671,17 +649,21 @@ const SubmitButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 6px 14px rgba(17, 17, 17, 0.12);
+  box-shadow: 0 5px 12px rgba(17, 17, 17, 0.1);
+  white-space: nowrap;
+  grid-column: ${({ $hasBack }) => ($hasBack ? "auto" : "1 / -1")};
 
   @media (max-width: 768px) {
+    width: 100%;
     min-height: 50px;
     font-size: 15px;
+    grid-column: ${({ $hasBack }) => ($hasBack ? "auto" : "1 / -1")};
   }
 
   &:hover {
     background: ${({ theme }) => theme.buttonHover};
     transform: translateY(-1px);
-    box-shadow: 0 10px 18px rgba(17, 17, 17, 0.16);
+    box-shadow: 0 8px 16px rgba(17, 17, 17, 0.13);
   }
 
   &:active {
@@ -690,8 +672,15 @@ const SubmitButton = styled.button`
   }
 
   &:disabled {
-    opacity: 0.65;
+    opacity: 0.72;
+    box-shadow: none;
+    transform: none;
     cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16);
   }
 
   .spin {
@@ -715,6 +704,11 @@ const LinkText = styled.span`
   &:hover {
     text-decoration: underline;
     color: #0668c7;
+  }
+
+  &:focus-visible {
+    outline: none;
+    text-decoration: underline;
   }
 `;
 
@@ -931,8 +925,14 @@ const PlanoGeralModal = ({ isOpen, onClose }) => {
 
 const Formulario = () => {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const TOTAL_STEPS = 5;
+  const STEP_TITLES = ["Sobre você", "Participação", "Endereço", "Cuidados", "Finalização"];
   const navigate = useNavigate();
+  const location = useLocation();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [prefillNoticeName, setPrefillNoticeName] = useState("");
+  const [hasAppliedReenrollment, setHasAppliedReenrollment] = useState(false);
+  const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
     nomeCompleto: "",
@@ -980,6 +980,22 @@ const Formulario = () => {
   const [isMinor, setIsMinor] = useState(false);
   const [theme] = useState(themes.dashboardLike);
 
+  const goNextStep = () => {
+    setStep((current) => Math.min(TOTAL_STEPS, current + 1));
+  };
+
+  const goPrevStep = () => {
+    setStep((current) => Math.max(1, current - 1));
+  };
+
+  const handleNextStep = (event) => {
+    const form = event?.currentTarget?.form;
+    if (form && !form.reportValidity()) {
+      return;
+    }
+    goNextStep();
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -1002,6 +1018,29 @@ const Formulario = () => {
 
     fetchInstitutions();
   }, [navigate, API_URL]);
+
+  useEffect(() => {
+    const reenrollment = location.state?.reenrollment;
+    if (!reenrollment || hasAppliedReenrollment) return;
+
+    const incoming = reenrollment.prefillData || {};
+
+    setFormData((prev) => ({
+      ...prev,
+      ...incoming,
+      dataNascimento: incoming.dataNascimento || prev.dataNascimento,
+      primeiraComejaca: false,
+      comissao: "",
+    }));
+
+    if (incoming?.dataNascimento) {
+      setIsMinor(calculateAge(incoming.dataNascimento) < 18);
+    }
+
+    setStep(1);
+    setPrefillNoticeName(reenrollment.firstName || "");
+    setHasAppliedReenrollment(true);
+  }, [location.state, hasAppliedReenrollment]);
 
   const calculateAge = (date) => {
     if (!date) return 0;
@@ -1111,6 +1150,12 @@ const Formulario = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (step !== TOTAL_STEPS) {
+      goNextStep();
+      return;
+    }
+
     setIsSubmitting(true);
     setErrors([]);
 
@@ -1136,6 +1181,8 @@ const Formulario = () => {
         otherInstitution: formData.otherInstitution,
         primeiraComejaca: formData.primeiraComejaca,
       };
+
+      console.log("PAYLOAD INSCRIÇÃO:", payload);
 
       const response = await axios.post(`${API_URL}/api/auth/inscrever`, payload, {
         headers: {
@@ -1175,23 +1222,27 @@ const Formulario = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
       <ThemeProvider theme={theme}>
         <Container>
-          <TopBar>
-            <TopBarInner>
-              <BackButton type="button" onClick={handleBack} aria-label="Voltar">
-                <FiArrowLeft size={15} />
-              </BackButton>
-              <HeaderBadge>COMEJACA 2026</HeaderBadge>
-            </TopBarInner>
-          </TopBar>
+          <AppHeader
+            showBack
+            onBack={handleBack}
+            rightContent={<AppHeaderBadge>COMEJACA 2026</AppHeaderBadge>}
+          />
 
           <Content>
             <FormCard onSubmit={handleSubmit}>
               <Header>
-                <Title>INSCRIÇÃO</Title>
+                <Title>Nova Inscrição</Title>
 
                 <Subtitle>
-               
+                  Passo {step} de {TOTAL_STEPS} - {STEP_TITLES[step - 1]}
                 </Subtitle>
+
+                {prefillNoticeName && (
+                  <PrefillNotice>
+                    Formulario preenchido com base na inscrição anterior de{" "}
+                    <strong>{prefillNoticeName}</strong>. Revise os dados antes de continuar.
+                  </PrefillNotice>
+                )}
 
                 {errors.length > 0 && (
                   <ErrorBox>
@@ -1202,200 +1253,213 @@ const Formulario = () => {
                 )}
               </Header>
 
-              <Section>
-                <SectionHeader>
-                  <SectionIcon>
-                    <FiUser />
-                  </SectionIcon>
-                  <SectionTitleWrap>
-                    <SectionTitle>Sobre você</SectionTitle>
-                    <SectionDescription>
-                      Vamos começar com suas informações principais.
-                    </SectionDescription>
-                  </SectionTitleWrap>
-                </SectionHeader>
+              {(step === 1 || step === 2) && (
+                <Section>
+                  <SectionHeader>
+                    <SectionIcon>
+                      {step === 1 ? <FiUser /> : <FiClock />}
+                    </SectionIcon>
+                    <SectionTitleWrap>
+                      <SectionTitle>{step === 1 ? "Sobre você" : "Participação"}</SectionTitle>
+                      <SectionDescription>
+                        {step === 1
+                          ? ""
+                          : "Conte como você vai participar desta edição."}
+                      </SectionDescription>
+                    </SectionTitleWrap>
+                  </SectionHeader>
 
-                <FormGrid>
-                  <InputGroup>
-                    <InputLabel><FiUser /> Nome completo *</InputLabel>
-                    <InputField
-                      name="nomeCompleto"
-                      placeholder=""
-                      value={formData.nomeCompleto}
-                      onChange={handleChange}
-                      required
-                    />
-                  </InputGroup>
+                  <FormGrid>
+                    {step === 1 && (
+                      <>
+                        <InputGroup>
+                          <InputLabel><FiUser /> Nome completo *</InputLabel>
+                          <InputField
+                            name="nomeCompleto"
+                            placeholder=""
+                            value={formData.nomeCompleto}
+                            onChange={handleChange}
+                            required
+                          />
+                        </InputGroup>
 
-                  <InputGroup>
-                    <InputLabel><FiUser /> Nome social</InputLabel>
-                    <InputField
-                      name="nomeSocial"
-                      placeholder=""
-                      value={formData.nomeSocial}
-                      onChange={handleChange}
-                    />
-                  </InputGroup>
+                        <InputGroup>
+                          <InputLabel><FiUser /> Nome social</InputLabel>
+                          <InputField
+                            name="nomeSocial"
+                            placeholder=""
+                            value={formData.nomeSocial}
+                            onChange={handleChange}
+                          />
+                        </InputGroup>
 
-                  <InputGroup>
-                    <InputLabel><FiUser /> Nome no crachá *</InputLabel>
-                    <InputField
-                      name="nomeCracha"
-                      placeholder=""
-                      value={formData.nomeCracha}
-                      onChange={handleChange}
-                      required
-                    />
-                  </InputGroup>
+                        <InputGroup>
+                          <InputLabel><FiUser /> Nome no crachá *</InputLabel>
+                          <InputField
+                            name="nomeCracha"
+                            placeholder=""
+                            value={formData.nomeCracha}
+                            onChange={handleChange}
+                            required
+                          />
+                        </InputGroup>
 
-                  <InputGroup>
-                    <InputLabel><FiCalendar /> Data de nascimento *</InputLabel>
-                    <StyledDatePicker
-                      value={formData.dataNascimento}
-                      onChange={handleDateChange}
-                      format="dd/MM/yyyy"
-                      maxDate={today}
-                    />
-                  </InputGroup>
+                        <InputGroup>
+                          <InputLabel><FiCalendar /> Data de nascimento *</InputLabel>
+                          <StyledDatePicker
+                            value={formData.dataNascimento}
+                            onChange={handleDateChange}
+                            format="dd/MM/yyyy"
+                            maxDate={today}
+                          />
+                        </InputGroup>
 
-                  {isMinor && (
-                    <>
-                      <InputGroup>
-                        <InputLabel><FiShield /> Nome do responsável *</InputLabel>
-                        <InputField
-                          name="nomeCompletoResponsavel"
-                          value={formData.nomeCompletoResponsavel}
-                          onChange={handleChange}
-                          placeholder=""
-                          required={isMinor}
-                        />
-                      </InputGroup>
+                        {isMinor && (
+                          <>
+                            <InputGroup>
+                              <InputLabel><FiShield /> Nome do responsável *</InputLabel>
+                              <InputField
+                                name="nomeCompletoResponsavel"
+                                value={formData.nomeCompletoResponsavel}
+                                onChange={handleChange}
+                                placeholder=""
+                                required={isMinor}
+                              />
+                            </InputGroup>
 
-                      <InputGroup>
-                        <InputLabel><FiFileText /> Documento do responsável *</InputLabel>
-                        <InputField
-                          name="documentoResponsavel"
-                          value={formData.documentoResponsavel || ""}
-                          onChange={handleChange}
-                          placeholder="CPF ou RG"
-                          maxLength={14}
-                          required={isMinor}
-                        />
-                      </InputGroup>
+                            <InputGroup>
+                              <InputLabel><FiFileText /> Documento do responsável *</InputLabel>
+                              <InputField
+                                name="documentoResponsavel"
+                                value={formData.documentoResponsavel || ""}
+                                onChange={handleChange}
+                                placeholder="CPF ou RG"
+                                maxLength={14}
+                                required={isMinor}
+                              />
+                            </InputGroup>
 
-                      <InputGroup>
-                        <InputLabel><FiPhone /> Telefone do responsável *</InputLabel>
-                        <InputField
-                          name="telefoneResponsavel"
-                          value={formData.telefoneResponsavel}
-                          onChange={handleChange}
-                          placeholder="Número para contato"
-                          required={isMinor}
-                        />
-                      </InputGroup>
-                    </>
-                  )}
+                            <InputGroup>
+                              <InputLabel><FiPhone /> Telefone do responsável *</InputLabel>
+                              <InputField
+                                name="telefoneResponsavel"
+                                value={formData.telefoneResponsavel}
+                                onChange={handleChange}
+                                placeholder="Número para contato"
+                                required={isMinor}
+                              />
+                            </InputGroup>
+                          </>
+                        )}
 
-                  <InputGroup>
-                    <InputLabel><FiUser /> Gênero *</InputLabel>
-                    <Select name="sexo" value={formData.sexo} onChange={handleChange} required>
-                      <option value="">Selecione</option>
-                      <option value="Masculino">Masculino</option>
-                      <option value="Feminino">Feminino</option>
-                      <option value="prefironaoresponder">Prefiro não responder</option>
-                      <option value="outro">Outro</option>
-                    </Select>
-                  </InputGroup>
+                        <InputGroup>
+                          <InputLabel><FiUser /> Gênero *</InputLabel>
+                          <Select name="sexo" value={formData.sexo} onChange={handleChange} required>
+                            <option value="">Selecione</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="prefironaoresponder">Prefiro não responder</option>
+                            <option value="outro">Outro</option>
+                          </Select>
+                        </InputGroup>
 
-                  {formData.sexo === "outro" && (
-                    <InputGroup>
-                      <InputLabel>Como você prefere se identificar</InputLabel>
-                      <InputField
-                        type="text"
-                        name="outroGenero"
-                        value={formData.outroGenero}
-                        placeholder="Escreva aqui"
-                        onChange={handleChange}
-                        required
-                      />
-                    </InputGroup>
-                  )}
+                        {formData.sexo === "outro" && (
+                          <InputGroup>
+                            <InputLabel>Como você prefere se identificar</InputLabel>
+                            <InputField
+                              type="text"
+                              name="outroGenero"
+                              value={formData.outroGenero}
+                              placeholder="Escreva aqui"
+                              onChange={handleChange}
+                              required
+                            />
+                          </InputGroup>
+                        )}
 
-                  <InputGroup>
-                    <InputLabel><FaWhatsapp /> WhatsApp *</InputLabel>
-                    <InputField
-                      name="telefone"
-                      value={formData.telefone}
-                      onChange={handleChange}
-                      placeholder=""
-                      required
-                    />
-                  </InputGroup>
+                        <InputGroup>
+                          <InputLabel><FaWhatsapp /> WhatsApp *</InputLabel>
+                          <InputField
+                            name="telefone"
+                            value={formData.telefone}
+                            onChange={handleChange}
+                            placeholder=""
+                            required
+                          />
+                        </InputGroup>
 
-                  <InputGroup>
-                    <InputLabel><FiMail /> E-mail *</InputLabel>
-                    <InputField
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder=""
-                      required
-                    />
-                  </InputGroup>
+                        <InputGroup>
+                          <InputLabel><FiMail /> E-mail *</InputLabel>
+                          <InputField
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder=""
+                            required
+                          />
+                        </InputGroup>
+                      </>
+                    )}
 
-                  <InputGroup>
-                    <InputLabel>Como você vai participar? *</InputLabel>
-                    <Select
-                      name="tipoParticipacao"
-                      value={formData.tipoParticipacao}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Selecione</option>
-                      <option value="Confraternista">Confraternista</option>
-                      <option value="Trabalhador">Trabalhador</option>
-                    </Select>
-                  </InputGroup>
+                    {step === 2 && (
+                      <>
+                        <InputGroup>
+                          <InputLabel>Como você vai participar? *</InputLabel>
+                          <Select
+                            name="tipoParticipacao"
+                            value={formData.tipoParticipacao}
+                            onChange={handleChange}
+                            required
+                          >
+                            <option value="">Selecione</option>
+                            <option value="Confraternista">Confraternista</option>
+                            <option value="Trabalhador">Trabalhador</option>
+                          </Select>
+                        </InputGroup>
 
-                  {formData.tipoParticipacao === "Trabalhador" && (
-                    <InputGroup>
-                      <InputLabel>Em qual equipe você gostaria de atuar? *</InputLabel>
-                      <Select
-                        name="comissao"
-                        value={formData.comissao}
-                        onChange={handleChange}
-                      >
-                        <option value="">Selecione</option>
-                        <option value="Alimentação">Alimentação</option>
-                        <option value="Atendimento Fraterno">Atendimento Fraterno</option>
-                        <option value="Coordenação Geral">Coordenação Geral</option>
-                        <option value="Divulgação">Divulgação</option>
-                        <option value="Estudos Doutrinários">Estudos Doutrinários</option>
-                        <option value="Multimeios">Multimeios</option>
-                        <option value="Secretaria">Secretaria</option>
-                        <option value="Serviços Gerais">Serviços Gerais</option>
-                        <option value="Recepção">Recepção</option>
-                      </Select>
-                    </InputGroup>
-                  )}
+                        {formData.tipoParticipacao === "Trabalhador" && (
+                          <InputGroup>
+                            <InputLabel>Em qual equipe você gostaria de atuar? *</InputLabel>
+                            <Select
+                              name="comissao"
+                              value={formData.comissao}
+                              onChange={handleChange}
+                            >
+                              <option value="">Selecione</option>
+                              <option value="Alimentação">Alimentação</option>
+                              <option value="Atendimento Fraterno">Atendimento Fraterno</option>
+                              <option value="Coordenação Geral">Coordenação Geral</option>
+                              <option value="Divulgação">Divulgação</option>
+                              <option value="Estudos Doutrinários">Estudos Doutrinários</option>
+                              <option value="Multimeios">Multimeios</option>
+                              <option value="Secretaria">Secretaria</option>
+                              <option value="Serviços Gerais">Serviços Gerais</option>
+                              <option value="Recepção">Recepção</option>
+                            </Select>
+                          </InputGroup>
+                        )}
 
-                  <FullWidth>
-                    <CheckboxContainer>
-                      <CheckboxInput
-                        type="checkbox"
-                        name="primeiraComejaca"
-                        checked={formData.primeiraComejaca}
-                        onChange={handleChange}
-                      />
-                      <CheckboxLabel>
-                        Esta será minha primeira COMEJACA.
-                      </CheckboxLabel>
-                    </CheckboxContainer>
-                  </FullWidth>
-                </FormGrid>
-              </Section>
+                        <FullWidth>
+                          <CheckboxContainer>
+                            <CheckboxInput
+                              type="checkbox"
+                              name="primeiraComejaca"
+                              checked={formData.primeiraComejaca}
+                              onChange={handleChange}
+                            />
+                            <CheckboxLabel>
+                              Esta será minha primeira COMEJACA.
+                            </CheckboxLabel>
+                          </CheckboxContainer>
+                        </FullWidth>
+                      </>
+                    )}
+                  </FormGrid>
+                </Section>
+              )}
 
+              {step === 3 && (
               <Section>
                 <SectionHeader>
                   <SectionIcon>
@@ -1514,7 +1578,9 @@ const Formulario = () => {
                   )}
                 </FormGrid>
               </Section>
+              )}
 
+              {step === 4 && (
               <Section>
                 <SectionHeader>
                   <SectionIcon>
@@ -1550,7 +1616,17 @@ const Formulario = () => {
                       onChange={handleChange}
                     />
                   </InputGroup>
-
+                  <FullWidth>
+                    <InputGroup>
+                      <InputLabel><FiInfo /> Algo mais que você queira nos contar?</InputLabel>
+                      <TextArea
+                        name="outrasInformacoes"
+                        placeholder="Esse espaço é seu, caso queira compartilhar alguma informação importante."
+                        value={formData.outrasInformacoes}
+                        onChange={handleChange}
+                      />
+                    </InputGroup>
+                  </FullWidth>
                   <FullWidth>
                     <InputGroup>
                       <InputLabel><FiInfo /> Existe alguma condição que você gostaria que soubéssemos?</InputLabel>
@@ -1643,17 +1719,7 @@ const Formulario = () => {
                     </FullWidth>
                   )}
 
-                  <FullWidth>
-                    <InputGroup>
-                      <InputLabel><FiInfo /> Algo mais que você queira nos contar?</InputLabel>
-                      <TextArea
-                        name="outrasInformacoes"
-                        placeholder="Esse espaço é seu, caso queira compartilhar alguma informação importante."
-                        value={formData.outrasInformacoes}
-                        onChange={handleChange}
-                      />
-                    </InputGroup>
-                  </FullWidth>
+            
 
                         <InputGroup>
                     <InputLabel><FiInfo /> Alimentação *</InputLabel>
@@ -1671,7 +1737,9 @@ const Formulario = () => {
                   </InputGroup>
                 </FormGrid>
               </Section>
+              )}
 
+              {step === 5 && (
               <Section>
        {/*  */}
 
@@ -1684,23 +1752,37 @@ const Formulario = () => {
                   </CheckboxLabel>
                 </CheckboxContainer>
               </Section>
+              )}
 
               <PlanoGeralModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
 
               <FooterActions>
-                <SubmitButton type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <FiLoader className="spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <FiFileText />
-                      Finalizar inscrição
-                    </>
-                  )}
-                </SubmitButton>
+                {step > 1 && (
+                  <StepBackButton type="button" onClick={goPrevStep}>
+                    <FiArrowLeft size={15} />
+                    Voltar
+                  </StepBackButton>
+                )}
+
+                {step < TOTAL_STEPS ? (
+                  <SubmitButton type="button" onClick={handleNextStep}>
+                    Próximo
+                  </SubmitButton>
+                ) : (
+                  <SubmitButton type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <FiLoader className="spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <FiFileText />
+                        Finalizar inscrição
+                      </>
+                    )}
+                  </SubmitButton>
+                )}
               </FooterActions>
             </FormCard>
           </Content>

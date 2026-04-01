@@ -18,7 +18,7 @@ const ListaInscricoes = () => {
       setLoading(false);
     }
   };
-
+z
   const gerarNovoLink = async (id) => {
     try {
       setMensagem('');

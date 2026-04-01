@@ -1,100 +1,195 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import AuthLayout from './auth/AuthLayout';
+import PremiumAuthField from './auth/PremiumAuthField';
 import {
-  faEnvelope,
-  faArrowLeft,
-  faLock,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
-import { toast } from "react-toastify";
+  AuthButtonSpinner,
+  AuthFlowButtonLabelWide,
+  AuthLoginActions,
+  AuthLoginFieldStack,
+  AuthLoginForm,
+  AuthPrimaryButton,
+} from './auth/authStyles';
 
-const gradientAnimation = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+const ForgotPasswordContentStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 `;
 
-const LinkVoltar = styled.div`
-  margin-top: 5rem;
-  color: #0d1b2a;
-  a {
-    color: inherit;
-    text-decoration: none;
+const ForgotPasswordFormShell = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 0.18rem;
+
+  @media (min-width: 640px) {
+    padding-top: 0.22rem;
+  }
+
+  @media (max-width: 639px) {
+    padding-top: 0.16rem;
   }
 `;
 
-const AuthContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-  background: #e7ecef;
-  background-size: 200% 200%;
-  animation: ${gradientAnimation} 10s ease infinite;
-  padding: 20px;
+const ForgotPasswordForm = styled(AuthLoginForm)`
+  margin-top: 0;
 `;
 
-const AuthWrapper = styled.div`
-  background-color: #e7ecef;
+const ForgotPasswordActions = styled(AuthLoginActions)`
+  margin-top: 18px;
+
+  @media (min-width: 640px) {
+    margin-top: 18px;
+  }
+
+  @media (max-width: 639px) {
+    margin-top: 18px;
+  }
+`;
+
+const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  height: 52px;
   border-radius: 5px;
-  padding: 40px;
-  width: 100%;
-  max-width: 450px;
-  text-align: center;
-  backdrop-filter: blur(10px);
-`;
+  border: none;
+  background: linear-gradient(180deg, #2b2d42 0%, #1f2133 100%);
+  color: #f8fafc;
+  box-shadow:
+    0 8px 18px rgba(17, 24, 39, 0.14),
+    0 16px 28px -24px rgba(17, 24, 39, 0.18);
+  transition:
+    background 0.18s ease,
+    transform 0.15s ease,
+    box-shadow 0.18s ease,
+    filter 0.15s ease;
 
-const Title = styled.h2`
-  color: #000;
-  margin-bottom: 30px;
-`;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 5px;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
 
-export const StyledInput = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  height: 50px;
-  font-size: 16px;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 5px;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      transparent 46%
+    );
+    opacity: 0.72;
+  }
 
-  &:hover {
-    border-color: #0d1b2a;
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, #323550 0%, #24263a 100%);
+    transform: translateY(-1px);
+    filter: brightness(1.01);
+    box-shadow:
+      0 12px 24px rgba(17, 24, 39, 0.16),
+      0 18px 34px -24px rgba(17, 24, 39, 0.2);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.985);
+    box-shadow: 0 5px 12px rgba(17, 24, 39, 0.1);
+    background: linear-gradient(180deg, #25283d 0%, #1a1c2d 100%);
   }
 
   &:focus {
-    border-color: #0d1b2a;
     outline: none;
+  }
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 3px rgba(124, 58, 237, 0.12),
+      0 8px 18px rgba(17, 24, 39, 0.12);
+  }
+
+  &:disabled {
+    background: #c7ced8;
+    color: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 6px 14px -16px rgba(15, 23, 42, 0.16);
+
+    &::before {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    &::after {
+      opacity: 0.5;
+    }
+  }
+
+  &[aria-busy='true'] {
+    cursor: wait;
+  }
+
+  @media (max-width: 639px) {
+    min-height: 52px;
+    height: 52px;
+    border-radius: 5px;
+    font-size: 0.96875rem;
   }
 `;
 
-const StyledButton = styled.button`
-  background-color: #0d1b2a;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
+const ForgotPasswordFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.9rem;
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: 1px solid #e5e7eb;
   width: 100%;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-height: 50px;
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+
+  @media (max-width: 639px) {
+    margin-top: 16px;
+    padding-top: 0;
+  }
+`;
+
+const ForgotPasswordFooterLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  color: #6b7280;
+  text-decoration: none;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  transition: color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: #2563eb;
+  }
+
+  &:focus {
+    outline: none;
   }
 `;
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: "" });
+  const [formData, setFormData] = useState({ email: '' });
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const [countdown, setCountdown] = useState(30);
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
   useEffect(() => {
     let timer;
@@ -121,18 +216,16 @@ const ForgotPassword = () => {
       await axios.post(`${API_URL}/api/auth/forgot-password`, formData);
       setDisabled(true);
 
-      // Mostra notificação antes do redirecionamento
-      toast.success("E-mail enviado.", {
-        position: "bottom-center",
+      toast.success('Enviamos o link de redefinição para seu e-mail.', {
+        position: 'bottom-center',
         autoClose: 4000,
       });
 
-      // Redireciona após o toast ser exibido
-      setTimeout(() => navigate("/"), 4200);
+      setTimeout(() => navigate('/'), 4200);
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Erro ao conectar com o servidor.",
-        { position: "top-center" }
+        error.response?.data?.message || 'Erro ao conectar com o servidor.',
+        { position: 'top-center' }
       );
     } finally {
       setLoading(false);
@@ -140,41 +233,63 @@ const ForgotPassword = () => {
   };
 
   return (
-    <AuthContainer>
-      <AuthWrapper>
-        <Title>
-          <FontAwesomeIcon icon={faLock} /> Redefinir Senha
-        </Title>
-        <form onSubmit={handleReset}>
-          <StyledInput
-            type="email"
-            name="email"
-            placeholder="Digite seu e-mail"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            required
-          />
-          <StyledButton type="submit" disabled={loading || disabled}>
-            {loading ? (
-              <FontAwesomeIcon icon={faSpinner} spin />
-            ) : disabled ? (
-              `Aguarde ${countdown}s`
-            ) : (
-              <>
-                <FontAwesomeIcon icon={faEnvelope} /> Enviar e-mail
-              </>
-            )}
-          </StyledButton>
-        </form>
-        <LinkVoltar>
-          <Link to="/">
-            <FontAwesomeIcon icon={faArrowLeft} /> Voltar para o login
-          </Link>
-        </LinkVoltar>
-      </AuthWrapper>
-    </AuthContainer>
+    <AuthLayout
+      title="Redefinir senha"
+      subtitle="Informe seu e-mail para receber as instruções de redefinição."
+      layoutPreset="login"
+      brandMode="muted"
+      spacingMode="recovery"
+      showUtilityActions={false}
+    >
+      <ForgotPasswordContentStack>
+        <ForgotPasswordFormShell>
+          <ForgotPasswordForm onSubmit={handleReset}>
+            <AuthLoginFieldStack>
+              <PremiumAuthField
+                id="forgot-password-email"
+                type="email"
+                name="email"
+                label="E-mail"
+                icon={faEnvelope}
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((prevData) => ({ ...prevData, email: e.target.value }))
+                }
+                required
+                disabled={loading}
+                autoComplete="email"
+                inputMode="email"
+                placeholder="nome@dominio.com"
+              />
+            </AuthLoginFieldStack>
+
+            <ForgotPasswordActions>
+              <ForgotPasswordSubmitButton
+                type="submit"
+                disabled={loading || disabled}
+                aria-busy={loading ? 'true' : 'false'}
+              >
+                {loading ? <AuthButtonSpinner /> : null}
+                <AuthFlowButtonLabelWide>
+                  {loading ? 'Enviar e-mail' : disabled ? (
+                    `Aguarde ${countdown}s`
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faEnvelope} />
+                      Enviar e-mail
+                    </>
+                  )}
+                </AuthFlowButtonLabelWide>
+              </ForgotPasswordSubmitButton>
+            </ForgotPasswordActions>
+          </ForgotPasswordForm>
+
+          <ForgotPasswordFooter>
+            <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
+          </ForgotPasswordFooter>
+        </ForgotPasswordFormShell>
+      </ForgotPasswordContentStack>
+    </AuthLayout>
   );
 };
 

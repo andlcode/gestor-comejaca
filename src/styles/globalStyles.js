@@ -5,10 +5,25 @@ import { createGlobalStyle } from 'styled-components';
  const GlobalStyles = createGlobalStyle`
   /* Definição das cores */
   :root {
-  
+    --app-bg: #F6F7F9;
+    --card-bg: #FFFFFF;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --btn-primary-bg: #1C1C1E;
+    --btn-primary-text: #FFFFFF;
+    --btn-secondary-border: #E5E7EB;
+    --status-pending-bg: #FEF3C7;
+    --status-pending-text: #92400E;
+    --status-success-bg: #DCFCE7;
+    --status-success-text: #166534;
+    --status-error-bg: #FEE2E2;
+    --status-error-text: #991B1B;
+    --card-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
     --secondary-gold: #f39c12;
- 
-   
+    --primary-purple: #1C1C1E;
+    --background: #F6F7F9;
+    --text-color: #111827;
+    --border-color: #E5E7EB;
   }
 
   /* Reset básico */
@@ -22,8 +37,8 @@ import { createGlobalStyle } from 'styled-components';
     height: 100%;
     width: 100%;
     font-family: Arial, sans-serif;
-    background-color: var(--background);
-    color: var(--text-color);
+    background-color: var(--app-bg);
+    color: var(--text-primary);
     overflow-y: auto  }
 
   a {

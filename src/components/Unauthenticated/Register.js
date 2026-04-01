@@ -1,204 +1,148 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
-import { FiUser, FiMail, FiLock } from 'react-icons/fi';
-import { toast } from "react-toastify";
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faUser,
+  faEnvelope,
+  faLock,
+  faSpinner,
+} from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
 
-// Animação de fundo
-const gradientAnimation = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
+import AuthLayout from './auth/AuthLayout';
+import PremiumAuthField from './auth/PremiumAuthField';
+import {
+  AuthFormAlert,
+  AuthLoginActions,
+  AuthLoginFieldStack,
+  AuthLoginForm,
+  AuthPrimaryButton,
+} from './auth/authStyles';
 
-const AuthContainer = styled.div`
+const RegisterContentStack = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  height: 95vh;
-  background-size: 400% 400%;
-  animation: ${gradientAnimation} 15s ease infinite;
-  box-sizing: border-box;
-  background: #e7ecef;
-    background-size: 100% 100%; /* ← Reduza o tamanho */
-  animation: none; /* ← Desative a animação no mobile */
-
-  @media (max-width: 768px) {
-    animation: none;
-  }
+  gap: 0;
 `;
 
-const span = styled.div`
- font-size: 0.7rem;
-  
-`;
-const AuthWrapper = styled.div`
-  width: 100%;
-  max-width: 480px;
-  padding: 2.5rem;
-  margin: 1rem;
-  background: #e7ecef;
-  backdrop-filter: blur(20px);
-  border-radius: 5px;
-
-    @media (max-width: 768px) {
-    backdrop-filter: none; 
-  }
-`;
-
-const Title = styled.h1`
-  text-align: center;
-  color: #22223b;
-  font-size: 2.5rem;
-  margin-bottom: 2.5rem;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-`;
-
-const InputWrapper = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  transition: none;
-
-  &:focus-within {
-    border-color: #4a4e69;
-    /* Evite box-shadow no mobile */
-    box-shadow: none;
-  }
-
-  &:hover {
-    border: #0d1b2a 1px solid;
-  }
-  
-`;
-
-const Input = styled.input`
-  flex: 1;
-  padding: 8px;
-  font-size: 1rem;
-  border: none;
-  outline: none;
-  background: #fff;
-  color: #333;
-  font-family: 'Poppins', sans-serif;
-
-  &::placeholder {
-    color: #aaa;
-  }
-`;
-
-const Form = styled.form`
+const RegisterFormShell = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  text-align: center;
+  gap: 0;
+  padding-top: 0.18rem;
+
+  @media (min-width: 640px) {
+    padding-top: 0.22rem;
+  }
+
+  @media (max-width: 639px) {
+    padding-top: 0.16rem;
+  }
 `;
 
-const Button = styled.button`
-  width: 100%;
-  height: 49px;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-family: 'Poppins', sans-serif;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, #22223b 0%, #22223b 100%);
-  margin-top: 1.5rem;
-  transition: all 0.3s ease;
+const RegisterAlert = styled(AuthFormAlert)`
+  color: #7f1d1d;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 249, 249, 0.98) 0%,
+    rgba(254, 242, 242, 0.98) 100%
+  );
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  border-left: 3px solid rgba(239, 68, 68, 0.38);
+  box-shadow: 0 10px 22px -20px rgba(239, 68, 68, 0.3);
+`;
 
-  &:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(135deg, #f39c12 0%, #f39c12 100%);
+const RegisterSubmitButton = styled(AuthPrimaryButton)`
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  height: 52px;
+  border-radius: 5px;
+  border: none;
+  background: linear-gradient(180deg, #2b2d42 0%, #1f2133 100%);
+  color: #f8fafc;
+  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.12);
+  transition:
+    background 0.18s ease,
+    transform 0.15s ease,
+    box-shadow 0.18s ease,
+    filter 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, #323550 0%, #24263a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(17, 24, 39, 0.14);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.985);
+    box-shadow: 0 5px 12px rgba(17, 24, 39, 0.1);
   }
 
   &:disabled {
-    background: #aaa;
+    background: #c7ced8;
     cursor: not-allowed;
+    box-shadow: none;
   }
 `;
 
-const ErrorMessage = styled.p`
-  color: #e74c3c;
-  font-size: 14px;
-  text-align: center;
-  margin-top: 10px;
-  font-family: 'Poppins', sans-serif;
+const PasswordFeedback = styled.p`
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: ${(props) => (props.$valid ? '#16a34a' : '#6b7280')};
+  font-weight: ${(props) => (props.$valid ? 600 : 500)};
 `;
 
-const StyledLink = styled(Link)`
-  color: #22223b;
+const SubmitButtonContent = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+`;
+
+const SubmitSpinner = styled(FontAwesomeIcon)`
+  font-size: 0.95rem;
+`;
+
+const RegisterFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  margin-top: 0.82rem;
+  padding-top: 0.72rem;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+
+  @media (max-width: 639px) {
+    margin-top: 0.74rem;
+    padding-top: 0.66rem;
+  }
+`;
+
+const RegisterFooterLink = styled(Link)`
+  color: #6b7280;
   text-decoration: none;
-  font-size: 14px;
-  text-align: center;
-  margin-top: 15px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  transition: color 0.15s ease;
 
-  &:hover {
-    color: #335c67;
-    text-decoration: underline;
+  &:hover,
+  &:focus-visible {
+    color: #2563eb;
+  }
+
+  &:focus {
+    outline: none;
   }
 `;
-
-const Icon = styled.span`
-  margin-right: 10px;
-  color: #4a4e69;
-`;
-
-const PasswordCriteriaList = styled.ul`
-  list-style: none;
-  padding-left: 0;
-  font-size: 0.85rem;
-  color: #555;
-  margin-top: 0.5rem;
-  text-align: left;
-`;
-
-const PasswordCriteriaItem = styled.li`
-  color: ${(props) => (props.met ? '#27ae60' : '#999')};
-  margin-bottom: 0.3rem;
-  font-weight: ${(props) => (props.met ? '600' : '400')};
-  &:before {
-    content: '${(props) => (props.met ? '✔' : '✖')}';
-    display: inline-block;
-    width: 1em;
-    margin-right: 0.5em;
-    color: ${(props) => (props.met ? '#27ae60' : '#999')};
-  }
-`;
-
-// Critérios de senha
-const passwordCriteria = {
-  length: {
-    test: (pw) => pw.length === 8,
-    label: "Exatamente 8 caracteres",
-  },
-  uppercase: {
-    test: (pw) => /[A-Z]/.test(pw),
-    label: "Pelo menos 1 letra maiúscula",
-  },
-  lowercase: {
-    test: (pw) => /[a-z]/.test(pw),
-    label: "Pelo menos 1 letra minúscula",
-  },
-  number: {
-    test: (pw) => /[0-9]/.test(pw),
-    label: "Pelo menos 1 número",
-  },
-  specialChar: {
-    test: (pw) => /[!@#$%^&*(),.?":{}|<>]/.test(pw),
-    label: "Pelo menos 1 caractere especial",
-  },
-};
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -209,81 +153,114 @@ const Register = () => {
   });
 
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState('');
-
-  // Verifica os critérios da senha e retorna um objeto com booleanos
-  const checkCriteria = (pw) => {
-    const results = {};
-    for (const key in passwordCriteria) {
-      results[key] = passwordCriteria[key].test(pw);
-    }
-    return results;
-  };
-
-  const criteriaResults = checkCriteria(formData.password);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+  const getPasswordValidation = (password) => {
+    if (!password) {
+      return { show: false, valid: false, message: '' };
+    }
+
+    if (password.length < 8) {
+      return {
+        show: true,
+        valid: false,
+        message: 'Senha deve ter pelo menos 8 caracteres',
+      };
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return {
+        show: true,
+        valid: false,
+        message: 'Inclua uma letra maiúscula',
+      };
+    }
+
+    return {
+      show: true,
+      valid: true,
+      message: 'Senha válida ✔',
+    };
+  };
+
+  const passwordValidation = getPasswordValidation(formData.password);
+  const confirmPasswordMismatch =
+    formData.confirmPassword !== '' && formData.confirmPassword !== formData.password;
+
   const isFormValid = () => {
     const { name, email, password, confirmPassword } = formData;
-    // Ajustei a condição para validar todos os critérios
-    const allCriteriaMet = Object.values(criteriaResults).every(Boolean);
+
     return (
       name.trim() !== '' &&
-      isValidEmail(email) &&
-      allCriteriaMet &&
+      isValidEmail(email.trim()) &&
+      passwordValidation.valid &&
       confirmPassword === password
     );
   };
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
+
+    setError(null);
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: '',
+      ...(name === 'password' ? { confirmPassword: '' } : {}),
     }));
-  };
-
-  const handleChangePassword = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prevData) => {
-      const updatedData = { ...prevData, [name]: value };
-
-      // Mensagem dinâmica conforme critérios
-      if (!passwordCriteria.length.test(updatedData.password)) {
-        setErrorMessage('A senha deve ter exatamente 8 caracteres.');
-      } else if (updatedData.confirmPassword && updatedData.confirmPassword !== updatedData.password) {
-        setErrorMessage('A confirmação da senha deve ser igual à senha.');
-      } else {
-        setErrorMessage('');
-      }
-
-      return updatedData;
-    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    localStorage.clear();
+    const trimmedName = formData.name.trim();
+    const trimmedEmail = formData.email.trim();
+    const nextFieldErrors = {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    };
+
+    setError(null);
+    setFieldErrors(nextFieldErrors);
+
+    if (!trimmedName) {
+      nextFieldErrors.name = 'Informe seu nome completo.';
+      setFieldErrors(nextFieldErrors);
+      setError(nextFieldErrors.name);
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
+      nextFieldErrors.confirmPassword = 'As senhas não coincidem';
+      setFieldErrors(nextFieldErrors);
       setError('As senhas não coincidem.');
       return;
     }
 
-    if (!isValidEmail(formData.email)) {
+    if (!isValidEmail(trimmedEmail)) {
+      nextFieldErrors.email = 'Por favor, insira um e-mail válido.';
+      setFieldErrors(nextFieldErrors);
       setError('Por favor, insira um e-mail válido.');
       return;
     }
 
-    const allCriteriaMet = Object.values(criteriaResults).every(Boolean);
-    if (!allCriteriaMet) {
-      setError('A senha não atende todos os critérios.');
+    if (!passwordValidation.valid) {
+      nextFieldErrors.password =
+        passwordValidation.message || 'A senha informada é inválida.';
+      setFieldErrors(nextFieldErrors);
+      setError(passwordValidation.message || 'A senha informada é inválida.');
       return;
     }
 
@@ -292,13 +269,13 @@ const Register = () => {
       setError(null);
 
       const response = await axios.post(`${API_URL}/api/auth/registrar`, {
-        name: formData.name,
-        email: formData.email,
+        name: trimmedName,
+        email: trimmedEmail,
         password: formData.password,
       });
 
-      toast.success("Sucesso. Verifique seu email.", {
-        position: "bottom-center",
+      toast.success('Sucesso. Verifique seu email.', {
+        position: 'bottom-center',
         autoClose: 4000,
       });
 
@@ -306,7 +283,10 @@ const Register = () => {
         localStorage.setItem('token', response.data.token);
 
         const { id, name, email } = response.data.user;
-        localStorage.setItem('user', JSON.stringify({ name, userEmail: email, id }));
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ name, userEmail: email, id })
+        );
         localStorage.setItem('isVerified', 'false');
 
         navigate('/verificar');
@@ -319,84 +299,122 @@ const Register = () => {
         confirmPassword: '',
       });
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Erro ao registrar usuário');
-      console.error('Erro de registro:', err);
+      setError(
+        err.response?.data?.error || err.message || 'Erro ao registrar usuário'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthContainer>
-      <AuthWrapper>
-        <Title>Criar Conta</Title>
-        <Form onSubmit={handleSubmit}>
-          <InputWrapper>
-            <Icon><FiUser /></Icon>
-            <Input
-              type="text"
-              name="name"
-              placeholder="Nome completo"
-              value={formData.name}
-              onChange={handleChange}
-            />
-          </InputWrapper>
+    <AuthLayout
+      title="Criar conta"
+      subtitle="Preencha seus dados para iniciar seu acesso ao sistema."
+      layoutPreset="login"
+      showUtilityActions={false}
+    >
+      <RegisterContentStack>
+        <RegisterFormShell>
+          <AuthLoginForm onSubmit={handleSubmit}>
+            <AuthLoginFieldStack>
+              <PremiumAuthField
+                id="register-name"
+                type="text"
+                name="name"
+                label="Nome completo"
+                icon={faUser}
+                value={formData.name}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                autoComplete="name"
+                placeholder="Digite seu nome completo"
+                error={Boolean(fieldErrors.name)}
+                aria-invalid={Boolean(fieldErrors.name)}
+              />
 
-          <InputWrapper>
-            <Icon><FiMail /></Icon>
-            <Input
-              type="email"
-              name="email"
-              placeholder="E-mail"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </InputWrapper>
+              <PremiumAuthField
+                id="register-email"
+                type="email"
+                name="email"
+                label="E-mail"
+                icon={faEnvelope}
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                autoComplete="email"
+                inputMode="email"
+                placeholder="nome@dominio.com"
+                error={Boolean(fieldErrors.email)}
+                aria-invalid={Boolean(fieldErrors.email)}
+              />
 
-          <InputWrapper>
-            <Icon><FiLock /></Icon>
-            <Input
-              type="password"
-              name="password"
-              placeholder="Senha (8 caracteres)"
-              value={formData.password}
-              onChange={handleChangePassword}
-              maxLength={8}
-            />
-          </InputWrapper>
+              <PremiumAuthField
+                id="register-password"
+                type="password"
+                name="password"
+                label="Senha"
+                icon={faLock}
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                autoComplete="new-password"
+                placeholder="Digite sua senha"
+                error={Boolean(fieldErrors.password)}
+                aria-invalid={Boolean(fieldErrors.password)}
+              />
 
-          {/* Lista dinâmica de critérios da senha */}
-          <PasswordCriteriaList>
-            {Object.entries(passwordCriteria).map(([key, { label }]) => (
-              <PasswordCriteriaItem key={key} met={criteriaResults[key]}>
-                {label}
-              </PasswordCriteriaItem>
-            ))}
-          </PasswordCriteriaList>
+              {passwordValidation.show ? (
+                <PasswordFeedback $valid={passwordValidation.valid}>
+                  {passwordValidation.message}
+                </PasswordFeedback>
+              ) : null}
 
-          <InputWrapper>
-            <Icon><FiLock /></Icon>
-            <Input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirmar senha"
-              value={formData.confirmPassword}
-              onChange={handleChangePassword}
-              maxLength={8}
-            />
-          </InputWrapper>
+              <PremiumAuthField
+                id="register-confirm-password"
+                type="password"
+                name="confirmPassword"
+                label="Confirmar senha"
+                icon={faLock}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                autoComplete="new-password"
+                placeholder="Confirme sua senha"
+                error={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
+                aria-invalid={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
+              />
 
-          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+              {confirmPasswordMismatch ? (
+                <PasswordFeedback $valid={false}>As senhas não coincidem</PasswordFeedback>
+              ) : null}
+            </AuthLoginFieldStack>
 
-          <Button type="submit" disabled={!isFormValid() || loading}>
-            {loading ? 'Registrando...' : 'Registrar'}
-          </Button>
-        </Form>
+            {error ? <RegisterAlert>{error}</RegisterAlert> : null}
 
-        <StyledLink to="/">Já tem uma conta? Entrar</StyledLink>
-      </AuthWrapper>
-    </AuthContainer>
+            <AuthLoginActions>
+              <RegisterSubmitButton type="submit" disabled={!isFormValid() || loading}>
+                <SubmitButtonContent>
+                  {loading ? <SubmitSpinner icon={faSpinner} spin /> : null}
+                  <span>{loading ? 'Registrando...' : 'Criar conta'}</span>
+                </SubmitButtonContent>
+              </RegisterSubmitButton>
+            </AuthLoginActions>
+          </AuthLoginForm>
+
+          <RegisterFooter>
+            <RegisterFooterLink to="/">Entrar</RegisterFooterLink>
+            <RegisterFooterLink to="/recuperarsenha">
+              Recuperar senha
+            </RegisterFooterLink>
+          </RegisterFooter>
+        </RegisterFormShell>
+      </RegisterContentStack>
+    </AuthLayout>
   );
 };
 

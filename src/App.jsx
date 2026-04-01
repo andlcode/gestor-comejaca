@@ -11,6 +11,7 @@ import GlobalStyle from './styles/globalStyles';
 import FormularioInscricao from './components/Authenticated/subscription';
 import FichaInscricao from './components/Authenticated/Print';
 import ForgotPassword from './components/Unauthenticated/ForgotPassword';
+import NovaSenha from './components/Unauthenticated/NovaSenha';
 import NotFound from './components/Unauthenticated/NotFound';
 import ProtectedRoute from './routes/ProtectedRoutes';
 import { AuthProvider } from './context/AuthContext';
@@ -75,9 +76,8 @@ function AppContent() {
       <Route path="/registrar" element={<Register />} />
       <Route path="/recuperarsenha" element={<ForgotPassword />} />
       <Route path="/recuperarsenha/route" element={<ChangePassword />} />
-        <Route path="/recuperarsenha" element={<ForgotPassword />} />
-
-    <Route path="/novasenha" element={<ChangePassword />} />
+      <Route path="/novasenha" element={<NovaSenha />} />
+      <Route path="/redefinir-senha" element={<NovaSenha />} />
       <Route path="*" element={<NotFound />} />
 
       {/* Rotas Privadas */}
