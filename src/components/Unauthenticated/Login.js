@@ -23,35 +23,28 @@ const LoginContentStack = styled.div`
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 100%;
+  width: 100%;
   gap: 0;
-  justify-content: space-between;
 
   @media (max-width: 639px) {
     flex: 1;
     min-height: 0;
-    justify-content: space-between;
   }
 `;
 
-const LoginFormShell = styled.div`
+const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1;
+  min-height: 100%;
   justify-content: center;
-  gap: 0;
+  width: 100%;
 
   @media (max-width: 639px) {
     flex: 1;
     min-height: 0;
     justify-content: center;
   }
-`;
-
-const LoginMainForm = styled(AuthLoginForm)`
-  margin-top: auto;
-  margin-bottom: auto;
-  flex-shrink: 0;
 `;
 
 const LoginAlert = styled(AuthFormAlert)`
@@ -66,33 +59,33 @@ const LoginSubmitButton = styled(AuthPrimaryButton)`
   margin-top: 0;
   position: relative;
   overflow: hidden;
-  min-height: 48px;
-  height: 48px;
-  border-radius: 12px;
+  min-height: 52px;
+  height: 52px;
+  border-radius: 16px;
   border: none;
-  background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+  background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
   color: #f8fafc;
-  box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+  box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
   transition: all 0.2s ease;
 
   &::before {
     content: '';
     position: absolute;
     inset: 1px;
-    border-radius: 12px;
+    border-radius: 16px;
     pointer-events: none;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+    background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
     transform: scale(0.98);
-    box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+    box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
   }
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-    box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+    box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
   }
 
   &:focus {
@@ -120,8 +113,8 @@ const LoginSubmitButton = styled(AuthPrimaryButton)`
   }
 
   @media (max-width: 639px) {
-    min-height: 48px;
-    height: 48px;
+    min-height: 52px;
+    height: 52px;
   }
 `;
 
@@ -129,13 +122,13 @@ const LoginFooter = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  margin-top: 0;
-  padding: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: auto;
+  padding: 10px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   width: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   flex-shrink: 0;
 
   @media (max-width: 639px) {
@@ -143,9 +136,9 @@ const LoginFooter = styled.div`
     margin-top: auto;
     margin-left: -16px;
     margin-right: -16px;
-    padding: 12px 16px max(12px, env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 0 max(10px, env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
   }
 `;
@@ -256,8 +249,8 @@ const Login = () => {
       showUtilityActions={false}
     >
       <LoginContentStack>
-        <LoginFormShell>
-          <LoginMainForm onSubmit={handleSubmit}>
+        <ContentWrapper>
+          <AuthLoginForm onSubmit={handleSubmit}>
             <AuthLoginFieldStack>
               <PremiumAuthField
                 id="login-email"
@@ -311,8 +304,8 @@ const Login = () => {
                 <AuthFlowButtonLabel>Entrar</AuthFlowButtonLabel>
               </LoginSubmitButton>
             </AuthLoginActions>
-          </LoginMainForm>
-        </LoginFormShell>
+          </AuthLoginForm>
+        </ContentWrapper>
 
         <LoginFooter>
           <LoginFooterActions aria-label="Ações secundárias">

@@ -2053,11 +2053,11 @@ export const AuthPrimaryButton = styled.button`
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.9296875rem;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
   line-height: 1.21;
   color: #fafbfd;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -2066,7 +2066,7 @@ export const AuthPrimaryButton = styled.button`
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+  background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
   transition: all 0.2s ease;
 
   ${({ $flat }) =>
@@ -2075,31 +2075,31 @@ export const AuthPrimaryButton = styled.button`
           box-shadow: 0 1px 2px rgba(15, 23, 42, 0.07);
 
           &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
             transform: scale(0.98);
-            box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+            box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
           }
 
           &:active:not(:disabled) {
             transform: scale(0.98);
-            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
             transition-duration: 0.12s;
           }
         `
       : css`
-          box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+          box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
 
           &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
             transform: scale(0.98);
-            box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+            box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
           }
 
           &:active:not(:disabled) {
             transform: scale(0.98);
-            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
-            box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
+            box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
             transition-duration: 0.12s;
           }
         `}
@@ -2382,7 +2382,7 @@ const authLoginAuxLinkShared = css`
   margin: 0;
   border-radius: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.828125rem;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.012em;
   line-height: 1.3;
@@ -2428,7 +2428,7 @@ const authLoginAuxLinkShared = css`
     flex: 1 1 0;
     min-height: 3rem;
     padding: 0.75rem 0.875rem;
-    font-size: 0.90625rem;
+    font-size: 14px;
   }
 `;
 
@@ -2527,7 +2527,7 @@ export const AuthAuxDivider = styled.span`
 export const AuthLoginAuxDivider = styled(AuthAuxDivider)`
   align-self: stretch;
   height: auto;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.3);
   margin: 0;
 `;
 

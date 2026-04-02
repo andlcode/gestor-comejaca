@@ -23,38 +23,28 @@ const ForgotPasswordContentStack = styled.div`
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 100%;
+  width: 100%;
   gap: 0;
-
-  @media (max-width: 639px) {
-    flex: 1;
-    min-height: 0;
-    justify-content: space-between;
-  }
 `;
 
-const ForgotPasswordFormShell = styled.div`
+const ForgotPasswordContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1;
   min-height: 100%;
-  justify-content: space-between;
-  gap: 0;
-  padding-top: 0.18rem;
-
-  @media (min-width: 640px) {
-    padding-top: 0.22rem;
-  }
+  justify-content: center;
+  width: 100%;
 
   @media (max-width: 639px) {
     flex: 1;
     min-height: 0;
-    justify-content: space-between;
-    padding-top: 0;
+    justify-content: center;
   }
 `;
 
 const ForgotPasswordForm = styled(AuthLoginForm)`
   margin-top: 0;
+  flex-shrink: 0;
 `;
 
 const ForgotPasswordActions = styled(AuthLoginActions)`
@@ -149,16 +139,14 @@ const ForgotPasswordFooter = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  margin-top: 24px;
+  margin-top: auto;
   padding: 12px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   width: 100%;
   background: rgba(255, 255, 255, 0.9);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 
   @media (max-width: 639px) {
     width: calc(100% + 32px);
@@ -243,12 +231,9 @@ const ForgotPassword = () => {
       title="Redefinir senha"
       subtitle="Informe seu e-mail para receber as instruções de redefinição."
       layoutPreset="login"
-      brandMode="muted"
-      spacingMode="recovery"
-      showUtilityActions={false}
     >
       <ForgotPasswordContentStack>
-        <ForgotPasswordFormShell>
+        <ForgotPasswordContentWrapper>
           <ForgotPasswordForm onSubmit={handleReset}>
             <AuthLoginFieldStack>
               <PremiumAuthField
@@ -289,13 +274,13 @@ const ForgotPassword = () => {
               </ForgotPasswordSubmitButton>
             </ForgotPasswordActions>
           </ForgotPasswordForm>
+        </ForgotPasswordContentWrapper>
 
-          <ForgotPasswordFooter>
-            <ForgotPasswordFooterActions aria-label="Ações secundárias">
-              <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
-            </ForgotPasswordFooterActions>
-          </ForgotPasswordFooter>
-        </ForgotPasswordFormShell>
+        <ForgotPasswordFooter>
+          <ForgotPasswordFooterActions aria-label="Ações secundárias">
+            <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
+          </ForgotPasswordFooterActions>
+        </ForgotPasswordFooter>
       </ForgotPasswordContentStack>
     </AuthLayout>
   );
