@@ -79,6 +79,8 @@ class AuthRenderErrorBoundary extends React.Component {
   }
 
   render() {
+    const showDebug = process.env.NODE_ENV !== 'production';
+
     if (this.state.hasError) {
       return (
         <FallbackShell>
@@ -88,9 +90,11 @@ class AuthRenderErrorBoundary extends React.Component {
               Ocorreu um erro de renderização. Tente voltar para a tela anterior e abrir
               novamente.
             </FallbackText>
-            <FallbackDebug>
-              {`message: ${this.state.errorMessage}\n\nstack: ${this.state.errorStack}\n\ncomponentStack: ${this.state.componentStack}`}
-            </FallbackDebug>
+            {showDebug ? (
+              <FallbackDebug>
+                {`message: ${this.state.errorMessage}\n\nstack: ${this.state.errorStack}\n\ncomponentStack: ${this.state.componentStack}`}
+              </FallbackDebug>
+            ) : null}
           </FallbackCard>
         </FallbackShell>
       );

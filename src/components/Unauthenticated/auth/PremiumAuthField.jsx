@@ -189,6 +189,18 @@ const IconFa = styled(FontAwesomeIcon)`
   height: 1.125rem;
 `;
 
+const isValidFontAwesomeIcon = (icon) => {
+  if (!icon) return false;
+  if (typeof icon === 'string') return true;
+  if (Array.isArray(icon)) return icon.length > 0;
+
+  return Boolean(
+    icon &&
+      typeof icon === 'object' &&
+      (icon.iconName || icon.prefix || Array.isArray(icon.icon))
+  );
+};
+
 const PremiumAuthField = forwardRef(function PremiumAuthField(
   {
     label,
@@ -215,6 +227,8 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
   const [focused, setFocused] = useState(false);
   const hasValue = value != null && String(value).length > 0;
   const active = focused || hasValue;
+  const safeLabel = typeof label === 'string' ? label : '';
+  const canRenderIcon = isValidFontAwesomeIcon(icon);
 
   return (
     <InputShell
@@ -224,12 +238,12 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
     >
       <InputInner>
         <InputIconSlot>
-          {icon ? <IconFa icon={icon} aria-hidden /> : null}
+          {canRenderIcon ? <IconFa icon={icon} aria-hidden /> : null}
         </InputIconSlot>
 
         <FieldTrack>
           <FloatingLabel htmlFor={id} $active={active} $error={error}>
-            {label}
+            {safeLabel}
           </FloatingLabel>
 
           <StyledInput

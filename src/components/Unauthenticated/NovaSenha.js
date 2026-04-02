@@ -3,9 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
 import AuthLayout from './auth/AuthLayout';
+import AuthRenderErrorBoundary from './auth/AuthRenderErrorBoundary';
 import PremiumAuthField from './auth/PremiumAuthField';
 import {
   AuthButtonSpinner,
@@ -16,8 +16,10 @@ import {
   AuthLoginForm,
   AuthPrimaryButton,
 } from './auth/authStyles';
+import { getSafeApiErrorMessage, getSafeMessage } from '../../utils/safeMessage';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+const REQUEST_TIMEOUT_MS = 15000;
 
 const ResetPasswordContentStack = styled.div`
   display: flex;
@@ -53,6 +55,14 @@ const ResetPasswordError = styled(AuthFormAlert)`
   background: #fef2f2;
   border: 1px solid rgba(248, 113, 113, 0.18);
   border-left: 3px solid rgba(239, 68, 68, 0.38);
+  box-shadow: none;
+`;
+
+const ResetPasswordSuccess = styled(AuthFormAlert)`
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  border-left: 3px solid rgba(34, 197, 94, 0.42);
   box-shadow: none;
 `;
 
@@ -149,10 +159,18 @@ const ResetPasswordFooterLink = styled(Link)`
   }
 `;
 
+const createStatusState = (type = '', message = '') => ({
+  type,
+  message: getSafeMessage(message, ''),
+});
+
 const NovaSenha = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
+  const token = useMemo(
+    () => getSafeMessage(searchParams.get('token'), '').trim(),
+    [searchParams]
+  );
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -160,6 +178,7 @@ const NovaSenha = () => {
   const [validating, setValidating] = useState(true);
   const [invalidToken, setInvalidToken] = useState(false);
   const [userName, setUserName] = useState('');
+  const [status, setStatus] = useState(createStatusState());
 
   const passwordFeedback = useMemo(() => {
     if (!newPassword) return '';
@@ -179,31 +198,42 @@ const NovaSenha = () => {
 
     const validateToken = async () => {
       if (!token) {
+        const message = 'Este link é inválido ou está incompleto.';
         setInvalidToken(true);
+        setStatus(createStatusState('error', message));
         setValidating(false);
-        toast.error('Token inválido ou expirado.');
+        toast.error(message);
         return;
       }
 
       try {
+        setValidating(true);
+        setStatus(createStatusState('info', 'Validando o link enviado para o seu e-mail...'));
+
         const response = await axios.get(
           `${API_URL}/api/auth/reset-password/validate`,
           {
             params: { token },
+            timeout: REQUEST_TIMEOUT_MS,
           }
         );
 
         if (ignore) return;
 
-        setUserName(response.data?.user?.name || '');
+        setUserName(getSafeMessage(response.data?.user?.name, 'participante'));
         setInvalidToken(false);
+        setStatus(createStatusState());
       } catch (error) {
         if (ignore) return;
 
-        setInvalidToken(true);
-        toast.error(
-          error.response?.data?.message || 'Token inválido ou expirado.'
+        const message = getSafeApiErrorMessage(
+          error,
+          'Este link é inválido, expirou ou já foi utilizado.'
         );
+
+        setInvalidToken(true);
+        setStatus(createStatusState('error', message));
+        toast.error(message);
       } finally {
         if (!ignore) {
           setValidating(false);
@@ -240,149 +270,183 @@ const NovaSenha = () => {
   }, [invalidToken, userName, validating]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
 
     if (!token) {
-      toast.error('Token inválido ou expirado.');
+      const message = 'Token inválido ou expirado.';
+      setStatus(createStatusState('error', message));
+      toast.error(message);
       return;
     }
 
     if (!passwordIsValid) {
-      toast.error(
-        'A senha deve ter pelo menos 8 caracteres e uma letra maiúscula.'
-      );
+      const message = 'A senha deve ter pelo menos 8 caracteres e uma letra maiúscula.';
+      setStatus(createStatusState('error', message));
+      toast.error(message);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error('A confirmação da senha não coincide.');
+      const message = 'A confirmação da senha não coincide.';
+      setStatus(createStatusState('error', message));
+      toast.error(message);
       return;
     }
 
     try {
       setLoading(true);
+      setStatus(createStatusState());
 
-      await axios.post(`${API_URL}/api/auth/reset-password`, {
-        token,
-        newPassword,
-      });
+      const response = await axios.post(
+        `${API_URL}/api/auth/reset-password`,
+        {
+          token,
+          newPassword,
+        },
+        {
+          timeout: REQUEST_TIMEOUT_MS,
+        }
+      );
 
-      toast.success('Senha atualizada com sucesso.');
+      const successMessage = getSafeMessage(
+        response?.data?.message,
+        'Senha atualizada com sucesso.'
+      );
+
+      setStatus(createStatusState('success', successMessage));
+      toast.success(successMessage);
       navigate('/');
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || 'Erro ao atualizar senha.'
+      const message = getSafeApiErrorMessage(
+        error,
+        'Não foi possível atualizar a senha.'
       );
+      setStatus(createStatusState('error', message));
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthLayout
-      title={layoutCopy.title}
-      subtitle={layoutCopy.subtitle}
-      layoutPreset="login"
-      brandMode="muted"
-      spacingMode="recovery"
-      showUtilityActions={false}
-    >
-      <ResetPasswordContentStack>
-        <ResetPasswordFormShell>
-          {validating ? (
-            <ResetPasswordInfo>
-              Aguarde um instante enquanto validamos o token enviado para o seu e-mail.
-            </ResetPasswordInfo>
-          ) : null}
+    <AuthRenderErrorBoundary>
+      <AuthLayout
+        title={layoutCopy.title}
+        subtitle={layoutCopy.subtitle}
+        layoutPreset="login"
+      >
+        <ResetPasswordContentStack>
+          <ResetPasswordFormShell>
+            {validating ? (
+              <ResetPasswordInfo>
+                Aguarde um instante enquanto validamos o token enviado para o seu e-mail.
+              </ResetPasswordInfo>
+            ) : null}
 
-          {!validating && invalidToken ? (
-            <>
-              <ResetPasswordError>
-                Este link de redefinição é inválido, expirou ou já foi utilizado.
-              </ResetPasswordError>
+            {!validating && status.type === 'error' && invalidToken ? (
+              <>
+                <ResetPasswordError role="alert" aria-live="assertive">
+                  {status.message}
+                </ResetPasswordError>
 
-              <ResetPasswordFooter>
-                <ResetPasswordFooterLink to="/recuperarsenha">
-                  Solicitar novo link
-                </ResetPasswordFooterLink>
+                <ResetPasswordFooter>
+                  <ResetPasswordFooterLink to="/recuperarsenha">
+                    Solicitar novo link
+                  </ResetPasswordFooterLink>
+                  <ResetPasswordFooterLink to="/">Voltar para o login</ResetPasswordFooterLink>
+                </ResetPasswordFooter>
+              </>
+            ) : null}
 
-                <ResetPasswordFooterLink to="/">
-                  <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: 8 }} />
-                  Voltar para o login
-                </ResetPasswordFooterLink>
-              </ResetPasswordFooter>
-            </>
-          ) : null}
+            {!validating && !invalidToken ? (
+              <>
+                <ResetPasswordForm onSubmit={handleSubmit} noValidate>
+                  <AuthLoginFieldStack>
+                    <PremiumAuthField
+                      id="reset-password-new-password"
+                      type="password"
+                      name="newPassword"
+                      label="Nova senha"
+                      icon={faLock}
+                      value={newPassword}
+                      onChange={(event) => {
+                        setNewPassword(getSafeMessage(event?.target?.value, ''));
+                        if (status.message) {
+                          setStatus(createStatusState());
+                        }
+                      }}
+                      required
+                      disabled={loading}
+                      autoComplete="new-password"
+                      placeholder="Digite sua nova senha"
+                      aria-invalid={status.type === 'error'}
+                    />
 
-          {!validating && !invalidToken ? (
-            <>
-              <ResetPasswordForm onSubmit={handleSubmit}>
-                <AuthLoginFieldStack>
-                  <PremiumAuthField
-                    id="reset-password-new-password"
-                    type="password"
-                    name="newPassword"
-                    label="Nova senha"
-                    icon={faLock}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    autoComplete="new-password"
-                    placeholder="Digite sua nova senha"
-                  />
+                    {passwordFeedback ? (
+                      <PasswordFeedback $valid={passwordIsValid}>{passwordFeedback}</PasswordFeedback>
+                    ) : null}
 
-                  {passwordFeedback ? (
-                    <PasswordFeedback $valid={passwordIsValid}>
-                      {passwordFeedback}
-                    </PasswordFeedback>
+                    <PremiumAuthField
+                      id="reset-password-confirm-password"
+                      type="password"
+                      name="confirmPassword"
+                      label="Confirmar nova senha"
+                      icon={faLock}
+                      value={confirmPassword}
+                      onChange={(event) => {
+                        setConfirmPassword(getSafeMessage(event?.target?.value, ''));
+                        if (status.message) {
+                          setStatus(createStatusState());
+                        }
+                      }}
+                      required
+                      disabled={loading}
+                      autoComplete="new-password"
+                      placeholder="Confirme sua nova senha"
+                      error={confirmPasswordMismatch}
+                      aria-invalid={confirmPasswordMismatch}
+                    />
+
+                    {confirmPasswordMismatch ? (
+                      <PasswordFeedback>As senhas não coincidem</PasswordFeedback>
+                    ) : null}
+                  </AuthLoginFieldStack>
+
+                  {status.type === 'error' && !invalidToken ? (
+                    <ResetPasswordError role="alert" aria-live="assertive">
+                      {status.message}
+                    </ResetPasswordError>
                   ) : null}
 
-                  <PremiumAuthField
-                    id="reset-password-confirm-password"
-                    type="password"
-                    name="confirmPassword"
-                    label="Confirmar nova senha"
-                    icon={faLock}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    autoComplete="new-password"
-                    placeholder="Confirme sua nova senha"
-                    error={confirmPasswordMismatch}
-                  />
-
-                  {confirmPasswordMismatch ? (
-                    <PasswordFeedback>As senhas não coincidem</PasswordFeedback>
+                  {status.type === 'success' ? (
+                    <ResetPasswordSuccess role="status" aria-live="polite">
+                      {status.message}
+                    </ResetPasswordSuccess>
                   ) : null}
-                </AuthLoginFieldStack>
 
-                <ResetPasswordActions>
-                  <ResetPasswordSubmitButton
-                    type="submit"
-                    disabled={loading}
-                    aria-busy={loading ? 'true' : 'false'}
-                  >
-                    {loading ? <AuthButtonSpinner /> : null}
-                    <AuthFlowButtonLabelWide>
-                      Salvar nova senha
-                    </AuthFlowButtonLabelWide>
-                  </ResetPasswordSubmitButton>
-                </ResetPasswordActions>
-              </ResetPasswordForm>
+                  <ResetPasswordActions>
+                    <ResetPasswordSubmitButton
+                      type="submit"
+                      disabled={loading}
+                      aria-busy={loading ? 'true' : 'false'}
+                    >
+                      {loading ? <AuthButtonSpinner /> : null}
+                      <AuthFlowButtonLabelWide>
+                        {loading ? 'Salvando...' : 'Salvar nova senha'}
+                      </AuthFlowButtonLabelWide>
+                    </ResetPasswordSubmitButton>
+                  </ResetPasswordActions>
+                </ResetPasswordForm>
 
-              <ResetPasswordFooter>
-                <ResetPasswordFooterLink to="/">
-                  <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: 8 }} />
-                  Voltar para o login
-                </ResetPasswordFooterLink>
-              </ResetPasswordFooter>
-            </>
-          ) : null}
-        </ResetPasswordFormShell>
-      </ResetPasswordContentStack>
-    </AuthLayout>
+                <ResetPasswordFooter>
+                  <ResetPasswordFooterLink to="/">Voltar para o login</ResetPasswordFooterLink>
+                </ResetPasswordFooter>
+              </>
+            ) : null}
+          </ResetPasswordFormShell>
+        </ResetPasswordContentStack>
+      </AuthLayout>
+    </AuthRenderErrorBoundary>
   );
 };
 

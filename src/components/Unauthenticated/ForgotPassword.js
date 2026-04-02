@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import AuthLayout from './auth/AuthLayout';
 import AuthRenderErrorBoundary from './auth/AuthRenderErrorBoundary';
+import PremiumAuthField from './auth/PremiumAuthField';
 import {
   AuthButtonSpinner,
   AuthFlowButtonLabelWide,
@@ -16,50 +18,32 @@ import {
   AuthLoginForm,
   AuthPrimaryButton,
 } from './auth/authStyles';
+import { getSafeApiErrorMessage, getSafeMessage } from '../../utils/safeMessage';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+const REQUEST_TIMEOUT_MS = 15000;
+const COOLDOWN_SECONDS = 30;
 
-/* ================= SAFE MESSAGE ================= */
-const getSafeMessage = (value, fallback) => {
-  if (typeof value === 'string' && value.trim()) return value;
-  if (typeof value === 'number') return String(value);
-
-  if (Array.isArray(value)) {
-    const joined = value
-      .map((item) => (typeof item === 'string' ? item : ''))
-      .filter(Boolean)
-      .join(', ');
-    if (joined) return joined;
-  }
-
-  if (value && typeof value === 'object') {
-    if (typeof value.message === 'string') return value.message;
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return fallback;
-    }
-  }
-
-  return fallback;
-};
-
-/* ================= STYLES ================= */
-
-const Wrapper = styled.div`
+const ForgotPasswordContentStack = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
   width: 100%;
+  gap: 0;
 `;
 
-const Input = styled.input`
+const ForgotPasswordContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+  justify-content: center;
   width: 100%;
-  height: 48px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.12);
-  padding: 0 14px;
-  font-size: 16px;
-  outline: none;
+
+  @media (max-width: 639px) {
+    min-height: 0;
+  }
 `;
 
 const ForgotPasswordFeedback = styled(AuthFormAlert)`
@@ -69,22 +53,71 @@ const ForgotPasswordFeedback = styled(AuthFormAlert)`
 const ForgotPasswordSuccess = styled(ForgotPasswordFeedback)`
   color: #166534;
   background: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  border-left: 3px solid rgba(34, 197, 94, 0.42);
+  box-shadow: none;
 `;
 
 const ForgotPasswordError = styled(ForgotPasswordFeedback)`
   color: #7f1d1d;
   background: #fef2f2;
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  border-left: 3px solid rgba(239, 68, 68, 0.38);
+  box-shadow: none;
 `;
 
-const Footer = styled.div`
-  margin-top: 20px;
+const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
+  &[aria-busy='true'] {
+    cursor: wait;
+  }
 `;
 
-const FooterLink = styled(AuthLoginAuxRouterLink)`
+const ForgotPasswordFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: auto;
+  padding: 10px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  width: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+
+  @supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  @media (max-width: 639px) {
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 10px 0 max(10px, env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
+  }
+`;
+
+const ForgotPasswordFooterActions = styled(AuthLoginAuxLinks)`
+  margin-top: 0;
+  padding: 0;
+  max-width: none;
+  justify-content: flex-end;
+`;
+
+const ForgotPasswordFooterLink = styled(AuthLoginAuxRouterLink)`
   color: #334155;
+  font-weight: 500;
 `;
 
-/* ================= COMPONENT ================= */
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const createFeedbackState = (type = '', message = '') => ({
+  type,
+  message: getSafeMessage(message, ''),
+});
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -94,12 +127,15 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
-  const [countdown, setCountdown] = useState(30);
-  const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const [countdown, setCountdown] = useState(COOLDOWN_SECONDS);
+  const [feedback, setFeedback] = useState(createFeedbackState());
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     return () => {
       isMountedRef.current = false;
+
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
       }
@@ -107,65 +143,116 @@ const ForgotPassword = () => {
   }, []);
 
   useEffect(() => {
-    let timer;
+    let timer = null;
 
     if (disabled) {
       timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
+        setCountdown((previousCountdown) => {
+          if (previousCountdown <= 1) {
             clearInterval(timer);
-            setDisabled(false);
-            return 30;
+            return COOLDOWN_SECONDS;
           }
-          return prev - 1;
+
+          return previousCountdown - 1;
         });
       }, 1000);
     }
 
-    return () => clearInterval(timer);
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
   }, [disabled]);
 
-  const handleReset = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (disabled && countdown === COOLDOWN_SECONDS) {
+      setDisabled(false);
+    }
+  }, [countdown, disabled]);
 
-    if (!email.trim()) {
-      const msg = 'Informe seu e-mail.';
-      setFeedback({ type: 'error', message: msg });
-      toast.error(msg);
+  const handleEmailChange = (event) => {
+    const nextEmail = getSafeMessage(event?.target?.value, '');
+    setEmail(nextEmail);
+
+    if (feedback.message) {
+      setFeedback(createFeedbackState());
+    }
+  };
+
+  const handleReset = async (event) => {
+    event?.preventDefault?.();
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      const message = 'Informe seu e-mail.';
+      setFeedback(createFeedbackState('error', message));
+      toast.error(message, { position: 'top-center' });
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      const message = 'Informe um e-mail válido.';
+      setFeedback(createFeedbackState('error', message));
+      toast.error(message, { position: 'top-center' });
       return;
     }
 
     try {
       setLoading(true);
-      setFeedback({ type: '', message: '' });
+      setFeedback(createFeedbackState());
 
-      await axios.post(`${API_URL}/api/auth/forgot-password`, { email });
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
 
-      const msg = 'Verifique seu e-mail para redefinir a senha.';
-
-      if (!isMountedRef.current) return;
-
-      setDisabled(true);
-      setCountdown(30);
-      setFeedback({ type: 'success', message: msg });
-
-      toast.success(msg);
-
-      redirectTimeoutRef.current = setTimeout(() => {
-        navigate('/');
-      }, 4000);
-
-    } catch (error) {
-      const message = getSafeMessage(
-        error?.response?.data?.message ?? error?.response?.data ?? error?.message,
-        'Erro ao conectar com o servidor.'
+      const response = await axios.post(
+        `${API_URL}/api/auth/forgot-password`,
+        { email: normalizedEmail },
+        { timeout: REQUEST_TIMEOUT_MS }
       );
 
-      setFeedback({ type: 'error', message });
-      toast.error(message);
+      if (!isMountedRef.current) {
+        return;
+      }
 
+      const successMessage = getSafeMessage(
+        response?.data?.message,
+        'Se o e-mail existir em nossa base, enviaremos instruções.'
+      );
+
+      setDisabled(true);
+      setCountdown(COOLDOWN_SECONDS);
+      setFeedback(createFeedbackState('success', successMessage));
+
+      toast.success(successMessage, {
+        position: 'bottom-center',
+        autoClose: 4000,
+      });
+
+      redirectTimeoutRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
+          navigate('/');
+        }
+      }, 4200);
+    } catch (error) {
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      const errorMessage = getSafeApiErrorMessage(
+        error,
+        'Não foi possível enviar as instruções de redefinição.'
+      );
+
+      setFeedback(createFeedbackState('error', errorMessage));
+      toast.error(errorMessage, { position: 'top-center' });
     } finally {
-      if (isMountedRef.current) setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -173,54 +260,76 @@ const ForgotPassword = () => {
     <AuthRenderErrorBoundary>
       <AuthLayout
         title="Redefinir senha"
-        subtitle="Digite seu e-mail para receber o link"
+        subtitle="Informe seu e-mail para receber as instruções de redefinição."
         layoutPreset="login"
       >
-        <Wrapper>
-          <AuthLoginForm onSubmit={handleReset}>
+        <ForgotPasswordContentStack>
+          <ForgotPasswordContentWrapper>
+            <AuthLoginForm onSubmit={handleReset} noValidate>
+              <AuthLoginFieldStack>
+                <PremiumAuthField
+                  id="forgot-password-email"
+                  type="email"
+                  name="email"
+                  label="E-mail"
+                  icon={faEnvelope}
+                  value={email}
+                  onChange={handleEmailChange}
+                  required
+                  disabled={loading || disabled}
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="nome@dominio.com"
+                  aria-invalid={feedback.type === 'error'}
+                  aria-describedby={feedback.message ? 'forgot-password-feedback' : undefined}
+                />
+              </AuthLoginFieldStack>
 
-            <AuthLoginFieldStack>
-              {/* INPUT SIMPLES (SEM PREMIUM) */}
-              <Input
-                type="email"
-                placeholder="nome@dominio.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading || disabled}
-              />
-            </AuthLoginFieldStack>
+              {feedback.type === 'success' ? (
+                <ForgotPasswordSuccess
+                  id="forgot-password-feedback"
+                  role="status"
+                  aria-live="polite"
+                >
+                  {feedback.message}
+                </ForgotPasswordSuccess>
+              ) : null}
 
-            {feedback.type === 'success' && (
-              <ForgotPasswordSuccess>
-                {feedback.message}
-              </ForgotPasswordSuccess>
-            )}
+              {feedback.type === 'error' ? (
+                <ForgotPasswordError
+                  id="forgot-password-feedback"
+                  role="alert"
+                  aria-live="assertive"
+                >
+                  {feedback.message}
+                </ForgotPasswordError>
+              ) : null}
 
-            {feedback.type === 'error' && (
-              <ForgotPasswordError>
-                {feedback.message}
-              </ForgotPasswordError>
-            )}
+              <AuthLoginActions>
+                <ForgotPasswordSubmitButton
+                  type="submit"
+                  disabled={loading || disabled}
+                  aria-busy={loading ? 'true' : 'false'}
+                >
+                  {loading ? <AuthButtonSpinner /> : null}
+                  <AuthFlowButtonLabelWide>
+                    {loading
+                      ? 'Enviando...'
+                      : disabled
+                        ? `Aguarde ${countdown}s`
+                        : 'Enviar e-mail'}
+                  </AuthFlowButtonLabelWide>
+                </ForgotPasswordSubmitButton>
+              </AuthLoginActions>
+            </AuthLoginForm>
+          </ForgotPasswordContentWrapper>
 
-            <AuthLoginActions>
-              <AuthPrimaryButton
-                type="submit"
-                disabled={loading || disabled}
-              >
-                {loading
-                  ? <AuthButtonSpinner />
-                  : disabled
-                  ? `Aguarde ${countdown}s`
-                  : 'Enviar e-mail'}
-              </AuthPrimaryButton>
-            </AuthLoginActions>
-
-          </AuthLoginForm>
-
-          <Footer>
-            <FooterLink to="/">Voltar para login</FooterLink>
-          </Footer>
-        </Wrapper>
+          <ForgotPasswordFooter>
+            <ForgotPasswordFooterActions aria-label="Ações secundárias">
+              <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
+            </ForgotPasswordFooterActions>
+          </ForgotPasswordFooter>
+        </ForgotPasswordContentStack>
       </AuthLayout>
     </AuthRenderErrorBoundary>
   );
