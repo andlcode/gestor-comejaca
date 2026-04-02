@@ -2053,7 +2053,7 @@ export const AuthPrimaryButton = styled.button`
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.9296875rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.3px;
   line-height: 1.21;
   color: #fafbfd;
   border: none;
@@ -2066,12 +2066,8 @@ export const AuthPrimaryButton = styled.button`
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  background: linear-gradient(180deg, #6d5df6 0%, #4f6ef7 100%);
-  transition:
-    background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.2s ease;
+  background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+  transition: all 0.2s ease;
 
   ${({ $flat }) =>
     $flat
@@ -2079,43 +2075,31 @@ export const AuthPrimaryButton = styled.button`
           box-shadow: 0 1px 2px rgba(15, 23, 42, 0.07);
 
           &:hover:not(:disabled) {
-            background: linear-gradient(180deg, #7565fb 0%, #5573fb 100%);
-            transform: translateY(-1px);
-            box-shadow:
-              0 2px 4px rgba(15, 23, 42, 0.08),
-              0 14px 24px -18px rgba(79, 110, 247, 0.42);
+            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+            transform: scale(0.98);
+            box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
           }
 
           &:active:not(:disabled) {
-            transform: translateY(0);
-            background: linear-gradient(180deg, #5d4ee8 0%, #4665e8 100%);
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
             transition-duration: 0.12s;
           }
         `
       : css`
-          box-shadow:
-            0 1px 2px rgba(15, 23, 42, 0.055),
-            0 10px 24px -10px rgba(79, 110, 247, 0.34),
-            0 18px 30px -20px rgba(109, 93, 246, 0.24),
-            0 1px 0 rgba(255, 255, 255, 0.11) inset;
+          box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
 
           &:hover:not(:disabled) {
-            background: linear-gradient(180deg, #7667fb 0%, #5674fb 100%);
-            transform: translateY(-1px);
-            box-shadow:
-              0 2px 5px rgba(15, 23, 42, 0.065),
-              0 16px 30px -18px rgba(79, 110, 247, 0.42),
-              0 24px 36px -28px rgba(109, 93, 246, 0.34),
-              0 1px 0 rgba(255, 255, 255, 0.13) inset;
+            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+            transform: scale(0.98);
+            box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
           }
 
           &:active:not(:disabled) {
-            transform: translateY(0);
-            background: linear-gradient(180deg, #6152ea 0%, #4867ea 100%);
-            box-shadow:
-              0 1px 2px rgba(15, 23, 42, 0.065),
-              0 3px 12px -3px rgba(79, 110, 247, 0.34);
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+            box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
             transition-duration: 0.12s;
           }
         `}
@@ -2404,24 +2388,23 @@ const authLoginAuxLinkShared = css`
   line-height: 1.3;
   color: #334155;
   text-decoration: none;
-  background: #f8fafc;
-  border: 1px solid transparent;
+  background: transparent;
+  border: none;
   box-shadow: none;
   -webkit-tap-highlight-color: transparent;
   transition:
     color 0.2s ease,
     background 0.2s ease,
-    border-color 0.2s ease,
     box-shadow 0.2s ease,
     transform 0.2s ease;
 
   &:hover {
     color: #1f2937;
-    background: #f1f5f9;
+    background: rgba(15, 23, 42, 0.04);
   }
 
   &:active {
-    background: #eef2f7;
+    background: rgba(15, 23, 42, 0.06);
     transform: translateY(0);
   }
 
@@ -2431,8 +2414,7 @@ const authLoginAuxLinkShared = css`
 
   &:focus-visible {
     color: #1f2937;
-    background: #f1f5f9;
-    border-color: rgba(129, 140, 248, 0.18);
+    background: rgba(15, 23, 42, 0.04);
     box-shadow:
       0 0 0 3px rgba(99, 102, 241, 0.1),
       0 4px 12px -12px rgba(15, 23, 42, 0.12);
@@ -2503,8 +2485,8 @@ export const AuthLoginAuxLinks = styled(AuthAuxLinksSaaS)`
   column-gap: 0;
   row-gap: 0;
   padding: 0;
-  background: #f8fafc;
-  border-radius: 12px;
+  background: transparent;
+  border-radius: 0;
   overflow: hidden;
 
   @media (max-width: 639px) {
@@ -2545,7 +2527,7 @@ export const AuthAuxDivider = styled.span`
 export const AuthLoginAuxDivider = styled(AuthAuxDivider)`
   align-self: stretch;
   height: auto;
-  background: rgba(148, 163, 184, 0.28);
+  background: rgba(0, 0, 0, 0.08);
   margin: 0;
 `;
 

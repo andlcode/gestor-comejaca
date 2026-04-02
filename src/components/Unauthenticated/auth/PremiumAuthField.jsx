@@ -12,26 +12,25 @@ export const InputShell = styled.div`
   position: relative;
   width: 100%;
   min-height: 48px;
-  border-radius: 12px;
+  border-radius: 18px;
   box-sizing: border-box;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow:
-    0 1px 2px rgba(17, 24, 39, 0.04),
-    0 6px 14px -16px rgba(17, 24, 39, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: ${tShell};
 
   &:hover:not(:focus-within) {
-    border-color: #d1d5db;
-    box-shadow:
-      0 1px 2px rgba(17, 24, 39, 0.04),
-      0 6px 14px -18px rgba(17, 24, 39, 0.08);
+    background: rgba(255, 255, 255, 0.76);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
   &:focus-within {
-    background: #ffffff;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(80, 120, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(80, 120, 255, 0.08);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -44,7 +43,7 @@ export const InputShell = styled.div`
     background: #fffafa;
     border-color: rgba(220, 100, 100, 0.24);
     box-shadow:
-      0 1px 2px rgba(17, 24, 39, 0.03),
+      0 2px 8px rgba(17, 24, 39, 0.03),
       0 6px 14px -18px rgba(220, 95, 95, 0.14);
 
     &:hover:not(:focus-within) {
@@ -160,7 +159,7 @@ export const StyledInput = styled.input`
   transition: ${tInput};
 
   &::placeholder {
-    color: #9ca3af;
+    color: rgba(0, 0, 0, 0.4);
     font-weight: 500;
     letter-spacing: -0.01em;
   }

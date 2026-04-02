@@ -79,28 +79,20 @@ const RegisterSubmitButton = styled(AuthPrimaryButton)`
   height: 48px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(180deg, #6d5df6 0%, #4f6ef7 100%);
+  background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
   color: #f8fafc;
-  box-shadow:
-    0 10px 24px -10px rgba(79, 110, 247, 0.34),
-    0 18px 30px -20px rgba(109, 93, 246, 0.24);
-  transition:
-    background 0.18s ease,
-    transform 0.15s ease,
-    box-shadow 0.18s ease,
-    filter 0.15s ease;
+  box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+  transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: linear-gradient(180deg, #7667fb 0%, #5674fb 100%);
-    transform: translateY(-1px);
-    box-shadow:
-      0 16px 30px -18px rgba(79, 110, 247, 0.42),
-      0 24px 36px -28px rgba(109, 93, 246, 0.34);
+    background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+    transform: scale(0.98);
+    box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.985);
-    box-shadow: 0 5px 12px rgba(17, 24, 39, 0.1);
+    transform: scale(0.98);
+    box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
   }
 
   &:disabled {
@@ -140,20 +132,25 @@ const RegisterFooter = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   margin-top: 24px;
-  padding-top: 0.78rem;
-  border-top: 1px solid #e5e7eb;
+  padding: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   width: 100%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fbfcfe 100%);
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 
   @media (max-width: 639px) {
     width: calc(100% + 32px);
     margin-top: auto;
     margin-left: -16px;
     margin-right: -16px;
-    padding: 0.42rem 16px max(0.55rem, env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid #e5e7eb;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
   }
 `;
