@@ -820,7 +820,18 @@ export const AuthBrandBlock = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    gap: 0.22rem;
+    gap: 0.26rem;
+    position: relative;
+
+    &::after {
+      content: '';
+      width: 2.25rem;
+      height: 2px;
+      margin-top: 0.18rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6d5df6 0%, #4f6ef7 100%);
+      opacity: 0.78;
+    }
   `}
 `;
 
@@ -836,10 +847,10 @@ export const AuthBrandTitle = styled.h1`
   ${({ $login, $mutedBrand }) =>
     $login &&
     `
-    font-size: clamp(0.90625rem, 2.1vw, 1rem);
-    font-weight: ${$mutedBrand ? 700 : 600};
-    letter-spacing: -0.022em;
-    color: #111827;
+    font-size: clamp(0.96875rem, 2.2vw, 1.0625rem);
+    font-weight: 800;
+    letter-spacing: -0.018em;
+    color: #0f172a;
   `}
 `;
 
@@ -853,7 +864,8 @@ export const AuthBrandOrdinal = styled.span`
     $login &&
     `
     color: ${$mutedBrand ? '#64748b' : '#5b4cdb'};
-    opacity: ${$mutedBrand ? 1 : 0.78};
+    opacity: 0.98;
+    margin-right: 0.32em;
   `}
 `;
 
@@ -867,9 +879,9 @@ export const AuthBrandName = styled.span`
   ${({ $login, $mutedBrand }) =>
     $login &&
     `
-    color: ${$mutedBrand ? '#111827' : '#1f2937'};
-    letter-spacing: 0.06em;
-    font-weight: ${$mutedBrand ? 800 : 700};
+    color: ${$mutedBrand ? '#0f172a' : '#111827'};
+    letter-spacing: 0.09em;
+    font-weight: 800;
   `}
 `;
 
@@ -884,7 +896,9 @@ export const AuthBrandYear = styled.span`
   ${({ $login }) =>
     $login &&
     `
-    color: #9ca3af;
+    color: #475569;
+    letter-spacing: 0.08em;
+    font-weight: 700;
   `}
 `;
 
@@ -902,10 +916,12 @@ export const AuthBrandSubtitle = styled.p`
   ${({ $login }) =>
     $login &&
     `
-    color: #6b7280;
-    font-size: clamp(0.734375rem, 1.8vw, 0.78125rem);
-    margin-top: 0.14rem;
-    opacity: 0.9;
+    color: #64748b;
+    font-size: clamp(0.6875rem, 1.7vw, 0.75rem);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-top: 0.06rem;
+    opacity: 0.88;
   `}
 `;
 
@@ -1047,23 +1063,23 @@ export const AuthCardBody = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    padding: 26px 28px 22px;
+    padding: 24px 24px 20px;
 
     @media (min-width: 640px) {
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      padding: 28px 32px 24px;
+      padding: 24px;
     }
 
     @media (min-width: 1024px) {
-      padding: 28px 32px 24px;
+      padding: 24px;
     }
 
     @media (max-width: 639px) {
-      padding: 12px max(16px, env(safe-area-inset-right, 0px))
-        max(10px, env(safe-area-inset-bottom, 0px))
-        max(16px, env(safe-area-inset-left, 0px));
+      padding: 20px max(20px, env(safe-area-inset-right, 0px))
+        max(20px, env(safe-area-inset-bottom, 0px))
+        max(20px, env(safe-area-inset-left, 0px));
       overflow: hidden;
     }
   `}
@@ -1264,21 +1280,21 @@ export const AuthLoginForm = styled(AuthFlowFormSaaS)`
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   margin-top: 0;
 `;
 
 export const AuthLoginFieldStack = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 `;
 
 export const AuthLoginActions = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
   margin-top: 8px;
 `;
