@@ -17,6 +17,8 @@ import {
   AuthPrimaryButton,
 } from './auth/authStyles';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
 const ResetPasswordContentStack = styled.div`
   display: flex;
   flex-direction: column;
@@ -27,15 +29,7 @@ const ResetPasswordFormShell = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding-top: 0.18rem;
-
-  @media (min-width: 640px) {
-    padding-top: 0.22rem;
-  }
-
-  @media (max-width: 639px) {
-    padding-top: 0.16rem;
-  }
+  padding-top: 0.12rem;
 `;
 
 const ResetPasswordForm = styled(AuthLoginForm)`
@@ -43,31 +37,30 @@ const ResetPasswordForm = styled(AuthLoginForm)`
 `;
 
 const ResetPasswordActions = styled(AuthLoginActions)`
-  margin-top: 18px;
-
-  @media (min-width: 640px) {
-    margin-top: 18px;
-  }
-
-  @media (max-width: 639px) {
-    margin-top: 18px;
-  }
+  margin-top: 16px;
 `;
 
-const ResetPasswordAlert = styled(AuthFormAlert)`
+const ResetPasswordInfo = styled(AuthFormAlert)`
   color: #475569;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
-  border: 1px solid rgba(203, 213, 225, 0.7);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-left: 3px solid rgba(37, 99, 235, 0.28);
-  box-shadow: 0 10px 22px -20px rgba(15, 23, 42, 0.16);
+  box-shadow: none;
 `;
 
-const InvalidTokenMessage = styled(AuthFormAlert)`
+const ResetPasswordError = styled(AuthFormAlert)`
   color: #7f1d1d;
-  background: linear-gradient(180deg, rgba(255, 249, 249, 0.98) 0%, rgba(254, 242, 242, 0.98) 100%);
+  background: #fef2f2;
   border: 1px solid rgba(248, 113, 113, 0.18);
   border-left: 3px solid rgba(239, 68, 68, 0.38);
-  box-shadow: 0 10px 22px -20px rgba(239, 68, 68, 0.3);
+  box-shadow: none;
+`;
+
+const PasswordFeedback = styled.p`
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: ${({ $valid }) => ($valid ? '#16a34a' : '#6b7280')};
 `;
 
 const ResetPasswordSubmitButton = styled(AuthPrimaryButton)`
@@ -79,51 +72,21 @@ const ResetPasswordSubmitButton = styled(AuthPrimaryButton)`
   border: none;
   background: linear-gradient(180deg, #2b2d42 0%, #1f2133 100%);
   color: #f8fafc;
-  box-shadow:
-    0 8px 18px rgba(17, 24, 39, 0.14),
-    0 16px 28px -24px rgba(17, 24, 39, 0.18);
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.14);
   transition:
     background 0.18s ease,
     transform 0.15s ease,
-    box-shadow 0.18s ease,
-    filter 0.15s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 1px;
-    border-radius: 5px;
-    pointer-events: none;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 5px;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.06) 0%,
-      transparent 46%
-    );
-    opacity: 0.72;
-  }
+    box-shadow 0.18s ease;
 
   &:hover:not(:disabled) {
     background: linear-gradient(180deg, #323550 0%, #24263a 100%);
     transform: translateY(-1px);
-    filter: brightness(1.01);
-    box-shadow:
-      0 12px 24px rgba(17, 24, 39, 0.16),
-      0 18px 34px -24px rgba(17, 24, 39, 0.2);
+    box-shadow: 0 12px 26px rgba(17, 24, 39, 0.16);
   }
 
   &:active:not(:disabled) {
     transform: scale(0.985);
     box-shadow: 0 5px 12px rgba(17, 24, 39, 0.1);
-    background: linear-gradient(180deg, #25283d 0%, #1a1c2d 100%);
   }
 
   &:focus {
@@ -133,32 +96,18 @@ const ResetPasswordSubmitButton = styled(AuthPrimaryButton)`
   &:focus-visible {
     box-shadow:
       0 0 0 3px rgba(124, 58, 237, 0.12),
-      0 8px 18px rgba(17, 24, 39, 0.12);
+      0 10px 24px rgba(17, 24, 39, 0.14);
   }
 
   &:disabled {
     background: #c7ced8;
     color: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 6px 14px -16px rgba(15, 23, 42, 0.16);
-
-    &::before {
-      border-color: rgba(255, 255, 255, 0.08);
-    }
-
-    &::after {
-      opacity: 0.5;
-    }
+    box-shadow: none;
+    cursor: not-allowed;
   }
 
   &[aria-busy='true'] {
     cursor: wait;
-  }
-
-  @media (max-width: 639px) {
-    min-height: 52px;
-    height: 52px;
-    border-radius: 5px;
-    font-size: 0.96875rem;
   }
 `;
 
@@ -168,13 +117,14 @@ const ResetPasswordFooter = styled.div`
   justify-content: space-between;
   gap: 0.9rem;
   margin-top: 16px;
-  padding-top: 0;
+  padding-top: 14px;
   border-top: 1px solid #e5e7eb;
   width: 100%;
 
   @media (max-width: 639px) {
-    margin-top: 16px;
-    padding-top: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
   }
 `;
 
@@ -205,11 +155,24 @@ const NovaSenha = () => {
   const token = searchParams.get('token');
 
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(true);
   const [invalidToken, setInvalidToken] = useState(false);
   const [userName, setUserName] = useState('');
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
+  const passwordFeedback = useMemo(() => {
+    if (!newPassword) return '';
+    if (newPassword.length < 8) return 'Senha deve ter pelo menos 8 caracteres';
+    if (!/[A-Z]/.test(newPassword)) return 'Inclua uma letra maiúscula';
+    return 'Senha válida ✔';
+  }, [newPassword]);
+
+  const passwordIsValid =
+    newPassword.length >= 8 && /[A-Z]/.test(newPassword);
+
+  const confirmPasswordMismatch =
+    confirmPassword.length > 0 && newPassword !== confirmPassword;
 
   useEffect(() => {
     let ignore = false;
@@ -253,7 +216,7 @@ const NovaSenha = () => {
     return () => {
       ignore = true;
     };
-  }, [API_URL, token]);
+  }, [token]);
 
   const layoutCopy = useMemo(() => {
     if (validating) {
@@ -272,7 +235,7 @@ const NovaSenha = () => {
 
     return {
       title: `Olá, ${userName || 'participante'}`,
-      subtitle: 'Informe sua nova senha.',
+      subtitle: 'Informe e confirme sua nova senha.',
     };
   }, [invalidToken, userName, validating]);
 
@@ -284,8 +247,15 @@ const NovaSenha = () => {
       return;
     }
 
-    if (newPassword.trim().length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres.');
+    if (!passwordIsValid) {
+      toast.error(
+        'A senha deve ter pelo menos 8 caracteres e uma letra maiúscula.'
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('A confirmação da senha não coincide.');
       return;
     }
 
@@ -320,21 +290,22 @@ const NovaSenha = () => {
       <ResetPasswordContentStack>
         <ResetPasswordFormShell>
           {validating ? (
-            <ResetPasswordAlert>
+            <ResetPasswordInfo>
               Aguarde um instante enquanto validamos o token enviado para o seu e-mail.
-            </ResetPasswordAlert>
+            </ResetPasswordInfo>
           ) : null}
 
           {!validating && invalidToken ? (
             <>
-              <InvalidTokenMessage>
+              <ResetPasswordError>
                 Este link de redefinição é inválido, expirou ou já foi utilizado.
-              </InvalidTokenMessage>
+              </ResetPasswordError>
 
               <ResetPasswordFooter>
                 <ResetPasswordFooterLink to="/recuperarsenha">
                   Solicitar novo link
                 </ResetPasswordFooterLink>
+
                 <ResetPasswordFooterLink to="/">
                   <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: 8 }} />
                   Voltar para o login
@@ -360,6 +331,31 @@ const NovaSenha = () => {
                     autoComplete="new-password"
                     placeholder="Digite sua nova senha"
                   />
+
+                  {passwordFeedback ? (
+                    <PasswordFeedback $valid={passwordIsValid}>
+                      {passwordFeedback}
+                    </PasswordFeedback>
+                  ) : null}
+
+                  <PremiumAuthField
+                    id="reset-password-confirm-password"
+                    type="password"
+                    name="confirmPassword"
+                    label="Confirmar nova senha"
+                    icon={faLock}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    autoComplete="new-password"
+                    placeholder="Confirme sua nova senha"
+                    error={confirmPasswordMismatch}
+                  />
+
+                  {confirmPasswordMismatch ? (
+                    <PasswordFeedback>As senhas não coincidem</PasswordFeedback>
+                  ) : null}
                 </AuthLoginFieldStack>
 
                 <ResetPasswordActions>
@@ -370,7 +366,7 @@ const NovaSenha = () => {
                   >
                     {loading ? <AuthButtonSpinner /> : null}
                     <AuthFlowButtonLabelWide>
-                      {loading ? 'Salvar nova senha' : 'Salvar nova senha'}
+                      Salvar nova senha
                     </AuthFlowButtonLabelWide>
                   </ResetPasswordSubmitButton>
                 </ResetPasswordActions>

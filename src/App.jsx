@@ -78,6 +78,7 @@ function AppContent() {
       <Route path="/recuperarsenha/route" element={<ChangePassword />} />
       <Route path="/novasenha" element={<NovaSenha />} />
       <Route path="/redefinir-senha" element={<NovaSenha />} />
+      <Route path="/reset-password" element={<NovaSenha />} />
       <Route path="*" element={<NotFound />} />
 
       {/* Rotas Privadas */}
@@ -90,6 +91,9 @@ function AppContent() {
       <Route path="/falha" element={<ProtectedRoute><FailurePage /></ProtectedRoute>} />
       <Route path="/sucesso" element={<ProtectedRoute><SuccessPage /></ProtectedRoute>} />
       <Route path="/pendente" element={<ProtectedRoute><PendingPage /></ProtectedRoute>} />
+      <Route path="/pagamento-erro" element={<ProtectedRoute><FailurePage /></ProtectedRoute>} />
+      <Route path="/pagamento-sucesso" element={<ProtectedRoute><SuccessPage /></ProtectedRoute>} />
+      <Route path="/pagamento-pendente" element={<ProtectedRoute><PendingPage /></ProtectedRoute>} />
       <Route path="/imprimir/:id" element={<ProtectedRoute><FichaInscricao /></ProtectedRoute>} />
       <Route path="/pagamentos" element={<ProtectedRoute><ListaParticipantes /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><admin /></ProtectedRoute>} />
