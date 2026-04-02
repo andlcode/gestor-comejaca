@@ -15,11 +15,20 @@ export const InputShell = styled.div`
   border-radius: 18px;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.7);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: ${tShell};
+
+  @supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  @media (max-width: 639px) {
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 
   &:hover:not(:focus-within) {
     background: rgba(255, 255, 255, 0.76);
@@ -191,6 +200,7 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
     onBlur,
     error = false,
     disabled = false,
+    required = false,
     id,
     name,
     type = 'text',
@@ -214,7 +224,7 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
     >
       <InputInner>
         <InputIconSlot>
-          <IconFa icon={icon} aria-hidden />
+          {icon ? <IconFa icon={icon} aria-hidden /> : null}
         </InputIconSlot>
 
         <FieldTrack>
@@ -227,9 +237,10 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
             id={id}
             name={name}
             type={type}
+            required={required}
             autoComplete={autoComplete}
             inputMode={inputMode}
-            value={value}
+            value={value ?? ''}
             onChange={onChange}
             disabled={disabled}
             $active={active}

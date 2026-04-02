@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import AuthLayout from './auth/AuthLayout';
+import AuthRenderErrorBoundary from './auth/AuthRenderErrorBoundary';
 import PremiumAuthField from './auth/PremiumAuthField';
 import {
   AuthButtonSpinner,
@@ -167,9 +168,12 @@ const ForgotPasswordFooter = styled.div`
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   width: 100%;
   background: rgba(255, 255, 255, 0.9);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   flex-shrink: 0;
+
+  @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
 
   @media (max-width: 639px) {
     width: calc(100% + 32px);
@@ -178,7 +182,9 @@ const ForgotPasswordFooter = styled.div`
     margin-right: -16px;
     padding: 12px 16px max(12px, env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgba(0, 0, 0, 0.06);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
   }
 `;
@@ -216,6 +222,13 @@ const ForgotPassword = () => {
   const [feedback, setFeedback] = useState({
     type: '',
     message: '',
+  });
+
+  console.log('[ForgotPassword] render', {
+    loading,
+    disabled,
+    countdown,
+    feedbackType: feedback.type,
   });
 
   useEffect(() => {
@@ -273,11 +286,17 @@ const ForgotPassword = () => {
   };
 
   const handleReset = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
+    console.log('[ForgotPassword] submit:start', {
+      loading,
+      disabled,
+      emailLength: formData.email?.length ?? 0,
+    });
 
     const trimmedEmail = formData.email?.trim();
 
     if (!trimmedEmail) {
+      console.log('[ForgotPassword] submit:empty-email');
       const message = 'Informe seu e-mail.';
       setFeedback({ type: 'error', message });
       toast.error(message, { position: 'top-center' });
@@ -285,6 +304,7 @@ const ForgotPassword = () => {
     }
 
     if (!isValidEmail(trimmedEmail)) {
+      console.log('[ForgotPassword] submit:invalid-email', trimmedEmail);
       const message = 'Informe um e-mail válido.';
       setFeedback({ type: 'error', message });
       toast.error(message, { position: 'top-center' });
@@ -292,17 +312,27 @@ const ForgotPassword = () => {
     }
 
     try {
+      console.log('[ForgotPassword] submit:before-request', trimmedEmail);
       setLoading(true);
       setFeedback({ type: '', message: '' });
+
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
 
       await axios.post(`${API_URL}/api/auth/forgot-password`, {
         email: trimmedEmail,
       });
+      console.log('[ForgotPassword] submit:request-success');
 
       const successMessage =
         'Se o e-mail existir em nossa base, enviaremos o link de redefinição em instantes.';
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        console.log('[ForgotPassword] submit:unmounted-after-success');
+        return;
+      }
 
       setDisabled(true);
       setCountdown(30);
@@ -318,18 +348,22 @@ const ForgotPassword = () => {
 
       redirectTimeoutRef.current = setTimeout(() => {
         if (isMountedRef.current) {
+          console.log('[ForgotPassword] submit:navigate-login');
           navigate('/');
         }
       }, 4200);
     } catch (error) {
-      console.error('Erro em forgot-password:', error);
+      console.error('[ForgotPassword] submit:error', error);
 
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
         'Erro ao conectar com o servidor.';
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        console.log('[ForgotPassword] submit:unmounted-after-error');
+        return;
+      }
 
       setFeedback({
         type: 'error',
@@ -341,81 +375,84 @@ const ForgotPassword = () => {
       });
     } finally {
       if (isMountedRef.current) {
+        console.log('[ForgotPassword] submit:finally');
         setLoading(false);
       }
     }
   };
 
   return (
-    <AuthLayout
-      title="Redefinir senha"
-      subtitle="Informe seu e-mail para receber as instruções de redefinição."
-      layoutPreset="login"
-    >
-      <ForgotPasswordContentStack>
-        <ForgotPasswordContentWrapper>
-          <ForgotPasswordForm onSubmit={handleReset} noValidate>
-            <AuthLoginFieldStack>
-              <PremiumAuthField
-                id="forgot-password-email"
-                type="email"
-                name="email"
-                label="E-mail"
-                icon={faEnvelope}
-                value={formData.email}
-                onChange={handleEmailChange}
-                required
-                disabled={loading || disabled}
-                autoComplete="email"
-                inputMode="email"
-                placeholder="nome@dominio.com"
-              />
-            </AuthLoginFieldStack>
+    <AuthRenderErrorBoundary>
+      <AuthLayout
+        title="Redefinir senha"
+        subtitle="Informe seu e-mail para receber as instruções de redefinição."
+        layoutPreset="login"
+      >
+        <ForgotPasswordContentStack>
+          <ForgotPasswordContentWrapper>
+            <ForgotPasswordForm onSubmit={handleReset} noValidate>
+              <AuthLoginFieldStack>
+                <PremiumAuthField
+                  id="forgot-password-email"
+                  type="email"
+                  name="email"
+                  label="E-mail"
+                  icon={faEnvelope}
+                  value={formData.email}
+                  onChange={handleEmailChange}
+                  required
+                  disabled={loading || disabled}
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="nome@dominio.com"
+                />
+              </AuthLoginFieldStack>
 
-            {feedback.type === 'success' ? (
-              <ForgotPasswordSuccess role="status" aria-live="polite">
-                {feedback.message}
-              </ForgotPasswordSuccess>
-            ) : null}
+              {feedback.type === 'success' ? (
+                <ForgotPasswordSuccess role="status" aria-live="polite">
+                  {feedback.message}
+                </ForgotPasswordSuccess>
+              ) : null}
 
-            {feedback.type === 'error' ? (
-              <ForgotPasswordError role="alert" aria-live="assertive">
-                {feedback.message}
-              </ForgotPasswordError>
-            ) : null}
+              {feedback.type === 'error' ? (
+                <ForgotPasswordError role="alert" aria-live="assertive">
+                  {feedback.message}
+                </ForgotPasswordError>
+              ) : null}
 
-            <ForgotPasswordActions>
-              <ForgotPasswordSubmitButton
-                type="submit"
-                disabled={loading || disabled}
-                aria-busy={loading ? 'true' : 'false'}
-              >
-                {loading ? <AuthButtonSpinner /> : null}
+              <ForgotPasswordActions>
+                <ForgotPasswordSubmitButton
+                  type="submit"
+                  disabled={loading || disabled}
+                  aria-busy={loading ? 'true' : 'false'}
+                >
+                  {loading ? <AuthButtonSpinner /> : null}
 
-                <AuthFlowButtonLabelWide>
-                  {loading ? (
-                    'Enviar e-mail'
-                  ) : disabled ? (
-                    `Aguarde ${countdown}s`
-                  ) : (
-                    <>
-                      <FontAwesomeIcon icon={faEnvelope} style={{ marginRight: 8 }} />
-                      Enviar e-mail
-                    </>
-                  )}
-                </AuthFlowButtonLabelWide>
-              </ForgotPasswordSubmitButton>
-            </ForgotPasswordActions>
-          </ForgotPasswordForm>
-        </ForgotPasswordContentWrapper>
+                  <AuthFlowButtonLabelWide>
+                    {loading ? (
+                      'Enviar e-mail'
+                    ) : disabled ? (
+                      `Aguarde ${countdown}s`
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faEnvelope} />
+                        Enviar e-mail
+                      </>
+                    )}
+                  </AuthFlowButtonLabelWide>
+                </ForgotPasswordSubmitButton>
+              </ForgotPasswordActions>
+            </ForgotPasswordForm>
+          </ForgotPasswordContentWrapper>
 
-        <ForgotPasswordFooter>
-          <ForgotPasswordFooterActions aria-label="Ações secundárias">
-            <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
-          </ForgotPasswordFooterActions>
-        </ForgotPasswordFooter>
-      </ForgotPasswordContentStack>
-    </AuthLayout>
+          <ForgotPasswordFooter>
+            <ForgotPasswordFooterActions aria-label="Ações secundárias">
+              <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
+            </ForgotPasswordFooterActions>
+          </ForgotPasswordFooter>
+        </ForgotPasswordContentStack>
+      </AuthLayout>
+    </AuthRenderErrorBoundary>
   );
 };
 
