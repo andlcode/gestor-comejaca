@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
 import AuthLayout from './auth/AuthLayout';
@@ -10,6 +10,9 @@ import {
   AuthFlowButtonLabel,
   AuthFormAlert,
   AuthLoginActions,
+  AuthLoginAuxDivider,
+  AuthLoginAuxLinks,
+  AuthLoginAuxRouterLink,
   AuthLoginFieldStack,
   AuthLoginForm,
   AuthPrimaryButton,
@@ -18,86 +21,84 @@ import {
 const LoginContentStack = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
   gap: 0;
+
+  @media (max-width: 639px) {
+    flex: 1;
+    min-height: 0;
+    justify-content: space-between;
+  }
 `;
 
 const LoginFormShell = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  justify-content: space-between;
   gap: 0;
-  padding-top: 0.18rem;
+  padding-top: 0.14rem;
 
   @media (min-width: 640px) {
-    padding-top: 0.22rem;
+    padding-top: 0.18rem;
   }
 
   @media (max-width: 639px) {
-    padding-top: 0.16rem;
+    flex: 1;
+    min-height: 0;
+    justify-content: space-between;
+    padding-top: 0;
   }
 `;
 
 const LoginAlert = styled(AuthFormAlert)`
   color: #7f1d1d;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 249, 249, 0.98) 0%,
-    rgba(254, 242, 242, 0.98) 100%
-  );
+  background: #fef2f2;
   border: 1px solid rgba(248, 113, 113, 0.18);
-  border-left: 3px solid rgba(239, 68, 68, 0.38);
-  box-shadow: 0 10px 22px -20px rgba(239, 68, 68, 0.3);
+  border-left: 3px solid rgba(239, 68, 68, 0.34);
+  box-shadow: none;
 `;
 
 const LoginSubmitButton = styled(AuthPrimaryButton)`
+  margin-top: 0;
   position: relative;
   overflow: hidden;
-  min-height: 52px;
-  height: 52px;
-  border-radius: 5px;
+  min-height: 48px;
+  height: 48px;
+  border-radius: 12px;
   border: none;
-  background: linear-gradient(180deg, #2b2d42 0%, #1f2133 100%);
+  background: linear-gradient(180deg, #6d5df6 0%, #4f6ef7 100%);
   color: #f8fafc;
-  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.12);
+  box-shadow:
+    0 10px 24px -10px rgba(79, 110, 247, 0.34),
+    0 18px 30px -20px rgba(109, 93, 246, 0.24);
   transition:
     background 0.18s ease,
     transform 0.15s ease,
-    box-shadow 0.18s ease,
-    filter 0.15s ease;
+    box-shadow 0.18s ease;
 
   &::before {
     content: '';
     position: absolute;
     inset: 1px;
-  border-radius: 5px;
+    border-radius: 12px;
     pointer-events: none;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-  border-radius: 5px;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.06) 0%,
-      transparent 46%
-    );
-    opacity: 0.72;
-  }
-
   &:hover:not(:disabled) {
-    background: linear-gradient(180deg, #323550 0%, #24263a 100%);
+    background: linear-gradient(180deg, #7667fb 0%, #5674fb 100%);
     transform: translateY(-1px);
-    filter: brightness(1.01);
-    box-shadow: 0 10px 22px rgba(17, 24, 39, 0.14);
+    box-shadow:
+      0 16px 30px -18px rgba(79, 110, 247, 0.42),
+      0 24px 36px -28px rgba(109, 93, 246, 0.34);
   }
 
   &:active:not(:disabled) {
     transform: scale(0.985);
     box-shadow: 0 5px 12px rgba(17, 24, 39, 0.1);
-    background: linear-gradient(180deg, #25283d 0%, #1a1c2d 100%);
   }
 
   &:focus {
@@ -106,21 +107,17 @@ const LoginSubmitButton = styled(AuthPrimaryButton)`
 
   &:focus-visible {
     box-shadow:
-      0 0 0 3px rgba(124, 58, 237, 0.12),
-      0 8px 18px rgba(17, 24, 39, 0.12);
+      0 0 0 3px rgba(99, 102, 241, 0.14),
+      0 16px 30px -18px rgba(79, 110, 247, 0.32);
   }
 
   &:disabled {
     background: #c7ced8;
     color: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 6px 14px -16px rgba(15, 23, 42, 0.16);
+    box-shadow: none;
 
     &::before {
       border-color: rgba(255, 255, 255, 0.08);
-    }
-
-    &::after {
-      opacity: 0.5;
     }
   }
 
@@ -129,65 +126,52 @@ const LoginSubmitButton = styled(AuthPrimaryButton)`
   }
 
   @media (max-width: 639px) {
-    min-height: 52px;
-    height: 52px;
-  border-radius: 5px;
-    font-size: 0.96875rem;
+    min-height: 48px;
+    height: 48px;
   }
 `;
 
 const LoginFooter = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.9rem;
-  margin-top: 0.82rem;
-  padding-top: 0.72rem;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 24px;
+  padding-top: 0.78rem;
   border-top: 1px solid #e5e7eb;
   width: 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fbfcfe 100%);
 
   @media (max-width: 639px) {
-    margin-top: 0.74rem;
-    padding-top: 0.66rem;
+    width: calc(100% + 32px);
+    margin-top: auto;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 0.42rem 16px max(0.55rem, env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid #e5e7eb;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
   }
 `;
 
-const LoginInlineLink = styled(Link)`
+const LoginFooterActions = styled(AuthLoginAuxLinks)`
+  margin-top: 0;
+  padding: 0;
+  max-width: none;
+  justify-content: space-between;
+
+  @media (max-width: 639px) {
+    justify-content: space-between;
+  }
+`;
+
+const LoginInlineLink = styled(AuthLoginAuxRouterLink)`
   color: #6b7280;
-  text-decoration: none;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.875rem;
   font-weight: 500;
-  letter-spacing: -0.012em;
-  transition: color 0.15s ease;
-
-  &:hover,
-  &:focus-visible {
-    color: #7c3aed;
-  }
-
-  &:focus {
-    outline: none;
-  }
 `;
 
-const LoginFooterLink = styled(Link)`
+const LoginFooterLink = styled(AuthLoginAuxRouterLink)`
   color: #4b5563;
-  text-decoration: none;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.875rem;
   font-weight: 600;
-  letter-spacing: -0.012em;
-  transition: color 0.15s ease;
-
-  &:hover,
-  &:focus-visible {
-    color: #7c3aed;
-  }
-
-  &:focus {
-    outline: none;
-  }
 `;
 
 const Login = () => {
@@ -228,14 +212,15 @@ const Login = () => {
     localStorage.removeItem('tokenExpiration');
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     try {
       setLoading(true);
       setError(null);
       clearAuthStorage();
 
       const response = await axios.post(`${API_URL}/api/auth/entrar`, formData);
-
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);
@@ -250,8 +235,7 @@ const Login = () => {
       expirationDate.setDate(expirationDate.getDate() + 7);
       localStorage.setItem('tokenExpiration', expirationDate.toISOString());
 
-      const redirectPath = user.isVerified ? '/painel' : '/verificar';
-      navigate(redirectPath);
+      navigate(user.isVerified ? '/painel' : '/verificar');
     } catch (err) {
       if (err.response) {
         if (err.response.status === 401) {
@@ -276,12 +260,7 @@ const Login = () => {
     >
       <LoginContentStack>
         <LoginFormShell>
-          <AuthLoginForm
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-          >
+          <AuthLoginForm onSubmit={handleSubmit}>
             <AuthLoginFieldStack>
               <PremiumAuthField
                 id="login-email"
@@ -338,13 +317,15 @@ const Login = () => {
           </AuthLoginForm>
 
           <LoginFooter>
-            <LoginInlineLink to="/recuperarsenha">
-              Esqueci minha senha
-            </LoginInlineLink>
-
-            <LoginFooterLink to="/registrar">
-              Criar conta
-            </LoginFooterLink>
+            <LoginFooterActions aria-label="Ações secundárias">
+              <LoginInlineLink to="/recuperarsenha">
+                Esqueci minha senha
+              </LoginInlineLink>
+              <AuthLoginAuxDivider />
+              <LoginFooterLink to="/registrar">
+                Criar conta
+              </LoginFooterLink>
+            </LoginFooterActions>
           </LoginFooter>
         </LoginFormShell>
       </LoginContentStack>

@@ -11,8 +11,8 @@ const tInput = 'color 0.18s ease, padding 0.18s ease';
 export const InputShell = styled.div`
   position: relative;
   width: 100%;
-  min-height: 54px;
-  border-radius: 5px;
+  min-height: 48px;
+  border-radius: 12px;
   box-sizing: border-box;
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -64,7 +64,7 @@ export const InputInner = styled.div`
   flex-direction: row;
   align-items: stretch;
   gap: 12px;
-  min-height: 54px;
+  min-height: 48px;
   padding: 0 16px;
   box-sizing: border-box;
 `;

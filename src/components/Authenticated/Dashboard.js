@@ -930,6 +930,12 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      console.log('[MercadoPago][Dashboard] resposta do backend para pagamento:', {
+        itemId,
+        init_point: response.data?.init_point || null,
+        fullResponse: response.data,
+      });
+
       if (response.data?.init_point) {
         window.open(response.data.init_point, '_blank');
       } else {

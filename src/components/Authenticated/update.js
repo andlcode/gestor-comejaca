@@ -417,10 +417,10 @@ const Atualizar = () => {
 
     setIsSubmitting(true);
     setErrors([]);
-
+  
     try {
       const token = localStorage.getItem("token");
-
+  
       const payload = {
         id: formData.id,
         nomeCompleto: formData.nomeCompleto?.trim() || "",
@@ -465,8 +465,6 @@ const Atualizar = () => {
         deficienciaOutraDescricao:
           formData.deficienciaOutraDescricao?.trim() || "",
         valor: formData.valor || 0,
-        linkPagamento: formData.linkPagamento || "",
-        statusPagamento: formData.statusPagamento || "",
       };
 
       console.log("PAYLOAD INSCRIÇÃO:", payload);
@@ -475,13 +473,13 @@ const Atualizar = () => {
         `${API_URL}/api/auth/participante/${formData.id}`,
         payload,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
       );
-
+  
       if (response.status === 200) {
         navigate("/painel");
       } else {
@@ -500,7 +498,7 @@ const Atualizar = () => {
       setIsSubmitting(false);
     }
   };
-
+  
   if (isLoadingPage) {
     return (
       <PageShell>
@@ -590,24 +588,24 @@ const Atualizar = () => {
                   </div>
                 </SectionHeader>
 
-                <FormGrid>
+            <FormGrid>
                   <Field>
                     <Label><FiUser /> Nome completo *</Label>
                     <Input
-                      name="nomeCompleto"
-                      value={formData.nomeCompleto}
-                      onChange={handleChange}
+                  name="nomeCompleto"
+                  value={formData.nomeCompleto}
+                  onChange={handleChange}
                       placeholder="Digite seu nome completo"
-                      required
-                    />
+                  required
+                />
                   </Field>
 
                   <Field>
                     <Label><FiUser /> Nome social</Label>
                     <Input
-                      name="nomeSocial"
-                      value={formData.nomeSocial}
-                      onChange={handleChange}
+                  name="nomeSocial"
+                  value={formData.nomeSocial}
+                  onChange={handleChange}
                       placeholder="Digite seu nome social"
                     />
                   </Field>
@@ -615,9 +613,9 @@ const Atualizar = () => {
                   <Field>
                     <Label><FiUser /> Nome no crachá *</Label>
                     <Input
-                      name="nomeCracha"
-                      value={formData.nomeCracha}
-                      onChange={handleChange}
+                  name="nomeCracha"
+                  value={formData.nomeCracha}
+                  onChange={handleChange}
                       placeholder="Digite o nome que aparecerá no crachá"
                       required
                     />
@@ -626,10 +624,10 @@ const Atualizar = () => {
                   <Field>
                     <Label><FiCalendar /> Data de nascimento *</Label>
                     <DateFieldWrap>
-                      <StyledDatePicker
-                        value={formData.dataNascimento}
-                        onChange={handleDateChange}
-                        format="dd/MM/yyyy"
+                <StyledDatePicker
+                  value={formData.dataNascimento}
+                  onChange={handleDateChange}
+                  format="dd/MM/yyyy"
                         maxDate={new Date()}
                         slotProps={{
                           textField: {
@@ -643,29 +641,29 @@ const Atualizar = () => {
 
                   <Field>
                     <Label><FiUser /> Gênero *</Label>
-                    <Select
-                      name="sexo"
-                      value={formData.sexo}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Selecione</option>
-                      <option value="Masculino">Masculino</option>
-                      <option value="Feminino">Feminino</option>
+                <Select
+                  name="sexo"
+                  value={formData.sexo}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Selecione</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Feminino">Feminino</option>
                       <option value="prefironaoresponder">
                         Prefiro não responder
                       </option>
-                      <option value="outro">Outro</option>
-                    </Select>
+                  <option value="outro">Outro</option>
+                </Select>
                   </Field>
 
-                  {formData.sexo === "outro" && (
+     {formData.sexo === "outro" && (
                     <Field>
                       <Label><FiInfo /> Especifique</Label>
                       <Input
-                        name="outroGenero"
-                        value={formData.outroGenero}
-                        onChange={handleChange}
+            name="outroGenero"
+            value={formData.outroGenero}
+            onChange={handleChange}
                         placeholder="Digite seu gênero"
                       />
                     </Field>
@@ -674,59 +672,59 @@ const Atualizar = () => {
                   <Field>
                     <Label><FaWhatsapp /> WhatsApp *</Label>
                     <Input
-                      name="telefone"
-                      value={formData.telefone}
-                      onChange={handleChange}
-                      placeholder="Digite seu telefone"
-                      required
+         name="telefone"
+         value={formData.telefone}
+         onChange={handleChange}
+         placeholder="Digite seu telefone"
+         required
                     />
                   </Field>
 
                   <Field>
                     <Label><FiMail /> E-mail *</Label>
                     <Input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                       placeholder="nome@dominio.com"
-                      required
-                    />
+                  required
+                />
                   </Field>
 
                   <Field>
                     <Label><FiInfo /> Tipo de participação *</Label>
-                    <Select
-                      name="tipoParticipacao"
-                      value={formData.tipoParticipacao}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Selecione</option>
+                <Select
+                  name="tipoParticipacao"
+                  value={formData.tipoParticipacao}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Selecione</option>
                       {PARTICIPATION_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
-                    </Select>
+                </Select>
                   </Field>
 
                   {formData.tipoParticipacao === "Trabalhador" && (
                     <Field>
                       <Label><FiInfo /> Comissão *</Label>
-                      <Select
-                        name="comissao"
-                        value={formData.comissao}
-                        onChange={handleChange}
+                  <Select
+                    name="comissao"
+                    value={formData.comissao}
+                    onChange={handleChange}
                         required
-                      >
-                        <option value="">Selecione</option>
+                  >
+                    <option value="">Selecione</option>
                         {COMISSOES.map((comissao) => (
                           <option key={comissao} value={comissao}>
                             {comissao}
                           </option>
                         ))}
-                      </Select>
+                  </Select>
                     </Field>
                   )}
                 </FormGrid>
@@ -800,20 +798,20 @@ const Atualizar = () => {
                   <Field>
                     <Label><FiMapPin /> CEP *</Label>
                     <Input
-                      name="cep"
-                      value={formData.cep}
-                      onChange={handleCepChange}
+                  name="cep"
+                  value={formData.cep}
+                  onChange={handleCepChange}
                       placeholder="Digite seu CEP"
-                      required
-                    />
+                  required
+                />
                   </Field>
 
                   <Field>
                     <Label><FiMapPin /> Estado *</Label>
                     <Input
-                      name="estado"
-                      value={formData.estado}
-                      onChange={handleChange}
+                  name="estado"
+                  value={formData.estado}
+              onChange={handleChange}
                       disabled
                     />
                   </Field>
@@ -821,9 +819,9 @@ const Atualizar = () => {
                   <Field>
                     <Label><FiMapPin /> Cidade *</Label>
                     <Input
-                      name="cidade"
-                      value={formData.cidade}
-                      onChange={handleChange}
+                  name="cidade"
+                  value={formData.cidade}
+                  onChange={handleChange}
                       disabled
                     />
                   </Field>
@@ -831,9 +829,9 @@ const Atualizar = () => {
                   <Field>
                     <Label><FiMapPin /> Bairro *</Label>
                     <Input
-                      name="bairro"
-                      value={formData.bairro}
-                      onChange={handleChange}
+                  name="bairro"
+                  value={formData.bairro}
+                  onChange={handleChange}
                       disabled
                     />
                   </Field>
@@ -841,9 +839,9 @@ const Atualizar = () => {
                   <Field>
                     <Label><FiMapPin /> Logradouro *</Label>
                     <Input
-                      name="logradouro"
-                      value={formData.logradouro}
-                      onChange={handleChange}
+                  name="logradouro"
+                  value={formData.logradouro}
+                  onChange={handleChange}
                       disabled
                     />
                   </Field>
@@ -851,50 +849,50 @@ const Atualizar = () => {
                   <Field>
                     <Label><FiMapPin /> Número *</Label>
                     <Input
-                      name="numero"
-                      value={formData.numero}
-                      onChange={handleChange}
+                  name="numero"
+                  value={formData.numero}
+                  onChange={handleChange}
                       placeholder="Digite o número"
-                      required
-                    />
+                  required
+                />
                   </Field>
 
                   <Field>
                     <Label><FiMapPin /> Complemento</Label>
                     <Input
-                      name="complemento"
-                      value={formData.complemento}
-                      onChange={handleChange}
+                  name="complemento"
+                  value={formData.complemento}
+                  onChange={handleChange}
                       placeholder="Apartamento, bloco, referência..."
-                    />
+                />
                   </Field>
 
                   <Field>
                     <Label><FiMapPin /> Instituição espírita *</Label>
-                    <Select
-                      name="IE"
-                      value={formData.IE}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Selecione</option>
+                <Select
+                  name="IE"
+                  value={formData.IE}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Selecione</option>
                       {institutions.map((inst) => (
                         <option key={inst.id} value={inst.nome}>
                           {inst.nome}
                         </option>
-                      ))}
+                  ))}
                       <option value="outro">Outro</option>
-                    </Select>
+                </Select>
                   </Field>
 
                   {formData.IE === "outro" && (
                     <Field fullWidth>
                       <Label><FiMapPin /> Nome da instituição</Label>
                       <Input
-                        name="otherInstitution"
-                        value={formData.otherInstitution}
-                        onChange={handleChange}
-                        placeholder="Digite o nome da instituição"
+            name="otherInstitution"
+            value={formData.otherInstitution}
+            onChange={handleChange}
+            placeholder="Digite o nome da instituição"
                       />
                     </Field>
                   )}
@@ -921,11 +919,11 @@ const Atualizar = () => {
                     <Label><FiClock /> É sua primeira COMEJACA? *</Label>
                     <CheckRow>
                       <CheckInput
-                        type="checkbox"
-                        name="primeiraComejaca"
-                        checked={formData.primeiraComejaca}
-                        onChange={handleChange}
-                      />
+      type="checkbox"
+      name="primeiraComejaca"
+      checked={formData.primeiraComejaca}
+      onChange={handleChange}
+    />
                       <CheckText>
                         Sim, esta é minha primeira COMEJACA.
                       </CheckText>
@@ -936,33 +934,33 @@ const Atualizar = () => {
                     <Label><FiInfo /> Alimentação *</Label>
                     <Select
                       name="vegetariano"
-                      value={formData.vegetariano}
-                      onChange={handleChange}
+                  value={formData.vegetariano}
+                  onChange={handleChange}
                       required
                     >
                       <option value="">Como é sua alimentação?</option>
-                      <option value="Não">Não</option>
-                      <option value="Vegetariano">Vegetariano</option>
-                      <option value="Vegano">Vegano</option>
-                    </Select>
+                  <option value="Não">Não</option>
+                  <option value="Vegetariano">Vegetariano</option>
+                  <option value="Vegano">Vegano</option>
+                </Select>
                   </Field>
 
                   <Field>
                     <Label><FiInfo /> Alergias ou restrições alimentares</Label>
-                    <TextArea
-                      name="alergia"
-                      value={formData.alergia}
-                      onChange={handleChange}
+                <TextArea
+                  name="alergia"
+                  value={formData.alergia}
+                  onChange={handleChange}
                       placeholder="Se houver algo que a equipe precise considerar, conte aqui."
-                    />
+                />
                   </Field>
 
                   <Field>
                     <Label><FiInfo /> Uso de medicação</Label>
-                    <TextArea
-                      name="medicacao"
-                      value={formData.medicacao}
-                      onChange={handleChange}
+                <TextArea
+                  name="medicacao"
+                  value={formData.medicacao}
+                  onChange={handleChange}
                       placeholder="Você faz uso de algum medicamento? Descreva aqui."
                     />
                   </Field>
@@ -979,11 +977,11 @@ const Atualizar = () => {
                         >
                           <CheckInput
                             $srOnly
-                            type="checkbox"
+          type="checkbox"
                             name={item.name}
                             checked={!!formData[item.name]}
-                            onChange={handleChange}
-                          />
+          onChange={handleChange}
+        />
                           <span>{item.label}</span>
                         </CheckPill>
                       ))}
@@ -994,7 +992,7 @@ const Atualizar = () => {
                         <Input
                           name="deficienciaOutraDescricao"
                           value={formData.deficienciaOutraDescricao}
-                          onChange={handleChange}
+          onChange={handleChange}
                           placeholder="Informe a condição"
                         />
                       </InlineInputWrap>
@@ -1006,7 +1004,7 @@ const Atualizar = () => {
                     <TextArea
                       name="outrasInformacoes"
                       value={formData.outrasInformacoes}
-                      onChange={handleChange}
+          onChange={handleChange}
                       placeholder="Caso queira compartilhar alguma informação importante, registre aqui."
                       rows={5}
                     />
@@ -1184,17 +1182,17 @@ const Atualizar = () => {
                 </PrimaryButton>
               ) : (
                 <PrimaryButton type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                {isSubmitting ? (
                     <>
-                      <FiLoader className="spin" />
-                      Salvando...
+                    <FiLoader className="spin" />
+                    Salvando...
                     </>
-                  ) : (
+                ) : (
                     <>
-                      <FiFileText />
-                      Salvar informações
+                    <FiFileText />
+                    Salvar informações
                     </>
-                  )}
+                )}
                 </PrimaryButton>
               )}
             </FooterActions>

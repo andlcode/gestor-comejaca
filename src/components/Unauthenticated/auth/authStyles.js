@@ -61,8 +61,8 @@ export const authFadeOverlay = keyframes`
 `;
 
 export const AuthPageShell = styled.div`
-  min-height: 100dvh;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -126,16 +126,57 @@ export const AuthPageShell = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100dvh;
     min-height: 100vh;
-    background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+    min-height: 100dvh;
+    background:
+      radial-gradient(
+        ellipse 78% 52% at 50% -10%,
+        rgba(255, 255, 255, 0.92) 0%,
+        rgba(255, 255, 255, 0) 62%
+      ),
+      radial-gradient(
+        ellipse 42% 30% at 12% 22%,
+        rgba(147, 197, 253, 0.12) 0%,
+        rgba(147, 197, 253, 0) 72%
+      ),
+      radial-gradient(
+        ellipse 38% 28% at 88% 78%,
+        rgba(196, 181, 253, 0.12) 0%,
+        rgba(196, 181, 253, 0) 74%
+      ),
+      linear-gradient(180deg, #fbfcfe 0%, #f2f5f9 46%, #e9eef5 100%);
 
     @media (min-width: 1024px) {
-      background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+      background:
+        radial-gradient(
+          ellipse 82% 56% at 50% -8%,
+          rgba(255, 255, 255, 0.98) 0%,
+          rgba(255, 255, 255, 0) 60%
+        ),
+        radial-gradient(
+          ellipse 34% 26% at 8% 24%,
+          rgba(147, 197, 253, 0.14) 0%,
+          rgba(147, 197, 253, 0) 74%
+        ),
+        radial-gradient(
+          ellipse 30% 24% at 92% 78%,
+          rgba(196, 181, 253, 0.14) 0%,
+          rgba(196, 181, 253, 0) 74%
+        ),
+        radial-gradient(
+          ellipse 85% 70% at 50% 115%,
+          rgba(148, 163, 184, 0.12) 0%,
+          rgba(148, 163, 184, 0) 62%
+        ),
+        linear-gradient(180deg, #fbfcfe 0%, #f2f5f9 44%, #e9eef5 100%);
     }
   `}
 
   @media (max-width: 639px) {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
     ${({ $saas }) =>
       $saas
         ? `
@@ -147,19 +188,15 @@ export const AuthPageShell = styled.div`
     `
         : `
       align-items: stretch;
-      justify-content: flex-start;
-      padding: max(0.45rem, env(safe-area-inset-top, 0px))
-        clamp(0.65rem, 3.2vw, 0.875rem)
-        max(0.4rem, env(safe-area-inset-bottom, 0px));
+      justify-content: stretch;
+      padding: 0;
     `}
     ${({ $login }) =>
       $login &&
       `
-      align-items: center;
-      justify-content: center;
-      padding: max(0.9rem, env(safe-area-inset-top, 0px))
-        clamp(0.95rem, 4.8vw, 1.15rem)
-        max(0.85rem, env(safe-area-inset-bottom, 0px));
+      align-items: stretch;
+      justify-content: stretch;
+      padding: 0;
     `}
     box-sizing: border-box;
   }
@@ -524,6 +561,7 @@ export const AuthCardWrap = styled.div`
   margin: 0 auto;
   align-self: center;
   flex-shrink: 0;
+  box-sizing: border-box;
 
   ${({ $saas }) =>
     $saas &&
@@ -535,8 +573,8 @@ export const AuthCardWrap = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    width: min(100%, 548px);
-    max-width: 548px;
+    width: 100%;
+    max-width: 720px;
 
     &::before {
       content: '';
@@ -570,8 +608,8 @@ export const AuthCardWrap = styled.div`
     ${({ $login }) =>
       $login &&
       `
-      width: min(100%, 548px);
-      max-width: 548px;
+      width: 100%;
+      max-width: 720px;
     `}
   }
 
@@ -589,16 +627,19 @@ export const AuthCardWrap = styled.div`
     ${({ $login }) =>
       $login &&
       `
-      width: min(100%, 568px);
-      max-width: 568px;
+      width: 100%;
+      max-width: 720px;
     `}
   }
 
   @media (max-width: 639px) {
-    width: min(92vw, 600px);
-    max-width: min(92vw, 600px);
-    margin: 0 auto;
-    align-self: center;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    align-self: stretch;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
 
     ${({ $saas }) =>
       $saas &&
@@ -612,12 +653,11 @@ export const AuthCardWrap = styled.div`
       `
       width: 100%;
       max-width: none;
+      height: 100%;
+      min-height: 0;
 
       &::before {
-        inset: 1rem 0.9rem -1.15rem;
-        border-radius: 24px;
-        filter: blur(22px);
-        opacity: 0.34;
+        display: none;
       }
     `}
   }
@@ -636,6 +676,7 @@ export const AuthCard = styled.div`
     0 0 0 1px rgba(255, 255, 255, 0.7) inset,
     0 1px 0 rgba(255, 255, 255, 0.76) inset;
   overflow: hidden;
+  box-sizing: border-box;
   animation: ${authCardEnter} 0.24s ease-out both;
 
   @media (prefers-reduced-motion: reduce) {
@@ -643,6 +684,10 @@ export const AuthCard = styled.div`
   }
 
   @media (min-width: 640px) {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 720px;
     border-radius: 5px;
     border: 1px solid rgba(15, 23, 42, 0.052);
     box-shadow:
@@ -661,20 +706,15 @@ export const AuthCard = styled.div`
   }
 
   @media (max-width: 639px) {
+    min-height: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-    min-height: 0;
+    justify-content: flex-start;
     width: 100%;
-    max-height: calc(
-      100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
-        0.95rem
-    );
-    max-height: calc(
-      100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
-        0.95rem
-    );
-    border-radius: 5px;
+    max-height: 100%;
+    border-radius: 0;
     border: 1px solid rgba(15, 23, 42, 0.07);
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.65) inset,
@@ -696,6 +736,10 @@ export const AuthCard = styled.div`
     box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
 
     @media (min-width: 640px) {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 720px;
       border-radius: 5px;
       border: 1px solid #e5e7eb;
       box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
@@ -706,9 +750,11 @@ export const AuthCard = styled.div`
     }
 
     @media (max-width: 639px) {
-      border-radius: 5px;
+      min-height: 0;
+      height: 100%;
+      border-radius: 0;
       border: 1px solid #e5e7eb;
-      box-shadow: 0 14px 30px rgba(17, 24, 39, 0.08);
+      box-shadow: none;
     }
 
     animation: ${authCardEnter} 0.22s ease-out both;
@@ -752,6 +798,12 @@ export const AuthCardHeader = styled.header`
       background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
       border-bottom: 1px solid #e5e7eb;
       padding: 1.28rem 1.6rem 1.12rem;
+    }
+
+    @media (max-width: 639px) {
+      padding: max(0.72rem, env(safe-area-inset-top, 0px)) max(0.95rem, env(safe-area-inset-right, 0px)) 0.64rem
+        max(0.95rem, env(safe-area-inset-left, 0px));
+      gap: 0.5rem;
     }
   `}
 `;
@@ -800,7 +852,7 @@ export const AuthBrandOrdinal = styled.span`
   ${({ $login, $mutedBrand }) =>
     $login &&
     `
-    color: ${$mutedBrand ? '#64748b' : '#7c3aed'};
+    color: ${$mutedBrand ? '#64748b' : '#5b4cdb'};
     opacity: ${$mutedBrand ? 1 : 0.78};
   `}
 `;
@@ -960,15 +1012,15 @@ export const AuthCardBody = styled.div`
   }
 
   @media (max-width: 639px) {
-    flex: 1 1 auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     min-height: 0;
-    padding: 0.85rem max(1rem, env(safe-area-inset-right, 0px))
-      max(0.75rem, env(safe-area-inset-bottom, 0px))
-      max(1rem, env(safe-area-inset-left, 0px));
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 0.7rem max(0.95rem, env(safe-area-inset-right, 0px))
+      max(0.6rem, env(safe-area-inset-bottom, 0px))
+      max(0.95rem, env(safe-area-inset-left, 0px));
+    overflow: hidden;
   }
 
   ${({ $saas }) =>
@@ -998,6 +1050,9 @@ export const AuthCardBody = styled.div`
     padding: 26px 28px 22px;
 
     @media (min-width: 640px) {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
       padding: 28px 32px 24px;
     }
 
@@ -1006,9 +1061,10 @@ export const AuthCardBody = styled.div`
     }
 
     @media (max-width: 639px) {
-      padding: 22px max(22px, env(safe-area-inset-right, 0px))
-        max(18px, env(safe-area-inset-bottom, 0px))
-        max(22px, env(safe-area-inset-left, 0px));
+      padding: 12px max(16px, env(safe-area-inset-right, 0px))
+        max(10px, env(safe-area-inset-bottom, 0px))
+        max(16px, env(safe-area-inset-left, 0px));
+      overflow: hidden;
     }
   `}
 `;
@@ -1034,6 +1090,8 @@ export const AuthContentInner = styled.div`
     $login &&
     `
     max-width: 460px;
+    flex: 1 1 auto;
+    min-height: 100%;
     gap: 0;
   `}
 
@@ -1043,6 +1101,11 @@ export const AuthContentInner = styled.div`
     padding-top: 0;
     max-width: none;
     width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
   }
 `;
 
@@ -1104,12 +1167,13 @@ export const AuthPageTitle = styled.h1`
     letter-spacing: -0.038em;
     line-height: 1.08;
     color: #111827;
-    margin-bottom: ${$recoverySpacing ? '12px' : '0.44rem'};
+    margin-bottom: 8px;
 
     @media (max-width: 639px) {
-      font-size: clamp(1.5625rem, 5.8vw, 1.8125rem);
-      margin-bottom: ${$recoverySpacing ? '12px' : '0.4rem'};
+      font-size: clamp(1.4375rem, 5.4vw, 1.6875rem);
+      margin-bottom: 8px;
       letter-spacing: -0.032em;
+      line-height: 1.06;
     }
   `}
 `;
@@ -1140,15 +1204,15 @@ export const AuthPageSubtitle = styled.p`
     $login &&
     `
     max-width: 32rem;
-    margin-bottom: ${$recoverySpacing ? '24px' : '0.38rem'};
+    margin-bottom: 24px;
     color: #6b7280;
     font-size: 0.90625rem;
     line-height: 1.58;
 
     @media (max-width: 639px) {
-      margin-bottom: ${$recoverySpacing ? '24px' : '0.34rem'};
-      font-size: 0.90625rem;
-      line-height: 1.54;
+      margin-bottom: 24px;
+      font-size: 0.875rem;
+      line-height: 1.46;
     }
   `}
 `;
@@ -1198,49 +1262,25 @@ export const AuthFlowFormSaaS = styled(AuthFlowForm)`
 
 export const AuthLoginForm = styled(AuthFlowFormSaaS)`
   width: 100%;
-  gap: 0;
-  margin-top: 0.92rem;
-
-  @media (min-width: 640px) {
-    margin-top: 1rem;
-  }
-
-  @media (max-width: 639px) {
-    margin-top: 0.88rem;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 0;
 `;
 
 export const AuthLoginFieldStack = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.92rem;
+  gap: 16px;
   width: 100%;
-
-  @media (min-width: 640px) {
-    gap: 0.94rem;
-  }
-
-  @media (max-width: 639px) {
-    gap: 0.82rem;
-  }
 `;
 
 export const AuthLoginActions = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
   width: 100%;
-  margin-top: 0.68rem;
-
-  @media (min-width: 640px) {
-    gap: 1.05rem;
-    margin-top: 0.74rem;
-  }
-
-  @media (max-width: 639px) {
-    gap: 0.9rem;
-    margin-top: 0.6rem;
-  }
+  margin-top: 8px;
 `;
 
 export const AuthRememberRow = styled.label`
@@ -1988,10 +2028,10 @@ export const AuthFormAlert = styled.p`
 `;
 
 export const AuthPrimaryButton = styled.button`
-  margin-top: 0.6875rem;
+  margin-top: 0;
   width: 100%;
-  min-height: 56px;
-  height: 56px;
+  min-height: 48px;
+  height: 48px;
   padding: 0 1.25rem;
   box-sizing: border-box;
   font-family: 'Inter', system-ui, sans-serif;
@@ -2001,7 +2041,7 @@ export const AuthPrimaryButton = styled.button`
   line-height: 1.21;
   color: #fafbfd;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -2010,7 +2050,7 @@ export const AuthPrimaryButton = styled.button`
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  background: #5e56ea;
+  background: linear-gradient(180deg, #6d5df6 0%, #4f6ef7 100%);
   transition:
     background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
@@ -2023,16 +2063,16 @@ export const AuthPrimaryButton = styled.button`
           box-shadow: 0 1px 2px rgba(15, 23, 42, 0.07);
 
           &:hover:not(:disabled) {
-            background: #5248d6;
+            background: linear-gradient(180deg, #7565fb 0%, #5573fb 100%);
             transform: translateY(-1px);
             box-shadow:
               0 2px 4px rgba(15, 23, 42, 0.08),
-              0 12px 24px -18px rgba(94, 86, 234, 0.42);
+              0 14px 24px -18px rgba(79, 110, 247, 0.42);
           }
 
           &:active:not(:disabled) {
             transform: translateY(0);
-            background: #4a42c5;
+            background: linear-gradient(180deg, #5d4ee8 0%, #4665e8 100%);
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
             transition-duration: 0.12s;
           }
@@ -2040,25 +2080,26 @@ export const AuthPrimaryButton = styled.button`
       : css`
           box-shadow:
             0 1px 2px rgba(15, 23, 42, 0.055),
-            0 8px 20px -8px rgba(94, 86, 234, 0.34),
-            0 16px 28px -18px rgba(94, 86, 234, 0.24),
+            0 10px 24px -10px rgba(79, 110, 247, 0.34),
+            0 18px 30px -20px rgba(109, 93, 246, 0.24),
             0 1px 0 rgba(255, 255, 255, 0.11) inset;
 
           &:hover:not(:disabled) {
-            background: #5249d8;
+            background: linear-gradient(180deg, #7667fb 0%, #5674fb 100%);
             transform: translateY(-1px);
             box-shadow:
               0 2px 5px rgba(15, 23, 42, 0.065),
-              0 14px 28px -16px rgba(94, 86, 234, 0.42),
+              0 16px 30px -18px rgba(79, 110, 247, 0.42),
+              0 24px 36px -28px rgba(109, 93, 246, 0.34),
               0 1px 0 rgba(255, 255, 255, 0.13) inset;
           }
 
           &:active:not(:disabled) {
             transform: translateY(0);
-            background: #4a42c5;
+            background: linear-gradient(180deg, #6152ea 0%, #4867ea 100%);
             box-shadow:
               0 1px 2px rgba(15, 23, 42, 0.065),
-              0 3px 12px -3px rgba(94, 86, 234, 0.34);
+              0 3px 12px -3px rgba(79, 110, 247, 0.34);
             transition-duration: 0.12s;
           }
         `}
@@ -2334,10 +2375,10 @@ const authLoginAuxLinkShared = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.4375rem;
-  padding: 0.48rem 0.76rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.9rem;
   margin: 0;
-  border-radius: 11px;
+  border-radius: 12px;
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.828125rem;
   font-weight: 600;
@@ -2345,9 +2386,9 @@ const authLoginAuxLinkShared = css`
   line-height: 1.3;
   color: #526071;
   text-decoration: none;
-  background: rgba(248, 250, 255, 0.82);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 6px 18px -18px rgba(15, 23, 42, 0.14);
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
   -webkit-tap-highlight-color: transparent;
   transition:
     color 0.2s ease,
@@ -2358,11 +2399,8 @@ const authLoginAuxLinkShared = css`
 
   &:hover {
     color: #414d5d;
-    background: rgba(255, 255, 255, 0.98);
-    border-color: rgba(191, 219, 254, 0.95);
-    box-shadow:
-      0 8px 18px -18px rgba(15, 23, 42, 0.14),
-      0 8px 16px -18px rgba(99, 102, 241, 0.16);
+    background: #f8fafc;
+    border-color: rgba(226, 232, 240, 0.95);
     transform: translateY(-1px);
   }
 
@@ -2376,16 +2414,17 @@ const authLoginAuxLinkShared = css`
 
   &:focus-visible {
     color: #404983;
-    background: rgba(248, 249, 255, 1);
-    border-color: rgba(129, 140, 248, 0.52);
+    background: #f8fafc;
+    border-color: rgba(129, 140, 248, 0.38);
     box-shadow:
-      0 0 0 4px rgba(99, 102, 241, 0.1),
-      0 10px 22px -18px rgba(15, 23, 42, 0.16);
+      0 0 0 3px rgba(99, 102, 241, 0.1),
+      0 4px 12px -12px rgba(15, 23, 42, 0.12);
   }
 
   @media (max-width: 639px) {
-    flex: 1 1 auto;
-    min-height: 2.625rem;
+    flex: 1 1 0;
+    min-height: 3rem;
+    padding: 0.75rem 0.875rem;
     font-size: 0.90625rem;
     border-radius: 12px;
   }
@@ -2436,13 +2475,17 @@ export const AuthAuxLinksSaaS = styled(AuthAuxLinks)`
 `;
 
 export const AuthLoginAuxLinks = styled(AuthAuxLinksSaaS)`
+  width: 100%;
+  max-width: none;
   margin-top: clamp(1rem, 2.45vw, 1.25rem);
+  justify-content: space-between;
   column-gap: 0.4375rem;
   row-gap: 0.4375rem;
-  padding-top: 0;
+  padding: 0;
 
   @media (max-width: 639px) {
-    margin-top: 0.9375rem;
+    margin-top: 0;
+    justify-content: space-between;
     column-gap: 0.375rem;
     row-gap: 0.375rem;
   }

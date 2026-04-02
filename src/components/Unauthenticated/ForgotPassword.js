@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +11,8 @@ import {
   AuthButtonSpinner,
   AuthFlowButtonLabelWide,
   AuthLoginActions,
+  AuthLoginAuxLinks,
+  AuthLoginAuxRouterLink,
   AuthLoginFieldStack,
   AuthLoginForm,
   AuthPrimaryButton,
@@ -19,12 +21,23 @@ import {
 const ForgotPasswordContentStack = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
   gap: 0;
+
+  @media (max-width: 639px) {
+    flex: 1;
+    min-height: 0;
+    justify-content: space-between;
+  }
 `;
 
 const ForgotPasswordFormShell = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  justify-content: space-between;
   gap: 0;
   padding-top: 0.18rem;
 
@@ -33,7 +46,10 @@ const ForgotPasswordFormShell = styled.div`
   }
 
   @media (max-width: 639px) {
-    padding-top: 0.16rem;
+    flex: 1;
+    min-height: 0;
+    justify-content: space-between;
+    padding-top: 0;
   }
 `;
 
@@ -42,29 +58,22 @@ const ForgotPasswordForm = styled(AuthLoginForm)`
 `;
 
 const ForgotPasswordActions = styled(AuthLoginActions)`
-  margin-top: 18px;
-
-  @media (min-width: 640px) {
-    margin-top: 18px;
-  }
-
-  @media (max-width: 639px) {
-    margin-top: 18px;
-  }
+  margin-top: 8px;
 `;
 
 const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
+  margin-top: 0;
   position: relative;
   overflow: hidden;
-  min-height: 52px;
-  height: 52px;
-  border-radius: 5px;
+  min-height: 48px;
+  height: 48px;
+  border-radius: 12px;
   border: none;
-  background: linear-gradient(180deg, #2b2d42 0%, #1f2133 100%);
+  background: linear-gradient(180deg, #6d5df6 0%, #4f6ef7 100%);
   color: #f8fafc;
   box-shadow:
-    0 8px 18px rgba(17, 24, 39, 0.14),
-    0 16px 28px -24px rgba(17, 24, 39, 0.18);
+    0 10px 24px -10px rgba(79, 110, 247, 0.34),
+    0 18px 30px -20px rgba(109, 93, 246, 0.24);
   transition:
     background 0.18s ease,
     transform 0.15s ease,
@@ -75,7 +84,7 @@ const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
     content: '';
     position: absolute;
     inset: 1px;
-    border-radius: 5px;
+    border-radius: 12px;
     pointer-events: none;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
@@ -84,7 +93,7 @@ const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: 5px;
+    border-radius: 12px;
     pointer-events: none;
     background: linear-gradient(
       180deg,
@@ -95,18 +104,18 @@ const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
   }
 
   &:hover:not(:disabled) {
-    background: linear-gradient(180deg, #323550 0%, #24263a 100%);
+    background: linear-gradient(180deg, #7667fb 0%, #5674fb 100%);
     transform: translateY(-1px);
     filter: brightness(1.01);
     box-shadow:
-      0 12px 24px rgba(17, 24, 39, 0.16),
-      0 18px 34px -24px rgba(17, 24, 39, 0.2);
+      0 16px 30px -18px rgba(79, 110, 247, 0.42),
+      0 24px 36px -28px rgba(109, 93, 246, 0.34);
   }
 
   &:active:not(:disabled) {
     transform: scale(0.985);
     box-shadow: 0 5px 12px rgba(17, 24, 39, 0.1);
-    background: linear-gradient(180deg, #25283d 0%, #1a1c2d 100%);
+    background: linear-gradient(180deg, #6152ea 0%, #4867ea 100%);
   }
 
   &:focus {
@@ -115,8 +124,8 @@ const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
 
   &:focus-visible {
     box-shadow:
-      0 0 0 3px rgba(124, 58, 237, 0.12),
-      0 8px 18px rgba(17, 24, 39, 0.12);
+      0 0 0 3px rgba(99, 102, 241, 0.14),
+      0 16px 30px -18px rgba(79, 110, 247, 0.32);
   }
 
   &:disabled {
@@ -138,48 +147,49 @@ const ForgotPasswordSubmitButton = styled(AuthPrimaryButton)`
   }
 
   @media (max-width: 639px) {
-    min-height: 52px;
-    height: 52px;
-    border-radius: 5px;
-    font-size: 0.96875rem;
+    min-height: 48px;
+    height: 48px;
+    border-radius: 12px;
+    font-size: 0.9375rem;
   }
 `;
 
 const ForgotPasswordFooter = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.9rem;
-  margin-top: 16px;
-  padding-top: 0;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 24px;
+  padding-top: 0.78rem;
   border-top: 1px solid #e5e7eb;
   width: 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fbfcfe 100%);
 
   @media (max-width: 639px) {
-    margin-top: 16px;
-    padding-top: 0;
+    width: calc(100% + 32px);
+    margin-top: auto;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 0.42rem 16px max(0.55rem, env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid #e5e7eb;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
   }
 `;
 
-const ForgotPasswordFooterLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
+const ForgotPasswordFooterActions = styled(AuthLoginAuxLinks)`
+  margin-top: 0;
+  padding: 0;
+  max-width: none;
+  justify-content: flex-end;
+
+  @media (max-width: 639px) {
+    justify-content: space-between;
+  }
+`;
+
+const ForgotPasswordFooterLink = styled(AuthLoginAuxRouterLink)`
   color: #6b7280;
-  text-decoration: none;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.875rem;
   font-weight: 500;
-  letter-spacing: -0.012em;
-  transition: color 0.15s ease;
-
-  &:hover,
-  &:focus-visible {
-    color: #2563eb;
-  }
-
-  &:focus {
-    outline: none;
-  }
 `;
 
 const ForgotPassword = () => {
@@ -285,7 +295,9 @@ const ForgotPassword = () => {
           </ForgotPasswordForm>
 
           <ForgotPasswordFooter>
-            <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
+            <ForgotPasswordFooterActions aria-label="Ações secundárias">
+              <ForgotPasswordFooterLink to="/">Entrar</ForgotPasswordFooterLink>
+            </ForgotPasswordFooterActions>
           </ForgotPasswordFooter>
         </ForgotPasswordFormShell>
       </ForgotPasswordContentStack>

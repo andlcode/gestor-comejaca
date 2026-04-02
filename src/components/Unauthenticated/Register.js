@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -16,6 +16,9 @@ import PremiumAuthField from './auth/PremiumAuthField';
 import {
   AuthFormAlert,
   AuthLoginActions,
+  AuthLoginAuxDivider,
+  AuthLoginAuxLinks,
+  AuthLoginAuxRouterLink,
   AuthLoginFieldStack,
   AuthLoginForm,
   AuthPrimaryButton,
@@ -24,12 +27,23 @@ import {
 const RegisterContentStack = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
   gap: 0;
+
+  @media (max-width: 639px) {
+    flex: 1;
+    min-height: 0;
+    justify-content: space-between;
+  }
 `;
 
 const RegisterFormShell = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  justify-content: space-between;
   gap: 0;
   padding-top: 0.18rem;
 
@@ -38,7 +52,10 @@ const RegisterFormShell = styled.div`
   }
 
   @media (max-width: 639px) {
-    padding-top: 0.16rem;
+    flex: 1;
+    min-height: 0;
+    justify-content: space-between;
+    padding-top: 0;
   }
 `;
 
@@ -55,15 +72,18 @@ const RegisterAlert = styled(AuthFormAlert)`
 `;
 
 const RegisterSubmitButton = styled(AuthPrimaryButton)`
+  margin-top: 0;
   position: relative;
   overflow: hidden;
-  min-height: 52px;
-  height: 52px;
-  border-radius: 5px;
+  min-height: 48px;
+  height: 48px;
+  border-radius: 12px;
   border: none;
-  background: linear-gradient(180deg, #2b2d42 0%, #1f2133 100%);
+  background: linear-gradient(180deg, #6d5df6 0%, #4f6ef7 100%);
   color: #f8fafc;
-  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.12);
+  box-shadow:
+    0 10px 24px -10px rgba(79, 110, 247, 0.34),
+    0 18px 30px -20px rgba(109, 93, 246, 0.24);
   transition:
     background 0.18s ease,
     transform 0.15s ease,
@@ -71,9 +91,11 @@ const RegisterSubmitButton = styled(AuthPrimaryButton)`
     filter 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: linear-gradient(180deg, #323550 0%, #24263a 100%);
+    background: linear-gradient(180deg, #7667fb 0%, #5674fb 100%);
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(17, 24, 39, 0.14);
+    box-shadow:
+      0 16px 30px -18px rgba(79, 110, 247, 0.42),
+      0 24px 36px -28px rgba(109, 93, 246, 0.34);
   }
 
   &:active:not(:disabled) {
@@ -85,6 +107,11 @@ const RegisterSubmitButton = styled(AuthPrimaryButton)`
     background: #c7ced8;
     cursor: not-allowed;
     box-shadow: none;
+  }
+
+  @media (max-width: 639px) {
+    min-height: 48px;
+    height: 48px;
   }
 `;
 
@@ -111,37 +138,40 @@ const SubmitSpinner = styled(FontAwesomeIcon)`
 
 const RegisterFooter = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.9rem;
-  margin-top: 0.82rem;
-  padding-top: 0.72rem;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 24px;
+  padding-top: 0.78rem;
   border-top: 1px solid #e5e7eb;
   width: 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fbfcfe 100%);
 
   @media (max-width: 639px) {
-    margin-top: 0.74rem;
-    padding-top: 0.66rem;
+    width: calc(100% + 32px);
+    margin-top: auto;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 0.42rem 16px max(0.55rem, env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid #e5e7eb;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
   }
 `;
 
-const RegisterFooterLink = styled(Link)`
+const RegisterFooterActions = styled(AuthLoginAuxLinks)`
+  margin-top: 0;
+  padding: 0;
+  max-width: none;
+  justify-content: space-between;
+
+  @media (max-width: 639px) {
+    justify-content: space-between;
+  }
+`;
+
+const RegisterFooterLink = styled(AuthLoginAuxRouterLink)`
   color: #6b7280;
-  text-decoration: none;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.875rem;
   font-weight: 500;
-  letter-spacing: -0.012em;
-  transition: color 0.15s ease;
-
-  &:hover,
-  &:focus-visible {
-    color: #2563eb;
-  }
-
-  &:focus {
-    outline: none;
-  }
 `;
 
 const Register = () => {
@@ -407,10 +437,13 @@ const Register = () => {
           </AuthLoginForm>
 
           <RegisterFooter>
-            <RegisterFooterLink to="/">Entrar</RegisterFooterLink>
-            <RegisterFooterLink to="/recuperarsenha">
-              Recuperar senha
-            </RegisterFooterLink>
+            <RegisterFooterActions aria-label="Ações secundárias">
+              <RegisterFooterLink to="/">Entrar</RegisterFooterLink>
+              <AuthLoginAuxDivider />
+              <RegisterFooterLink to="/recuperarsenha">
+                Recuperar senha
+              </RegisterFooterLink>
+            </RegisterFooterActions>
           </RegisterFooter>
         </RegisterFormShell>
       </RegisterContentStack>
