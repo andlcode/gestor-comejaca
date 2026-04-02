@@ -132,24 +132,25 @@ const RegisterFooter = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  margin-top: 24px;
-  padding: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: auto;
+  padding: 16px 0 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   width: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+
+  @supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
 
   @media (max-width: 639px) {
     width: calc(100% + 32px);
     margin-top: auto;
     margin-left: -16px;
     margin-right: -16px;
-    padding: 12px 16px max(12px, env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 10px 16px max(10px, env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
   }

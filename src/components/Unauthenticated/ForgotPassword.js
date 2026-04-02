@@ -77,7 +77,7 @@ const ForgotPasswordFooter = styled.div`
   flex-direction: column;
   align-items: stretch;
   margin-top: auto;
-  padding: 10px 0;
+  padding: 16px 0 0;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   width: 100%;
   background: rgba(255, 255, 255, 0.85);

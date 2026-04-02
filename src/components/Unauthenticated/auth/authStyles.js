@@ -574,22 +574,22 @@ export const AuthCardWrap = styled.div`
     $login &&
     `
     width: 100%;
-    max-width: 720px;
+    max-width: 480px;
 
     &::before {
       content: '';
       position: absolute;
-      inset: 1.4rem 1.25rem -1.9rem;
+      inset: 1rem 0.75rem -1.5rem;
       z-index: -1;
-      border-radius: 28px;
+      border-radius: 24px;
       background: radial-gradient(
         ellipse at center,
-        rgba(124, 58, 237, 0.12) 0%,
-        rgba(124, 58, 237, 0.04) 40%,
+        rgba(124, 58, 237, 0.14) 0%,
+        rgba(124, 58, 237, 0.05) 42%,
         transparent 74%
       );
-      filter: blur(30px);
-      opacity: 0.18;
+      filter: blur(26px);
+      opacity: 0.22;
       pointer-events: none;
     }
   `}
@@ -609,7 +609,7 @@ export const AuthCardWrap = styled.div`
       $login &&
       `
       width: 100%;
-      max-width: 720px;
+      max-width: 480px;
     `}
   }
 
@@ -628,7 +628,7 @@ export const AuthCardWrap = styled.div`
       $login &&
       `
       width: 100%;
-      max-width: 720px;
+      max-width: 480px;
     `}
   }
 
@@ -730,23 +730,31 @@ export const AuthCard = styled.div`
   ${({ $login }) =>
     $login &&
     css`
-    border-radius: 5px;
+    border-radius: 20px;
     border: 1px solid #e5e7eb;
-    background: #ffffff;
-    box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+      0 20px 48px rgba(15, 23, 42, 0.14),
+      0 8px 20px rgba(15, 23, 42, 0.06);
 
     @media (min-width: 640px) {
+      width: 100%;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 720px;
-      border-radius: 5px;
+      min-height: 520px;
+      border-radius: 20px;
       border: 1px solid #e5e7eb;
-      box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow:
+        0 24px 56px rgba(15, 23, 42, 0.16),
+        0 10px 24px rgba(15, 23, 42, 0.08);
     }
 
     @media (min-width: 1200px) {
-      box-shadow: 0 20px 44px rgba(17, 24, 39, 0.08);
+      box-shadow:
+        0 28px 64px rgba(15, 23, 42, 0.17),
+        0 12px 26px rgba(15, 23, 42, 0.08);
     }
 
     @media (max-width: 639px) {
@@ -797,7 +805,7 @@ export const AuthCardHeader = styled.header`
     @media (min-width: 640px) {
       background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
       border-bottom: 1px solid #e5e7eb;
-      padding: 1.28rem 1.6rem 1.12rem;
+      padding: 1.5rem 1.75rem 1.25rem;
     }
 
     @media (max-width: 639px) {
@@ -1069,11 +1077,11 @@ export const AuthCardBody = styled.div`
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      padding: 24px;
+      padding: 1.5rem 1.75rem 1.5rem;
     }
 
     @media (min-width: 1024px) {
-      padding: 24px;
+      padding: 1.5rem 1.75rem;
     }
 
     @media (max-width: 639px) {
@@ -1105,7 +1113,8 @@ export const AuthContentInner = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    max-width: 460px;
+    max-width: 100%;
+    width: 100%;
     flex: 1 1 auto;
     min-height: 100%;
     gap: 0;
@@ -1220,7 +1229,7 @@ export const AuthPageSubtitle = styled.p`
     $login &&
     `
     max-width: 32rem;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     color: #6b7280;
     font-size: 0.90625rem;
     line-height: 1.58;
@@ -1287,8 +1296,12 @@ export const AuthLoginForm = styled(AuthFlowFormSaaS)`
 export const AuthLoginFieldStack = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
+
+  @media (max-width: 639px) {
+    gap: 12px;
+  }
 `;
 
 export const AuthLoginActions = styled.div`
@@ -1296,7 +1309,11 @@ export const AuthLoginActions = styled.div`
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  margin-top: 8px;
+  margin-top: 16px;
+
+  @media (max-width: 639px) {
+    margin-top: 8px;
+  }
 `;
 
 export const AuthRememberRow = styled.label`
