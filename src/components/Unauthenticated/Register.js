@@ -170,7 +170,7 @@ const RegisterFooterActions = styled(AuthLoginAuxLinks)`
 `;
 
 const RegisterFooterLink = styled(AuthLoginAuxRouterLink)`
-  color: #6b7280;
+  color: #334155;
   font-weight: 500;
 `;
 

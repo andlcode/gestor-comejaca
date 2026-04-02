@@ -165,13 +165,13 @@ const LoginFooterActions = styled(AuthLoginAuxLinks)`
 `;
 
 const LoginInlineLink = styled(AuthLoginAuxRouterLink)`
-  color: #6b7280;
+  color: #334155;
   font-weight: 500;
 `;
 
 const LoginFooterLink = styled(AuthLoginAuxRouterLink)`
-  color: #4b5563;
-  font-weight: 600;
+  color: #334155;
+  font-weight: 500;
 `;
 
 const Login = () => {

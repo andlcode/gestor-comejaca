@@ -2375,18 +2375,20 @@ const authLoginAuxLinkShared = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.75rem;
-  padding: 0.625rem 0.9rem;
+  flex: 1 1 50%;
+  min-width: 0;
+  min-height: 2.875rem;
+  padding: 0.75rem 0.9rem;
   margin: 0;
-  border-radius: 12px;
+  border-radius: 0;
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.828125rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.012em;
   line-height: 1.3;
-  color: #526071;
+  color: #334155;
   text-decoration: none;
-  background: transparent;
+  background: #f8fafc;
   border: 1px solid transparent;
   box-shadow: none;
   -webkit-tap-highlight-color: transparent;
@@ -2398,13 +2400,12 @@ const authLoginAuxLinkShared = css`
     transform 0.2s ease;
 
   &:hover {
-    color: #414d5d;
-    background: #f8fafc;
-    border-color: rgba(226, 232, 240, 0.95);
-    transform: translateY(-1px);
+    color: #1f2937;
+    background: #f1f5f9;
   }
 
   &:active {
+    background: #eef2f7;
     transform: translateY(0);
   }
 
@@ -2413,12 +2414,16 @@ const authLoginAuxLinkShared = css`
   }
 
   &:focus-visible {
-    color: #404983;
-    background: #f8fafc;
-    border-color: rgba(129, 140, 248, 0.38);
+    color: #1f2937;
+    background: #f1f5f9;
+    border-color: rgba(129, 140, 248, 0.18);
     box-shadow:
       0 0 0 3px rgba(99, 102, 241, 0.1),
       0 4px 12px -12px rgba(15, 23, 42, 0.12);
+  }
+
+  &:only-child {
+    flex-basis: 100%;
   }
 
   @media (max-width: 639px) {
@@ -2426,7 +2431,6 @@ const authLoginAuxLinkShared = css`
     min-height: 3rem;
     padding: 0.75rem 0.875rem;
     font-size: 0.90625rem;
-    border-radius: 12px;
   }
 `;
 
@@ -2479,15 +2483,19 @@ export const AuthLoginAuxLinks = styled(AuthAuxLinksSaaS)`
   max-width: none;
   margin-top: clamp(1rem, 2.45vw, 1.25rem);
   justify-content: space-between;
-  column-gap: 0.4375rem;
-  row-gap: 0.4375rem;
+  flex-wrap: nowrap;
+  column-gap: 0;
+  row-gap: 0;
   padding: 0;
+  background: #f8fafc;
+  border-radius: 12px;
+  overflow: hidden;
 
   @media (max-width: 639px) {
     margin-top: 0;
     justify-content: space-between;
-    column-gap: 0.375rem;
-    row-gap: 0.375rem;
+    column-gap: 0;
+    row-gap: 0;
   }
 `;
 
@@ -2519,13 +2527,10 @@ export const AuthAuxDivider = styled.span`
 `;
 
 export const AuthLoginAuxDivider = styled(AuthAuxDivider)`
-  height: 0.875rem;
-  background: rgba(148, 163, 184, 0.22);
+  align-self: stretch;
+  height: auto;
+  background: rgba(148, 163, 184, 0.28);
   margin: 0;
-
-  @media (max-width: 639px) {
-    display: none;
-  }
 `;
 
 export const AuthStatusSlot = styled.div`
