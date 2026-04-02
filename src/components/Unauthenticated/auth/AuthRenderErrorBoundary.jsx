@@ -36,18 +36,46 @@ const FallbackText = styled.p`
   color: #475569;
 `;
 
+const FallbackDebug = styled.pre`
+  margin: 12px 0 0;
+  padding: 12px;
+  max-height: 240px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+`;
+
 class AuthRenderErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorMessage: '', errorStack: '', componentStack: '' };
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+      errorMessage: error?.message || 'Erro desconhecido',
+      errorStack: error?.stack || '',
+    };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[AuthRenderErrorBoundary] render crash:', error, errorInfo);
+    console.error('[AuthRenderErrorBoundary] error.message:', error?.message);
+    console.error('[AuthRenderErrorBoundary] error.stack:', error?.stack);
+    console.error(
+      '[AuthRenderErrorBoundary] errorInfo.componentStack:',
+      errorInfo?.componentStack
+    );
+
+    this.setState({
+      componentStack: errorInfo?.componentStack || '',
+    });
   }
 
   render() {
@@ -60,6 +88,9 @@ class AuthRenderErrorBoundary extends React.Component {
               Ocorreu um erro de renderização. Tente voltar para a tela anterior e abrir
               novamente.
             </FallbackText>
+            <FallbackDebug>
+              {`message: ${this.state.errorMessage}\n\nstack: ${this.state.errorStack}\n\ncomponentStack: ${this.state.componentStack}`}
+            </FallbackDebug>
           </FallbackCard>
         </FallbackShell>
       );
