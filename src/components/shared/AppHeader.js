@@ -12,8 +12,15 @@ const Wrapper = styled.header`
   right: 0;
   height: ${APP_HEADER_HEIGHT};
   z-index: 50;
-  border-bottom: 1px solid #e5e7eb;
-  background: #ffffff;
+  border-bottom: 1px solid
+    ${({ $glass }) => ($glass ? 'rgba(255, 255, 255, 0.38)' : '#e5e7eb')};
+  background: ${({ $glass }) =>
+    $glass ? 'rgba(248, 248, 251, 0.72)' : '#ffffff'};
+  backdrop-filter: ${({ $glass }) => ($glass ? 'blur(18px) saturate(160%)' : 'none')};
+  -webkit-backdrop-filter: ${({ $glass }) =>
+    $glass ? 'blur(18px) saturate(160%)' : 'none'};
+  box-shadow: ${({ $glass }) =>
+    $glass ? '0 8px 24px -20px rgba(15, 23, 42, 0.18)' : 'none'};
 
   @media (max-width: 768px) {
     height: ${APP_HEADER_HEIGHT_MOBILE};
@@ -127,9 +134,10 @@ const AppHeader = ({
   titleContent,
   rightContent,
   maxWidth = '980px',
+  glass = false,
 }) => {
   return (
-    <Wrapper>
+    <Wrapper $glass={glass}>
       <Inner $maxWidth={maxWidth}>
         <Left>
           {showBack && (

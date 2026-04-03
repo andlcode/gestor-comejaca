@@ -174,6 +174,14 @@ const ListaParticipantes = () => {
   const [participantDetailsCache, setParticipantDetailsCache] = useState({});
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
   const navigate = useNavigate();
+  const isAdmin = useMemo(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      return storedUser?.role === 'admin' || localStorage.getItem('role') === 'admin';
+    } catch {
+      return localStorage.getItem('role') === 'admin';
+    }
+  }, []);
 
   useEffect(() => {
     const fetchParticipantes = async () => {
@@ -589,7 +597,7 @@ const ListaParticipantes = () => {
                       <col style={{ width: '18%' }} />
                       <col style={{ width: '14%' }} />
                       <col style={{ width: '10%' }} />
-                      <col style={{ width: '12%' }} />
+                      <col style={{ width: '16%' }} />
                     </colgroup>
                     <TableHead>
                       <tr>
@@ -598,7 +606,7 @@ const ListaParticipantes = () => {
                         <TableHeaderCell>Comissão</TableHeaderCell>
                         <TableHeaderCell $nowrap>Status Pagamento</TableHeaderCell>
                         <TableHeaderCell $nowrap>Link</TableHeaderCell>
-                        <TableHeaderCell $nowrap>Ficha</TableHeaderCell>
+                        <TableHeaderCell $nowrap>Ações</TableHeaderCell>
                       </tr>
                     </TableHead>
                     <tbody>
@@ -652,12 +660,22 @@ const ListaParticipantes = () => {
                               )}
                             </TableCell>
                             <TableCell $nowrap>
-                              <ActionButton
-                                type="button"
-                                onClick={() => navigate(`/imprimir/${p.id}`)}
-                              >
-                                Imprimir
-                              </ActionButton>
+                              <ActionButtonGroup>
+                                <ActionButton
+                                  type="button"
+                                  onClick={() => navigate(`/imprimir/${p.id}`)}
+                                >
+                                  Imprimir
+                                </ActionButton>
+                                {isAdmin && (
+                                  <ActionButton
+                                    type="button"
+                                    onClick={() => navigate(`/atualizar/${p.id}`)}
+                                  >
+                                    Editar
+                                  </ActionButton>
+                                )}
+                              </ActionButtonGroup>
                             </TableCell>
                           </BodyRow>
                         );
@@ -1302,6 +1320,17 @@ const ActionButton = styled.button`
   &:hover {
     background: #2b2d42;
     transform: translateY(-1px);
+  }
+`;
+
+const ActionButtonGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: stretch;
   }
 `;
 

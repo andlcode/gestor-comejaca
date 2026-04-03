@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { FaInstagram } from 'react-icons/fa';
 import {
   FiBarChart2,
@@ -25,15 +25,31 @@ import AppHeader, {
   APP_HEADER_HEIGHT_MOBILE,
 } from '../shared/AppHeader';
 
-const PAGE_MAX_WIDTH = '980px';
+const PAGE_MAX_WIDTH = '760px';
+
+const cardEnter = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 
 const Container = styled.div`
   min-height: 100vh;
-  background: var(--app-bg);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.88) 0%, rgba(242, 242, 247, 0) 36%),
+    linear-gradient(180deg, #f8f8fb 0%, #f2f2f7 42%, #eef1f6 100%);
   padding: calc(28px + ${APP_HEADER_HEIGHT}) 18px 40px;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
     'Segoe UI', sans-serif;
   color: var(--text-primary);
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 
   @media (max-width: 768px) {
     padding: calc(16px + ${APP_HEADER_HEIGHT_MOBILE}) 12px 28px;
@@ -41,6 +57,7 @@ const Container = styled.div`
 `;
 
 const Content = styled.div`
+  width: 100%;
   max-width: ${PAGE_MAX_WIDTH};
   margin: 0 auto;
 `;
@@ -172,9 +189,10 @@ const MobileHeaderButton = styled.button`
   min-width: 42px;
   width: auto;
   padding: 0 12px;
-  border: 1px solid var(--btn-secondary-border);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 13px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(14px);
   color: #2c2c2e;
   display: inline-flex;
   align-items: center;
@@ -186,8 +204,8 @@ const MobileHeaderButton = styled.button`
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: #ffffff;
-    border-color: #cfcfd8;
+    background: rgba(255, 255, 255, 0.84);
+    border-color: rgba(15, 23, 42, 0.12);
   }
 
   &:active {
@@ -200,7 +218,7 @@ const TopActionBar = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 `;
 
 const DesktopActionGroup = styled.div`
@@ -255,9 +273,9 @@ const GhostActionButton = styled.button`
 
 const StateCard = styled.div`
   min-height: 140px;
-  border-radius: 5px;
-  background: var(--card-bg);
-  border: 1px solid var(--btn-secondary-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -266,13 +284,17 @@ const StateCard = styled.div`
   font-size: 15px;
   text-align: center;
   padding: 24px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 16px 28px -22px rgba(15, 23, 42, 0.12);
+  animation: ${cardEnter} 0.28s ease both;
 `;
 
 const Section = styled.section`
-  padding: 8px 0 0;
+  padding: 6px 0 0;
 
   & + & {
-    margin-top: 18px;
+    margin-top: 16px;
   }
 `;
 
@@ -337,72 +359,90 @@ const CountBadge = styled.span`
 const ActiveGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 16px;
 `;
 
 const RegistrationCard = styled.article`
-  padding: 20px;
-  border-radius: 5px;
-  background: var(--card-bg);
-  border: 1px solid var(--btn-secondary-border);
-  box-shadow: var(--card-shadow);
+  padding: 22px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 18px 34px -24px rgba(15, 23, 42, 0.14);
   transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  animation: ${cardEnter} 0.28s ease both;
 
   &:hover {
     transform: translateY(-1px);
-    border-color: #e4e4eb;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.045);
+    border-color: rgba(15, 23, 42, 0.08);
+    box-shadow:
+      0 2px 6px rgba(15, 23, 42, 0.04),
+      0 22px 38px -24px rgba(15, 23, 42, 0.16);
   }
 
   @media (max-width: 768px) {
     padding: 18px;
-    border-radius: 22px;
+    border-radius: 18px;
   }
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin-bottom: 10px;
 
   @media (max-width: 768px) {
+    align-items: stretch;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 `;
 
 const CardIdentity = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
 `;
 
 const CardName = styled.h3`
   margin: 0;
   color: var(--text-primary);
   font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+`;
+
+const CardStatusRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const StatusChip = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 26px;
-  padding: 0 10px;
+  min-height: 30px;
+  width: fit-content;
+  padding: 0 12px;
   border-radius: 999px;
   color: ${({ $appearance }) => $appearance?.textColor || '#64748b'};
   background: ${({ $appearance }) => $appearance?.backgroundColor || 'rgba(148, 163, 184, 0.14)'};
+  border: 1px solid ${({ $appearance }) => $appearance?.borderColor || 'rgba(148, 163, 184, 0.22)'};
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1;
 `;
 
 const StatusDot = styled.span`
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: ${({ $appearance }) => $appearance?.dotColor || '#94a3b8'};
 `;
@@ -410,70 +450,97 @@ const StatusDot = styled.span`
 const Actions = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
 
   @media (max-width: 768px) {
     width: 100%;
-    flex-direction: column;
-    align-items: stretch;
   }
 `;
 
 const SecondaryActions = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 `;
 
 const PrimaryAction = styled.div`
   display: inline-flex;
   margin-left: auto;
+  flex-shrink: 0;
+  min-width: 152px;
 
   @media (max-width: 768px) {
     width: 100%;
+    min-width: 0;
     margin-left: 0;
+    justify-content: stretch;
   }
 `;
 
 const Button = styled.button`
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: 5px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  min-width: ${({ $variant }) => ($variant === 'primary' ? '152px' : '0')};
   border: 1px solid
     ${({ $variant }) =>
-      $variant === 'primary' ? 'transparent' : 'var(--btn-secondary-border)'};
+      $variant === 'primary' ? 'transparent' : 'rgba(15, 23, 42, 0.08)'};
   background: ${({ $variant }) =>
-    $variant === 'primary' ? 'var(--btn-primary-bg)' : 'var(--card-bg)'};
-  color: ${({ $variant }) => ($variant === 'primary' ? '#ffffff' : 'var(--text-primary)')};
+    $variant === 'primary' ? '#1c1c1e' : 'rgba(248, 250, 252, 0.92)'};
+  color: ${({ $variant }) => ($variant === 'primary' ? '#ffffff' : '#334155')};
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  box-shadow: ${({ $variant }) =>
+    $variant === 'primary'
+      ? '0 2px 8px rgba(0, 0, 0, 0.12)'
+      : '0 1px 2px rgba(15, 23, 42, 0.03)'};
+  transform: scale(1);
+  transition: all 0.2s ease;
 
   &:hover {
     background: ${({ $variant }) =>
-      $variant === 'primary' ? '#2a2a2d' : '#f7f7f8'};
+      $variant === 'primary' ? '#1c1c1e' : '#ffffff'};
     border-color: ${({ $variant }) =>
-      $variant === 'primary' ? 'transparent' : 'var(--btn-secondary-border)'};
+      $variant === 'primary' ? 'transparent' : 'rgba(15, 23, 42, 0.1)'};
+    box-shadow: ${({ $variant }) =>
+      $variant === 'primary'
+        ? '0 2px 8px rgba(0, 0, 0, 0.12)'
+        : '0 2px 4px rgba(15, 23, 42, 0.04)'};
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+    opacity: 0.9;
   }
 
   &:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
+    opacity: 1;
+    cursor: progress;
+    transform: scale(1);
+    box-shadow: ${({ $variant }) =>
+      $variant === 'primary'
+        ? '0 8px 18px -14px rgba(0, 0, 0, 0.28)'
+        : '0 1px 2px rgba(15, 23, 42, 0.03)'};
   }
 
   @media (max-width: 768px) {
+    width: 100%;
     flex: 1 1 auto;
+    min-width: 0;
   }
 `;
 
@@ -487,26 +554,30 @@ const InlineEmpty = styled.div`
 `;
 
 const ArchiveShell = styled.div`
-  border-radius: 5px;
-  background: var(--card-bg);
-  border: 1px solid var(--btn-secondary-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(15, 23, 42, 0.05);
   overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.025),
+    0 12px 24px -22px rgba(15, 23, 42, 0.1);
+  animation: ${cardEnter} 0.28s ease both;
 `;
 
 const ArchiveToggle = styled.button`
   width: 100%;
-  min-height: 54px;
+  min-height: 56px;
   border: none;
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 18px;
   cursor: pointer;
   transition: background 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.56);
+    background: rgba(248, 250, 252, 0.78);
   }
 `;
 
@@ -514,21 +585,21 @@ const ArchiveTitle = styled.div`
   display: flex;
   align-items: flex-start;
   flex-direction: column;
-  gap: 6px;
-  color: #3a3a3c;
+  gap: 4px;
+  color: #475569;
 `;
 
 const ArchiveTitleMain = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 `;
 
 const ArchiveHint = styled.span`
-  font-size: 12px;
-  color: #8e8e93;
+  font-size: 11px;
+  color: #94a3b8;
 `;
 
 const ArchiveCount = styled.span`
@@ -537,14 +608,14 @@ const ArchiveCount = styled.span`
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: #f2f2f7;
-  color: #6e6e73;
-  font-size: 12px;
+  background: rgba(241, 245, 249, 0.92);
+  color: #64748b;
+  font-size: 11px;
   font-weight: 600;
 `;
 
 const ArchiveChevron = styled(FiChevronDown)`
-  color: #8e8e93;
+  color: #94a3b8;
   transition: transform 0.2s ease;
   transform: rotate(${({ $expanded }) => ($expanded ? '180deg' : '0deg')});
 `;
@@ -557,21 +628,21 @@ const ArchivePanel = styled.div`
 `;
 
 const ArchiveList = styled.div`
-  padding: 0 16px 8px;
+  padding: 0 18px 10px;
 `;
 
 const ArchiveRow = styled.div`
-  min-height: 46px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-top: 1px solid #f1f1f4;
+  border-top: 1px solid rgba(15, 23, 42, 0.05);
 `;
 
 const ArchiveName = styled.span`
-  font-size: 14px;
-  color: #6e6e73;
+  font-size: 13px;
+  color: #64748b;
   font-weight: 500;
   padding: 12px 0;
 `;
@@ -582,8 +653,8 @@ const ArchiveBadge = styled.span`
   min-height: 20px;
   padding: 0 8px;
   border-radius: 999px;
-  background: #f2f2f7;
-  color: #8e8e93;
+  background: rgba(241, 245, 249, 0.92);
+  color: #94a3b8;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -597,12 +668,12 @@ const ArchiveActions = styled.div`
 `;
 
 const ArchiveActionButton = styled.button`
-  min-height: 30px;
-  padding: 0 10px;
+  min-height: 31px;
+  padding: 0 11px;
   border-radius: 10px;
-  border: 1px solid #e0e2e8;
-  background: rgba(255, 255, 255, 0.92);
-  color: #4b4f5b;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  color: #475569;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -610,7 +681,7 @@ const ArchiveActionButton = styled.button`
 
   &:hover {
     background: #ffffff;
-    border-color: #d3d7e2;
+    border-color: rgba(15, 23, 42, 0.12);
   }
 `;
 
@@ -666,10 +737,11 @@ const ConfirmActions = styled.div`
 const DrawerOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(29, 29, 31, 0.22);
+  background: rgba(15, 23, 42, 0.34);
+  backdrop-filter: blur(2px);
   opacity: ${({ $open }) => ($open ? 1 : 0)};
   pointer-events: ${({ $open }) => ($open ? 'auto' : 'none')};
-  transition: opacity 0.2s ease;
+  transition: opacity 0.22s ease;
   z-index: 40;
 
   @media (min-width: 769px) {
@@ -681,15 +753,21 @@ const DrawerPanel = styled.aside`
   position: fixed;
   top: 0;
   right: 0;
-  width: min(86vw, 320px);
-  height: 100vh;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(16px);
-  border-left: 1px solid rgba(236, 236, 241, 0.9);
-  padding: 16px 14px;
+  bottom: 0;
+  width: min(82vw, 340px);
+  height: 100dvh;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(18px);
+  border-left: 1px solid rgba(236, 236, 241, 0.92);
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 14px
+    max(16px, env(safe-area-inset-bottom, 0px));
   transform: translateX(${({ $open }) => ($open ? '0' : '100%')});
-  transition: transform 0.22s ease;
-  box-shadow: -10px 0 24px rgba(0, 0, 0, 0.06);
+  transition: transform 0.24s ease;
+  box-shadow:
+    -8px 0 24px rgba(15, 23, 42, 0.08),
+    -24px 0 48px rgba(15, 23, 42, 0.12);
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -812,6 +890,7 @@ const DrawerInstagramLink = styled.a`
 `;
 
 const Spinner = styled(FiLoader)`
+  flex-shrink: 0;
   animation: spin 1s linear infinite;
 
   @keyframes spin {
@@ -1084,6 +1163,7 @@ const Dashboard = () => {
       </ConfirmOverlay>
 
       <AppHeader
+        glass
         titleContent={
           <HeaderIdentity>
             <HeaderBrand>COMEJACA</HeaderBrand>
@@ -1227,31 +1307,13 @@ const Dashboard = () => {
                           <CardIdentity>
                             <CardName>{shortName || item.nomeCompleto}</CardName>
 
-                            <StatusChip $appearance={statusAppearance}>
-                              <StatusDot $appearance={statusAppearance} />
-                              <span>{statusAppearance.label}</span>
-                            </StatusChip>
+                            <CardStatusRow>
+                              <StatusChip $appearance={statusAppearance}>
+                                <StatusDot $appearance={statusAppearance} />
+                                <span>{statusAppearance.label}</span>
+                              </StatusChip>
+                            </CardStatusRow>
                           </CardIdentity>
-                        </CardHeader>
-
-                        <Actions>
-                          <SecondaryActions>
-                            <Button
-                              type="button"
-                              onClick={() => navigate(`/imprimir/${item.id}`)}
-                            >
-                              <FiPrinter size={14} />
-                              Imprimir
-                            </Button>
-
-                            <Button
-                              type="button"
-                              onClick={() => navigate(`/atualizar/${item.id}`)}
-                            >
-                              <FiEdit size={14} />
-                              Editar
-                            </Button>
-                          </SecondaryActions>
 
                           {item.lifecycle.actions.canPay &&
                             statusVariant !== 'pago' && (
@@ -1273,6 +1335,26 @@ const Dashboard = () => {
                                 </Button>
                               </PrimaryAction>
                             )}
+                        </CardHeader>
+
+                        <Actions>
+                          <SecondaryActions>
+                            <Button
+                              type="button"
+                              onClick={() => navigate(`/imprimir/${item.id}`)}
+                            >
+                              <FiPrinter size={14} />
+                              Imprimir
+                            </Button>
+
+                            <Button
+                              type="button"
+                              onClick={() => navigate(`/atualizar/${item.id}`)}
+                            >
+                              <FiEdit size={14} />
+                              Editar
+                            </Button>
+                          </SecondaryActions>
                         </Actions>
                       </RegistrationCard>
                     );
