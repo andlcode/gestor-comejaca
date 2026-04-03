@@ -6,8 +6,9 @@ import axios from 'axios';
 import AppHeader, {
   APP_HEADER_HEIGHT,
   APP_HEADER_HEIGHT_MOBILE,
-  AppHeaderBadge,
 } from '../shared/AppHeader';
+
+const PAGE_MAX_WIDTH = '960px';
 
 const appHeaderTheme = {
   borderColor: '#e5e7eb',
@@ -33,34 +34,42 @@ const FIELD_LABELS = {
 
 const Container = styled.div`
   min-height: 100vh;
-  background: #f5f7fb;
-  padding: calc(24px + ${APP_HEADER_HEIGHT}) 24px 24px;
-  font-family: 'Poppins', sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.88) 0%, rgba(242, 242, 247, 0) 36%),
+    linear-gradient(180deg, #f8f8fb 0%, #f2f2f7 42%, #eef1f6 100%);
+  padding: calc(28px + ${APP_HEADER_HEIGHT}) 18px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
+    'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: #111827;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 
   @media (max-width: 768px) {
-    padding: calc(16px + ${APP_HEADER_HEIGHT_MOBILE}) 16px 16px;
+    padding: calc(16px + ${APP_HEADER_HEIGHT_MOBILE}) 12px 28px;
   }
 `;
 
 const ContentWrapper = styled.div`
   width: 100%;
-  max-width: 1480px;
+  max-width: ${PAGE_MAX_WIDTH};
   margin: 0 auto;
 `;
 
 const FormCard = styled.div`
   width: 100%;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 5px;
-  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.06);
-  padding: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 16px;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.03),
+    0 18px 34px -24px rgba(15, 23, 42, 0.14);
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 
   @media (max-width: 768px) {
     padding: 18px;
@@ -74,18 +83,19 @@ const PageHeader = styled.div`
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  padding-bottom: 2px;
 `;
 
 const TitleBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 `;
 
 const Title = styled.h1`
   margin: 0;
-  font-size: clamp(1.75rem, 3vw, 2.125rem);
-  line-height: 1.08;
+  font-size: clamp(1.65rem, 3vw, 2rem);
+  line-height: 1.05;
   font-weight: 700;
   letter-spacing: -0.04em;
   color: #111827;
@@ -93,10 +103,10 @@ const Title = styled.h1`
 
 const Subtitle = styled.p`
   margin: 0;
-  color: #6b7280;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  max-width: 760px;
+  color: #64748b;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  max-width: 640px;
 `;
 
 const ButtonContainer = styled.div`
@@ -114,14 +124,14 @@ const ActionButton = styled.button`
   height: 42px;
   padding: 0 14px;
   border-radius: 13px;
-  border: 1px solid ${({ $active }) => ($active ? '#1f2133' : '#d1d5db')};
-  background: ${({ $active }) => ($active ? '#1f2133' : 'rgba(255, 255, 255, 0.92)')};
-  color: ${({ $active }) => ($active ? '#ffffff' : '#374151')};
+  border: 1px solid ${({ $active }) => ($active ? '#1c1c1e' : 'rgba(15, 23, 42, 0.08)')};
+  background: ${({ $active }) => ($active ? '#1c1c1e' : 'rgba(248, 250, 252, 0.92)')};
+  color: ${({ $active }) => ($active ? '#ffffff' : '#334155')};
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: 'Poppins', sans-serif;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -132,8 +142,8 @@ const ActionButton = styled.button`
     transform 0.2s ease;
 
   &:hover {
-    background: ${({ $active }) => ($active ? '#2b2d42' : '#ffffff')};
-    border-color: ${({ $active }) => ($active ? '#2b2d42' : '#cbd5e1')};
+    background: ${({ $active }) => ($active ? '#2a2a2d' : '#ffffff')};
+    border-color: ${({ $active }) => ($active ? '#2a2a2d' : 'rgba(15, 23, 42, 0.12)')};
     transform: translateY(-1px);
   }
 
@@ -146,8 +156,8 @@ const ModeNotice = styled.p`
   margin: 0;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(248, 250, 252, 0.88);
   color: #475569;
   font-size: 0.9rem;
   line-height: 1.55;
@@ -158,7 +168,7 @@ const SearchContainer = styled.div`
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  max-width: 460px;
+  max-width: 420px;
 `;
 
 const Label = styled.label`
@@ -176,8 +186,8 @@ const StyledSelect = styled.select`
   min-height: 46px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.96);
   color: #111827;
   font-size: 0.95rem;
   transition:
@@ -194,9 +204,13 @@ const StyledSelect = styled.select`
 const TableContainer = styled.div`
   width: 100%;
   overflow-x: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: 16px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
+
+  @media (max-width: 767px) {
+    display: none;
+  }
 `;
 
 const Table = styled.table`
@@ -248,11 +262,11 @@ const Input = styled.input`
   width: 100%;
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.98);
   color: #111827;
-  font-family: 'Poppins', sans-serif;
+  font-family: inherit;
   font-size: 0.95rem;
   transition:
     border-color 0.18s ease,
@@ -301,9 +315,9 @@ const SubmitButton = styled.button`
   padding: 0 16px;
   border: none;
   border-radius: 13px;
-  background: #1f2133;
+  background: #1c1c1e;
   color: #ffffff;
-  font-family: 'Poppins', sans-serif;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -314,7 +328,7 @@ const SubmitButton = styled.button`
   box-shadow: 0 10px 18px -18px rgba(17, 24, 39, 0.35);
 
   &:hover {
-    background: #2b2d42;
+    background: #2a2a2d;
     transform: translateY(-1px);
   }
 `;
@@ -324,10 +338,10 @@ const SecondaryButton = styled.button`
   min-height: 44px;
   padding: 0 16px;
   border-radius: 13px;
-  border: 1px solid #d1d5db;
-  background: rgba(255, 255, 255, 0.92);
-  color: #374151;
-  font-family: 'Poppins', sans-serif;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(248, 250, 252, 0.92);
+  color: #334155;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -338,9 +352,67 @@ const SecondaryButton = styled.button`
 
   &:hover {
     background: #ffffff;
-    border-color: #cbd5e1;
+    border-color: rgba(15, 23, 42, 0.12);
     transform: translateY(-1px);
   }
+`;
+
+const HeaderIdentity = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+`;
+
+const HeaderBrand = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8e8e93;
+`;
+
+const HeaderPageTitleRow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+`;
+
+const HeaderPageTitle = styled.h1`
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: #111827;
+`;
+
+const HeaderPageMeta = styled.span`
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+`;
+
+const MobileFieldStack = styled.div`
+  display: none;
+
+  @media (max-width: 767px) {
+    display: grid;
+    gap: 14px;
+  }
+`;
+
+const MobileFieldCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
 `;
 
 
@@ -523,14 +595,27 @@ const IePage = () => {
     setError('');
   };
 
+  const visibleFields = Object.entries(formData).filter(
+    ([key]) => key !== 'CEU' && key !== 'horario'
+  );
+
   return (
     <ThemeProvider theme={appHeaderTheme}>
       <Container>
         <AppHeader
           showBack
+          glass
           onBack={() => navigate(-1)}
-          rightContent={<AppHeaderBadge>COMEJACA 2026</AppHeaderBadge>}
-          maxWidth="1480px"
+          titleContent={
+            <HeaderIdentity>
+              <HeaderBrand>COMEJACA</HeaderBrand>
+              <HeaderPageTitleRow>
+                <HeaderPageTitle>Sistema de inscrições</HeaderPageTitle>
+                <HeaderPageMeta>Gestão e atualização</HeaderPageMeta>
+              </HeaderPageTitleRow>
+            </HeaderIdentity>
+          }
+          maxWidth={PAGE_MAX_WIDTH}
         />
 
         <ContentWrapper>
@@ -609,7 +694,7 @@ const IePage = () => {
                   </tr>
                 </TableHead>
                 <tbody>
-                  {Object.entries(formData).map(([key, value]) =>
+                  {visibleFields.map(([key, value]) =>
                     key !== 'CEU' && key !== 'horario' ? (
                       <TableRow key={key}>
                         <TableCell>
@@ -630,6 +715,24 @@ const IePage = () => {
                 </tbody>
               </Table>
             </TableContainer>
+
+            <MobileFieldStack>
+              {visibleFields.map(([key, value]) => (
+                <MobileFieldCard key={key}>
+                  <Label htmlFor={`ie-mobile-${key}`}>
+                    {FIELD_LABELS[key] || key}
+                  </Label>
+                  <Input
+                    id={`ie-mobile-${key}`}
+                    type="text"
+                    name={key}
+                    value={value}
+                    onChange={handleChange}
+                    disabled={formMode === 'alterar' && !selectedInstitution}
+                  />
+                </MobileFieldCard>
+              ))}
+            </MobileFieldStack>
 
             {error ? <ErrorMessage>{error}</ErrorMessage> : null}
 

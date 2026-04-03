@@ -100,6 +100,49 @@ const HeaderPageMeta = styled.span`
   font-weight: 500;
 `;
 
+const HeaderMetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const UserBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  width: fit-content;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.74);
+  color: #475569;
+  backdrop-filter: blur(10px);
+`;
+
+const UserAvatar = styled.span`
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(28, 28, 30, 0.08);
+  color: #1c1c1e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+`;
+
+const UserNameText = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: #475569;
+`;
+
 const MobileOnly = styled.div`
   display: none;
 
@@ -987,9 +1030,34 @@ const Dashboard = () => {
   const isAdmin = useMemo(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-      return storedUser?.role === 'admin' || localStorage.getItem('role') === 'admin';
+      const role = storedUser?.role || localStorage.getItem('role');
+      return role === 'admin' || role === 'admin_total';
     } catch {
-      return localStorage.getItem('role') === 'admin';
+      const role = localStorage.getItem('role');
+      return role === 'admin' || role === 'admin_total';
+    }
+  }, []);
+  const currentUser = useMemo(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      const fullName = String(storedUser?.fullName || storedUser?.name || '').trim();
+      const initials = fullName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part.charAt(0))
+        .join('')
+        .toUpperCase();
+
+      return {
+        fullName,
+        initials: initials || 'U',
+      };
+    } catch {
+      return {
+        fullName: '',
+        initials: 'U',
+      };
     }
   }, []);
 
@@ -1167,10 +1235,18 @@ const Dashboard = () => {
         titleContent={
           <HeaderIdentity>
             <HeaderBrand>COMEJACA</HeaderBrand>
-            <HeaderPageTitleRow>
-              <HeaderPageTitle>Inscrições {ACTIVE_REGISTRATION_YEAR}</HeaderPageTitle>
-              <HeaderPageMeta>Total: {groupedSections.active.length}</HeaderPageMeta>
-            </HeaderPageTitleRow>
+            <HeaderMetaRow>
+              <HeaderPageTitleRow>
+                <HeaderPageTitle>Inscrições {ACTIVE_REGISTRATION_YEAR}</HeaderPageTitle>
+                <HeaderPageMeta>Total: {groupedSections.active.length}</HeaderPageMeta>
+              </HeaderPageTitleRow>
+              {currentUser.fullName ? (
+                <UserBadge aria-label={`Usuário logado: ${currentUser.fullName}`}>
+                  <UserAvatar>{currentUser.initials}</UserAvatar>
+                  <UserNameText>{currentUser.fullName}</UserNameText>
+                </UserBadge>
+              ) : null}
+            </HeaderMetaRow>
           </HeaderIdentity>
         }
         rightContent={

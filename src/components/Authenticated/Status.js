@@ -177,9 +177,19 @@ const ListaParticipantes = () => {
   const isAdmin = useMemo(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-      return storedUser?.role === 'admin' || localStorage.getItem('role') === 'admin';
+      const role = storedUser?.role || localStorage.getItem('role');
+      return role === 'admin' || role === 'admin_total';
     } catch {
-      return localStorage.getItem('role') === 'admin';
+      const role = localStorage.getItem('role');
+      return role === 'admin' || role === 'admin_total';
+    }
+  }, []);
+  const isAdminTotal = useMemo(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      return (storedUser?.role || localStorage.getItem('role')) === 'admin_total';
+    } catch {
+      return localStorage.getItem('role') === 'admin_total';
     }
   }, []);
 
@@ -244,6 +254,10 @@ const ListaParticipantes = () => {
   };
 
   const handleStatusChange = async (participanteId, novoStatus) => {
+    if (!isAdminTotal) {
+      return;
+    }
+
     try {
       await axios.put(
         `${API_URL}/api/auth/pagamentos/${participanteId}/status`,
@@ -517,8 +531,10 @@ const ListaParticipantes = () => {
       <Container>
         <AppHeader
           showBack
+          glass
           onBack={() => navigate(-1)}
-          rightContent={<AppHeaderBadge>COMEJACA 2026</AppHeaderBadge>}
+          title="Inscritos"
+          rightContent={<AppHeaderBadge>2026</AppHeaderBadge>}
           maxWidth="1560px"
         />
 
@@ -589,53 +605,168 @@ const ListaParticipantes = () => {
               </FilterBar>
 
               <TableCard>
-                <TableContainer>
-                  <MainTable>
-                    <colgroup>
-                      <col style={{ width: '22%' }} />
-                      <col style={{ width: '24%' }} />
-                      <col style={{ width: '18%' }} />
-                      <col style={{ width: '14%' }} />
-                      <col style={{ width: '10%' }} />
-                      <col style={{ width: '16%' }} />
-                    </colgroup>
-                    <TableHead>
-                      <tr>
-                        <TableHeaderCell>Nome</TableHeaderCell>
-                        <TableHeaderCell>Instituição Espírita</TableHeaderCell>
-                        <TableHeaderCell>Comissão</TableHeaderCell>
-                        <TableHeaderCell $nowrap>Status Pagamento</TableHeaderCell>
-                        <TableHeaderCell $nowrap>Link</TableHeaderCell>
-                        <TableHeaderCell $nowrap>Ações</TableHeaderCell>
-                      </tr>
-                    </TableHead>
-                    <tbody>
-                      {participantesFiltrados.map((p) => {
-                        const statusAppearance = getStatusPagamento(
-                          p.statusPagamento,
-                          'estatisticas'
-                        );
+                <DesktopTableOnly>
+                  <TableContainer>
+                    <MainTable>
+                      <colgroup>
+                        <col style={{ width: '22%' }} />
+                        <col style={{ width: '24%' }} />
+                        <col style={{ width: '18%' }} />
+                        <col style={{ width: '14%' }} />
+                        <col style={{ width: '10%' }} />
+                        <col style={{ width: '16%' }} />
+                      </colgroup>
+                      <TableHead>
+                        <tr>
+                          <TableHeaderCell>Nome</TableHeaderCell>
+                          <TableHeaderCell>Instituição Espírita</TableHeaderCell>
+                          <TableHeaderCell>Comissão</TableHeaderCell>
+                          <TableHeaderCell $nowrap>Status Pagamento</TableHeaderCell>
+                          <TableHeaderCell $nowrap>Link</TableHeaderCell>
+                          <TableHeaderCell $nowrap>Ações</TableHeaderCell>
+                        </tr>
+                      </TableHead>
+                      <tbody>
+                        {participantesFiltrados.map((p) => {
+                          const statusAppearance = getStatusPagamento(
+                            p.statusPagamento,
+                            'estatisticas'
+                          );
 
-                        return (
-                          <BodyRow key={p.id}>
-                            <TableCell>{p.nomeCompleto}</TableCell>
-                            <TableCell>
+                          return (
+                            <BodyRow key={p.id}>
+                              <TableCell>{p.nomeCompleto}</TableCell>
+                              <TableCell>
+                                <InstitutionNameText>
+                                  {formatInstitutionName(p.IE)}
+                                </InstitutionNameText>
+                              </TableCell>
+                              <TableCell>
+                                {p.tipoParticipacao === 'Trabalhador'
+                                  ? p.comissao || 'Sem Comissão'
+                                  : p.tipoParticipacao}
+                              </TableCell>
+                              <TableCell $nowrap>
+                                {isAdminTotal ? (
+                                  <StatusSelect
+                                    value={p.statusPagamento}
+                                    $appearance={statusAppearance}
+                                    onChange={(e) =>
+                                      handleStatusChange(p.id, e.target.value)
+                                    }
+                                  >
+                                    <option value="pendente">
+                                      {getStatusPagamento('pendente', 'estatisticas').label}
+                                    </option>
+                                    <option value="pago">
+                                      {getStatusPagamento('pago', 'estatisticas').label}
+                                    </option>
+                                    <option value="N/A">N/A</option>
+                                  </StatusSelect>
+                                ) : (
+                                  <StatusBadge $appearance={statusAppearance}>
+                                    {statusAppearance.label}
+                                  </StatusBadge>
+                                )}
+                              </TableCell>
+                              <TableCell $nowrap>
+                                {p.linkPagamento ? (
+                                  <TableLink
+                                    href={p.linkPagamento}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    Acessar
+                                  </TableLink>
+                                ) : (
+                                  'N/A'
+                                )}
+                              </TableCell>
+                              <TableCell $nowrap>
+                                <ActionButtonGroup>
+                                  <ActionButton
+                                    type="button"
+                                    onClick={() => navigate(`/imprimir/${p.id}`)}
+                                  >
+                                    Imprimir
+                                  </ActionButton>
+                                  {isAdmin && (
+                                    <ActionButton
+                                      type="button"
+                                      onClick={() => navigate(`/atualizar/${p.id}`)}
+                                    >
+                                      Editar
+                                    </ActionButton>
+                                  )}
+                                </ActionButtonGroup>
+                              </TableCell>
+                            </BodyRow>
+                          );
+                        })}
+                      </tbody>
+                    </MainTable>
+                  </TableContainer>
+                </DesktopTableOnly>
+
+                <MobileCardsOnly>
+                  {participantesFiltrados.map((p) => {
+                    const statusAppearance = getStatusPagamento(
+                      p.statusPagamento,
+                      'estatisticas'
+                    );
+
+                    return (
+                      <MobileParticipantCard key={p.id}>
+                        <MobileParticipantHeader>
+                          <MobileParticipantName>
+                            <MobileParticipantNameButton
+                              type="button"
+                              onClick={() => handleOpenParticipantModal(p)}
+                            >
+                              {p.nomeCompleto}
+                            </MobileParticipantNameButton>
+                          </MobileParticipantName>
+                        </MobileParticipantHeader>
+
+                        <MobileCardGrid>
+                          <MobileInfoRow>
+                            <MobileInfoValue>
                               <InstitutionNameText>
                                 {formatInstitutionName(p.IE)}
                               </InstitutionNameText>
-                            </TableCell>
-                            <TableCell>
+                            </MobileInfoValue>
+                          </MobileInfoRow>
+
+                          <MobileInfoRow>
+                            <MobileInfoValue>
                               {p.tipoParticipacao === 'Trabalhador'
                                 ? p.comissao || 'Sem Comissão'
                                 : p.tipoParticipacao}
-                            </TableCell>
-                            <TableCell $nowrap>
-                              <StatusSelect
+                            </MobileInfoValue>
+                          </MobileInfoRow>
+
+                          {p.linkPagamento ? (
+                            <MobileInfoRow>
+                              <MobileLinkValue>
+                                <TableLink
+                                  href={p.linkPagamento}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  Acessar pagamento
+                                </TableLink>
+                              </MobileLinkValue>
+                            </MobileInfoRow>
+                          ) : null}
+
+                          <MobileStatusRow>
+                            <MobileStatusLabel>Status</MobileStatusLabel>
+                            {isAdminTotal ? (
+                              <MobileStatusSelect
                                 value={p.statusPagamento}
                                 $appearance={statusAppearance}
-                                onChange={(e) =>
-                                  handleStatusChange(p.id, e.target.value)
-                                }
+                                onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                                aria-label={`Status de ${p.nomeCompleto}`}
                               >
                                 <option value="pendente">
                                   {getStatusPagamento('pendente', 'estatisticas').label}
@@ -644,45 +775,35 @@ const ListaParticipantes = () => {
                                   {getStatusPagamento('pago', 'estatisticas').label}
                                 </option>
                                 <option value="N/A">N/A</option>
-                              </StatusSelect>
-                            </TableCell>
-                            <TableCell $nowrap>
-                              {p.linkPagamento ? (
-                                <TableLink
-                                  href={p.linkPagamento}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  Acessar
-                                </TableLink>
-                              ) : (
-                                'N/A'
-                              )}
-                            </TableCell>
-                            <TableCell $nowrap>
-                              <ActionButtonGroup>
-                                <ActionButton
-                                  type="button"
-                                  onClick={() => navigate(`/imprimir/${p.id}`)}
-                                >
-                                  Imprimir
-                                </ActionButton>
-                                {isAdmin && (
-                                  <ActionButton
-                                    type="button"
-                                    onClick={() => navigate(`/atualizar/${p.id}`)}
-                                  >
-                                    Editar
-                                  </ActionButton>
-                                )}
-                              </ActionButtonGroup>
-                            </TableCell>
-                          </BodyRow>
-                        );
-                      })}
-                    </tbody>
-                  </MainTable>
-                </TableContainer>
+                              </MobileStatusSelect>
+                            ) : (
+                              <MobileStatusBadge $appearance={statusAppearance}>
+                                {statusAppearance.label}
+                              </MobileStatusBadge>
+                            )}
+                          </MobileStatusRow>
+                        </MobileCardGrid>
+
+                        <MobileActions $hasSecondary={isAdmin}>
+                          <MobilePrimaryActionButton
+                            type="button"
+                            onClick={() => navigate(`/imprimir/${p.id}`)}
+                          >
+                            Imprimir
+                          </MobilePrimaryActionButton>
+                          {isAdmin ? (
+                            <MobileSecondaryActionButton
+                              type="button"
+                              onClick={() => navigate(`/atualizar/${p.id}`)}
+                            >
+                              Editar
+                            </MobileSecondaryActionButton>
+                          ) : null}
+                        </MobileActions>
+                      </MobileParticipantCard>
+                    );
+                  })}
+                </MobileCardsOnly>
               </TableCard>
             </>
           ) : abaAtiva === 'gfe' ? (
@@ -693,65 +814,67 @@ const ListaParticipantes = () => {
                     <SectionTitle>{gfe}</SectionTitle>
                     <SectionMeta>Total: {participantesDoGrupo.length}</SectionMeta>
                   </SectionHeader>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <tr>
-                          <TableHeaderCell>Nome</TableHeaderCell>
-                          <TableHeaderCell>Data de Nascimento</TableHeaderCell>
-                          <TableHeaderCell>Idade</TableHeaderCell>
-                          <TableHeaderCell>Instituição Espírita</TableHeaderCell>
-                        </tr>
-                      </TableHead>
-                      <tbody>
-                        {participantesDoGrupo.map((p) => (
-                          <BodyRow key={p.id}>
-                            <TableCell>
-                              <ParticipantCellContent>
-                                <ParticipantNameButton
-                                  type="button"
-                                  onClick={() => handleOpenParticipantModal(p)}
-                                >
-                                  {p.nomeCompleto}
-                                </ParticipantNameButton>
-                                <ParticipantIndicators>
-                                  {getParticipantIndicatorItems(
-                                    participantDetailsCache[p.id] || p
-                                  ).map((indicator) => {
-                                    const Icon = indicator.icon;
+                  <SectionScroll>
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <tr>
+                            <TableHeaderCell>Nome</TableHeaderCell>
+                            <TableHeaderCell>Data de Nascimento</TableHeaderCell>
+                            <TableHeaderCell>Idade</TableHeaderCell>
+                            <TableHeaderCell>Instituição Espírita</TableHeaderCell>
+                          </tr>
+                        </TableHead>
+                        <tbody>
+                          {participantesDoGrupo.map((p) => (
+                            <BodyRow key={p.id}>
+                              <TableCell>
+                                <ParticipantCellContent>
+                                  <ParticipantNameButton
+                                    type="button"
+                                    onClick={() => handleOpenParticipantModal(p)}
+                                  >
+                                    {p.nomeCompleto}
+                                  </ParticipantNameButton>
+                                  <ParticipantIndicators>
+                                    {getParticipantIndicatorItems(
+                                      participantDetailsCache[p.id] || p
+                                    ).map((indicator) => {
+                                      const Icon = indicator.icon;
 
-                                    return (
-                                      <IndicatorIcon
-                                        key={indicator.key}
-                                        title={indicator.label}
-                                        aria-label={indicator.label}
-                                      >
-                                        <Icon size={14} />
-                                      </IndicatorIcon>
-                                    );
-                                  })}
-                                </ParticipantIndicators>
-                              </ParticipantCellContent>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(p.dataNascimento).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>{p.idade} anos</TableCell>
-                            <TableCell>
-                              <InstitutionNameText>
-                                {formatInstitutionName(p.IE)}
-                              </InstitutionNameText>
-                            </TableCell>
-                          </BodyRow>
-                        ))}
-                        <SummaryRow>
-                          <SummaryCell colSpan={4}>
-                            Total: {participantesDoGrupo.length}
-                          </SummaryCell>
-                        </SummaryRow>
-                      </tbody>
-                    </Table>
-                  </TableContainer>
+                                      return (
+                                        <IndicatorIcon
+                                          key={indicator.key}
+                                          title={indicator.label}
+                                          aria-label={indicator.label}
+                                        >
+                                          <Icon size={14} />
+                                        </IndicatorIcon>
+                                      );
+                                    })}
+                                  </ParticipantIndicators>
+                                </ParticipantCellContent>
+                              </TableCell>
+                              <TableCell>
+                                {new Date(p.dataNascimento).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>{p.idade} anos</TableCell>
+                              <TableCell>
+                                <InstitutionNameText>
+                                  {formatInstitutionName(p.IE)}
+                                </InstitutionNameText>
+                              </TableCell>
+                            </BodyRow>
+                          ))}
+                          <SummaryRow>
+                            <SummaryCell colSpan={4}>
+                              Total: {participantesDoGrupo.length}
+                            </SummaryCell>
+                          </SummaryRow>
+                        </tbody>
+                      </Table>
+                    </TableContainer>
+                  </SectionScroll>
                 </SectionCard>
               ))}
             </SectionStack>
@@ -762,7 +885,9 @@ const ListaParticipantes = () => {
                   <SectionTitle>Distribuição por comissão</SectionTitle>
                   <SectionMeta>Total de comissões: {dadosGrafico.length}</SectionMeta>
                 </SectionHeader>
-                <GraficoTrabalhadoresPorComissao dados={dadosGrafico} />
+                <SectionScroll>
+                  <GraficoTrabalhadoresPorComissao dados={dadosGrafico} />
+                </SectionScroll>
               </SectionCard>
 
               <FilterBar>
@@ -792,27 +917,29 @@ const ListaParticipantes = () => {
                     <SectionTitle>{comissao}</SectionTitle>
                     <SectionMeta>Total: {nomes.length}</SectionMeta>
                   </SectionHeader>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <tr>
-                          <TableHeaderCell>Nome do Trabalhador</TableHeaderCell>
-                        </tr>
-                      </TableHead>
-                      <tbody>
-                        {nomes.map((nome, idx) => (
-                          <BodyRow key={`${comissao}-${idx}`}>
-                            <TableCell>{nome}</TableCell>
-                          </BodyRow>
-                        ))}
-                        <SummaryRow>
-                          <SummaryCell colSpan={1}>
-                            Total de trabalhadores nesta comissão: {nomes.length}
-                          </SummaryCell>
-                        </SummaryRow>
-                      </tbody>
-                    </Table>
-                  </TableContainer>
+                  <SectionScroll>
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <tr>
+                            <TableHeaderCell>Nome do Trabalhador</TableHeaderCell>
+                          </tr>
+                        </TableHead>
+                        <tbody>
+                          {nomes.map((nome, idx) => (
+                            <BodyRow key={`${comissao}-${idx}`}>
+                              <TableCell>{nome}</TableCell>
+                            </BodyRow>
+                          ))}
+                          <SummaryRow>
+                            <SummaryCell colSpan={1}>
+                              Total de trabalhadores nesta comissão: {nomes.length}
+                            </SummaryCell>
+                          </SummaryRow>
+                        </tbody>
+                      </Table>
+                    </TableContainer>
+                  </SectionScroll>
                 </SectionCard>
               ))}
             </SectionStack>
@@ -822,28 +949,30 @@ const ListaParticipantes = () => {
                 <SectionTitle>Quantidade por instituição</SectionTitle>
                 <SectionMeta>Total de instituições: {Object.keys(contagemPorIE).length}</SectionMeta>
               </SectionHeader>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <tr>
-                      <TableHeaderCell>Instituição Espírita</TableHeaderCell>
-                      <TableHeaderCell>Quantidade</TableHeaderCell>
-                    </tr>
-                  </TableHead>
-                  <tbody>
-                    {contagemPorIEOrdenada.map(([ie, qtd]) => (
-                      <BodyRow key={ie}>
-                        <TableCell>
-                          <InstitutionNameText>
-                            {formatInstitutionName(ie)}
-                          </InstitutionNameText>
-                        </TableCell>
-                        <TableCell>{qtd}</TableCell>
-                      </BodyRow>
-                    ))}
-                  </tbody>
-                </Table>
-              </TableContainer>
+              <SectionScroll>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <tr>
+                        <TableHeaderCell>Instituição Espírita</TableHeaderCell>
+                        <TableHeaderCell>Quantidade</TableHeaderCell>
+                      </tr>
+                    </TableHead>
+                    <tbody>
+                      {contagemPorIEOrdenada.map(([ie, qtd]) => (
+                        <BodyRow key={ie}>
+                          <TableCell>
+                            <InstitutionNameText>
+                              {formatInstitutionName(ie)}
+                            </InstitutionNameText>
+                          </TableCell>
+                          <TableCell>{qtd}</TableCell>
+                        </BodyRow>
+                      ))}
+                    </tbody>
+                  </Table>
+                </TableContainer>
+              </SectionScroll>
             </SectionCard>
           )}
           </FormCard>
@@ -949,7 +1078,9 @@ export default ListaParticipantes;
 
 const Container = styled.div`
   min-height: 100vh;
-  background: #f5f7fb;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.88) 0%, rgba(242, 242, 247, 0) 36%),
+    linear-gradient(180deg, #f8f8fb 0%, #f2f2f7 42%, #eef1f6 100%);
   padding: calc(24px + ${APP_HEADER_HEIGHT}) 24px 24px;
   font-family: 'Poppins', sans-serif;
   display: flex;
@@ -957,13 +1088,18 @@ const Container = styled.div`
   align-items: center;
 
   @media (max-width: 767px) {
-    padding: calc(16px + ${APP_HEADER_HEIGHT_MOBILE}) 16px 16px;
+    padding: calc(14px + ${APP_HEADER_HEIGHT_MOBILE}) 12px 20px;
+    align-items: stretch;
   }
 `;
 
 const ContentWrapper = styled.div`
   width: 100%;
   max-width: 1560px;
+
+  @media (max-width: 767px) {
+    max-width: none;
+  }
 `;
 
 const FormCard = styled.div`
@@ -977,9 +1113,13 @@ const FormCard = styled.div`
   gap: 24px;
 
   @media (max-width: 767px) {
-    padding: 18px;
-    border-radius:5px;
-    gap: 18px;
+    width: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    gap: 22px;
   }
 `;
 
@@ -987,6 +1127,10 @@ const PageHeader = styled.header`
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
+
+  @media (max-width: 767px) {
+    display: none;
+  }
 `;
 
 const TitleBlock = styled.div`
@@ -1016,6 +1160,11 @@ const KpiGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 14px;
 
+  @media (max-width: 767px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
   @media (min-width: 1280px) {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
@@ -1030,6 +1179,15 @@ const KpiCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+
+  @media (max-width: 767px) {
+    border-radius: 16px;
+    padding: 16px;
+    min-height: 108px;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.03),
+      0 14px 24px -22px rgba(15, 23, 42, 0.14);
+  }
 `;
 
 const KpiLabel = styled.span`
@@ -1037,6 +1195,13 @@ const KpiLabel = styled.span`
   line-height: 1.4;
   color: #6b7280;
   font-weight: 500;
+
+  @media (max-width: 767px) {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
 `;
 
 const KpiValue = styled.strong`
@@ -1049,6 +1214,10 @@ const KpiValue = styled.strong`
     if ($tone === 'warning') return '#b45309';
     return '#111827';
   }};
+
+  @media (max-width: 767px) {
+    font-size: 2rem;
+  }
 `;
 
 const Tabs = styled.div`
@@ -1062,6 +1231,9 @@ const Tabs = styled.div`
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
+    margin: 0 -2px;
+    padding: 0 2px 6px;
+    gap: 8px;
   }
 `;
 
@@ -1090,6 +1262,16 @@ const TabButton = styled.button`
 
   &:hover {
     transform: translateY(-1px);
+  }
+
+  @media (max-width: 767px) {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+    box-shadow: ${({ $active }) =>
+      $active
+        ? '0 10px 20px -18px rgba(17, 24, 39, 0.24)'
+        : 'inset 0 0 0 1px rgba(229, 231, 235, 0.9)'};
   }
 `;
 
@@ -1150,6 +1332,28 @@ const TableCard = styled.div`
   border-radius: 16px;
   box-shadow: 0 12px 28px -24px rgba(17, 24, 39, 0.18);
   overflow: hidden;
+
+  @media (max-width: 767px) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+`;
+
+const DesktopTableOnly = styled.div`
+  @media (max-width: 767px) {
+    display: none;
+  }
+`;
+
+const MobileCardsOnly = styled.div`
+  display: none;
+
+  @media (max-width: 767px) {
+    display: grid;
+    gap: 14px;
+  }
 `;
 
 const TableContainer = styled.div`
@@ -1299,6 +1503,20 @@ const StatusSelect = styled.select`
   }
 `;
 
+const StatusBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid ${({ $appearance }) => $appearance?.borderColor || 'rgba(148, 163, 184, 0.28)'};
+  background: ${({ $appearance }) => $appearance?.backgroundColor || 'rgba(248, 250, 252, 0.96)'};
+  color: ${({ $appearance }) => $appearance?.textColor || '#475569'};
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+`;
+
 const ActionButton = styled.button`
   width: 100%;
   min-width: 96px;
@@ -1334,10 +1552,170 @@ const ActionButtonGroup = styled.div`
   }
 `;
 
+const MobileParticipantCard = styled.article`
+  padding: 16px 16px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 16px 28px -24px rgba(15, 23, 42, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const MobileParticipantHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const MobileParticipantName = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+`;
+
+const MobileParticipantNameButton = styled(ParticipantNameButton)`
+  font-size: 1.06rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+`;
+
+const MobileStatusSelect = styled(StatusSelect)`
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  appearance: none;
+  text-align: left;
+  white-space: normal;
+  flex-shrink: 1;
+`;
+
+const MobileStatusBadge = styled(StatusBadge)`
+  width: 100%;
+  min-height: 34px;
+  padding: 8px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  flex-shrink: 1;
+  white-space: normal;
+`;
+
+const MobileCardGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const MobileStatusRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  padding-top: 8px;
+`;
+
+const MobileStatusLabel = styled.span`
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #a0aec0;
+`;
+
+const MobileInfoRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`;
+
+const MobileInfoValue = styled.div`
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #475569;
+  word-break: break-word;
+  min-width: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+`;
+
+const MobileLinkValue = styled(MobileInfoValue)`
+  color: #2563eb;
+  font-weight: 600;
+
+  a {
+    display: inline;
+    white-space: normal;
+    word-break: break-word;
+  }
+`;
+
+const MobileActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+`;
+
+const MobilePrimaryActionButton = styled(ActionButton)`
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  background: #1c1c1e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+`;
+
+const MobileSecondaryActionButton = styled(ActionButton)`
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(248, 250, 252, 0.92);
+  color: #475569;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+
+  &:hover {
+    background: #ffffff;
+    color: #334155;
+    transform: translateY(-1px);
+  }
+`;
+
 const SectionStack = styled.div`
   display: flex;
   flex-direction: column;
   gap: 18px;
+`;
+
+const SectionScroll = styled.div`
+  width: 100%;
+
+  @media (max-width: 767px) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 `;
 
 const SectionCard = styled.div`
