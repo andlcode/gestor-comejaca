@@ -1171,6 +1171,7 @@ const Formulario = () => {
 
       const payload = {
         ...formData,
+        email: (formData.email || "").trim().toLowerCase(),
         comissao: String(formData.comissao),
         dataNascimento: dataNascimento.toISOString().split("T")[0],
         telefone: formData.telefone.replace(/\D/g, ""),
@@ -1183,6 +1184,11 @@ const Formulario = () => {
       };
 
       console.log("PAYLOAD INSCRIÇÃO:", payload);
+      console.log("[subscription] iniciando envio de inscrição", {
+        apiUrl: API_URL,
+        url: `${API_URL}/api/auth/inscrever`,
+        tokenPresent: Boolean(token),
+      });
 
       const response = await axios.post(`${API_URL}/api/auth/inscrever`, payload, {
         headers: {
@@ -1191,10 +1197,22 @@ const Formulario = () => {
         },
       });
 
+      console.log("[subscription] resposta da inscrição", {
+        status: response?.status,
+        data: response?.data,
+      });
+
       if (response.data.success) {
         navigate("/painel");
       }
     } catch (error) {
+      console.error("[subscription] erro ao enviar inscrição", {
+        message: error?.message,
+        code: error?.code,
+        stack: error?.stack,
+        responseStatus: error?.response?.status,
+        responseData: error?.response?.data,
+      });
       const detalhes = error.response?.data?.details;
 
       if (Array.isArray(detalhes)) {

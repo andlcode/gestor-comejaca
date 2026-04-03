@@ -1,159 +1,158 @@
 import React, { useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { faKey } from '@fortawesome/free-solid-svg-icons';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import AuthLayout from '../Unauthenticated/auth/AuthLayout';
+import PremiumAuthField from '../Unauthenticated/auth/PremiumAuthField';
+import {
+  AuthButtonSpinner,
+  AuthFlowButtonLabel,
+  AuthFormAlert,
+  AuthLoginActions,
+  AuthLoginFieldStack,
+  AuthLoginForm,
+  AuthPrimaryButton,
+} from '../Unauthenticated/auth/authStyles';
+import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 
-// Animação de fundo
-const gradientAnimation = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
-
-
-const AuthContainer = styled.div`
+const VerificationContentStack = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: #e7ecef;
+  flex: 1 1 auto;
+  min-height: 100%;
+  width: 100%;
+  gap: 0;
+  justify-content: space-between;
+
+  @media (max-width: 639px) {
+    min-height: 0;
+  }
+`;
+
+const VerificationContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
   justify-content: center;
-  min-height: 100vh;
- // background: linear-gradient(135deg, #22223b, #335c67, #22223b);
-  background-size: 200% 200%;
-  animation: ${gradientAnimation} 10s ease infinite;
-  padding: 20px;
-`;
-
-// Wrapper do formulário
-const AuthWrapper = styled.div`
-  background-color:#e7ecef;
-  border-radius: 20px;
-//  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  padding: 30px;
   width: 100%;
-  max-width: 400px;
-  text-align: center;
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-  &:hover {
-    transform: translateY(-5px);
-  //  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+  @media (max-width: 639px) {
+    justify-content: center;
   }
 `;
 
-// Título
-const Title = styled.h2`
-  color: #22223b;
-  font-size: 2rem;
-  margin-bottom: 20px;
-  font-family: 'Poppins', sans-serif;
+const VerificationSuccess = styled(AuthFormAlert)`
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  border-left: 3px solid rgba(34, 197, 94, 0.42);
+  box-shadow: none;
+`;
+
+const VerificationError = styled(AuthFormAlert)`
+  color: #7f1d1d;
+  background: #fef2f2;
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  border-left: 3px solid rgba(239, 68, 68, 0.34);
+  box-shadow: none;
+`;
+
+const VerificationSubmitButton = styled(AuthPrimaryButton)`
+  margin-top: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  height: 52px;
+  border-radius: 16px;
+
+  &[aria-busy='true'] {
+    cursor: wait;
+  }
+`;
+
+const VerificationFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: auto;
+  padding: 16px 0 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  width: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+
+  @supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  @media (max-width: 639px) {
+    width: calc(100% + 32px);
+    margin-top: auto;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 10px 16px max(10px, env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 -1px 0 rgba(15, 23, 42, 0.03);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+`;
+
+const VerificationFooterActions = styled.div`
+  display: flex;
+  width: 100%;
+  gap: 10px;
+
+  @media (max-width: 639px) {
+    gap: 8px;
+  }
+`;
+
+const VerificationSecondaryButton = styled.button`
+  flex: 1 1 50%;
+  min-height: 46px;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+  color: rgba(51, 65, 85, 0.9);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
   font-weight: 600;
-`;
-
-// Parágrafo
-const Paragraph = styled.p`
-  color: #22223b;
-  font-size: 1rem;
-  margin-bottom: 20px;
-  line-height: 1.5;
-  font-family: 'Poppins', sans-serif;
-`;
-
-// Input
-const Input = styled.input`
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 20px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  font-family: 'Poppins', sans-serif;
-
-  &:focus {
-    border-color: #4a4e69;
-    box-shadow: 0 0 8px rgba(74, 78, 105, 0.5);
-  }
-`;
-
-// Botão principal
-const Button = styled.button`
-  width: 100%;
-  padding: 14px;
-  font-size: 1rem;
-  background: linear-gradient(135deg, #003049, #4a4e69);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
+  letter-spacing: -0.012em;
   cursor: pointer;
-  transition: all 0.3s;
-  margin-bottom: 15px;
-  font-family: 'Poppins', sans-serif;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 
-  &:hover {
-    background: linear-gradient(135deg, #4a4e69, #22223b);
-    transform: scale(1.03);
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(15, 23, 42, 0.12);
+    color: #1f2937;
+    box-shadow: 0 6px 16px -14px rgba(15, 23, 42, 0.18);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
   }
 
   &:disabled {
-    background-color: #bdbdbd;
     cursor: not-allowed;
-
-    &:hover {
-      background-color: #bdbdbd;
-      transform: none;
-    }
+    opacity: 0.62;
+    box-shadow: none;
   }
-`;
-
-// Botão secundário
-const SecondaryButton = styled(Button)`
-  width: 150px;
-  background: linear-gradient(135deg, #4a4e69, #22223b);
-
-  &:hover {
-    background: linear-gradient(135deg, #22223b, #4a4e69);
-  }
-`;
-
-// Botão de logout
-const LogoutButton = styled(Button)`
-  background: linear-gradient(135deg, #6a040f, #9d0208);
-  width: 150px;
-
-  &:hover {
-    background: linear-gradient(135deg, #9d0208, #6a040f);
-  }
-`;
-
-// Grupo de botões
-const ButtonGroup = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 20px;
-`;
-
-// Mensagem de erro
-const ErrorMessage = styled.p`
-  color: #f44336;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-  font-family: 'Poppins', sans-serif;
-`;
-
-// Mensagem de sucesso
-const SuccessMessage = styled.p`
-  color: #388e3c;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-  font-family: 'Poppins', sans-serif;
 `;
 
 const VerificationCode = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const verificationState = location.state || {};
       useEffect(() => {
         const token = localStorage.getItem("token");
       
@@ -168,14 +167,17 @@ const VerificationCode = () => {
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false); // Adicionando estado para controlar a submissão
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const API_URL = getApiBaseUrl();
   const token = localStorage.getItem('token');
   const userEmail = localStorage.getItem('userEmail');
 
    // Corrigido para o nome correto da chave
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const userId = storedUser?.id;  
+  const emailForVerification =
+    verificationState?.email || storedUser?.userEmail || storedUser?.email || userEmail || '';
   console.log("E-mail salvo:", storedUser?.userEmail);
+  console.log('[VerificationCode] state recebido:', verificationState);
   
   console.log("Token:", token);
   console.log("ID do usuário:", userId);
@@ -246,9 +248,25 @@ const handleSubmit = async (e) => {
       setCode(''); // Limpa o campo de código
       localStorage.removeItem('verificationCode'); // Limpa o código de verificação do localStorage
 
-      // Salva as informações do usuário e o token no localStorage
-      const { id, name, email } = response.data.user;
-      localStorage.setItem('user', JSON.stringify({ id, name, email }));
+      // Preserva role existente e atualiza o snapshot do usuário verificado.
+      const { id, name, email, role } = response.data.user;
+      const existingStoredRole = localStorage.getItem('role');
+      const resolvedRole = role || existingStoredRole || null;
+
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          id,
+          name,
+          email,
+          userEmail: email,
+          role: resolvedRole,
+        })
+      );
+
+      if (resolvedRole) {
+        localStorage.setItem('role', resolvedRole);
+      }
   
       alert('Conta verificada com sucesso!');
       localStorage.setItem('isVerified', 'true');
@@ -281,7 +299,7 @@ useEffect(() => {
       const response = await axios.post(
         `${API_URL}/api/auth/enviarcodigo`,
         {
-          email: userEmail,
+          email: String(userEmail || '').trim().toLowerCase(),
         },
         {
           headers: {
@@ -318,40 +336,80 @@ useEffect(() => {
   }, [code]);
 
   return (
-    <AuthContainer>
-      <AuthWrapper>
-        <Title>PRÓXIMO PASSO</Title>
-        <Paragraph>
-          Enviamos um código para o e-mail <strong>{storedUser?.userEmail}</strong>.
-        </Paragraph>
-        <form onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            placeholder="Digite o código de 6 dígitos"
-            value={code}
-            onChange={handleCodeChange}
-            maxLength={6}
-            inputMode="numeric"
-          />
-          <Button type="submit" disabled={isSubmitting || code.length !== 6}>
-            {isSubmitting ? 'Ativando...' : 'Ativar'}
-          </Button>
-        </form>
-        {success && <SuccessMessage>Código verificado com sucesso! 🎉</SuccessMessage>}
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        <ButtonGroup>
-          <SecondaryButton onClick={handleResendCode} disabled={isResendDisabled}>
-            {isResendDisabled ? `Aguarde ${countdown}s` : 'Reenviar'}
-          </SecondaryButton>
-          <LogoutButton onClick={() => {
-            localStorage.clear();
-            navigate('/');
-          }}>
-            Sair
-          </LogoutButton>
-        </ButtonGroup>
-      </AuthWrapper>
-    </AuthContainer>
+    <AuthLayout
+      title="Verificar código"
+      subtitle={`Enviamos um código para o e-mail ${emailForVerification || 'informado no cadastro'}.`}
+      layoutPreset="login"
+    >
+      <VerificationContentStack>
+        <VerificationContentWrapper>
+          <AuthLoginForm onSubmit={handleSubmit} noValidate>
+            <AuthLoginFieldStack>
+              <PremiumAuthField
+                id="verification-code"
+                type="text"
+                name="verificationCode"
+                label="Código de verificação"
+                icon={faKey}
+                value={code}
+                onChange={handleCodeChange}
+                maxLength={6}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="Digite o código de 6 dígitos"
+                disabled={isSubmitting}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error || success ? 'verification-feedback' : undefined}
+              />
+            </AuthLoginFieldStack>
+
+            {success ? (
+              <VerificationSuccess id="verification-feedback" role="status" aria-live="polite">
+                {typeof success === 'string' ? success : 'Código verificado com sucesso! 🎉'}
+              </VerificationSuccess>
+            ) : null}
+
+            {error ? (
+              <VerificationError id="verification-feedback" role="alert" aria-live="assertive">
+                {error}
+              </VerificationError>
+            ) : null}
+
+            <AuthLoginActions>
+              <VerificationSubmitButton
+                type="submit"
+                disabled={isSubmitting || code.length !== 6}
+                aria-busy={isSubmitting ? 'true' : 'false'}
+              >
+                {isSubmitting ? <AuthButtonSpinner /> : null}
+                <AuthFlowButtonLabel>{isSubmitting ? 'Ativando...' : 'Ativar'}</AuthFlowButtonLabel>
+              </VerificationSubmitButton>
+            </AuthLoginActions>
+          </AuthLoginForm>
+        </VerificationContentWrapper>
+
+        <VerificationFooter>
+          <VerificationFooterActions aria-label="Ações secundárias">
+            <VerificationSecondaryButton
+              type="button"
+              onClick={handleResendCode}
+              disabled={isResendDisabled}
+            >
+              {isResendDisabled ? `Aguarde ${countdown}s` : 'Reenviar'}
+            </VerificationSecondaryButton>
+            <VerificationSecondaryButton
+              type="button"
+              onClick={() => {
+                localStorage.clear();
+                navigate('/');
+              }}
+            >
+              Sair
+            </VerificationSecondaryButton>
+          </VerificationFooterActions>
+        </VerificationFooter>
+      </VerificationContentStack>
+    </AuthLayout>
   );
 };
 

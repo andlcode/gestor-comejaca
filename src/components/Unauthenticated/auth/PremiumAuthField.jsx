@@ -222,6 +222,7 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
     'aria-invalid': ariaInvalid,
     'aria-describedby': ariaDescribedBy,
     className,
+    ...inputProps
   },
   ref
 ) {
@@ -262,6 +263,7 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
             placeholder={active && !hasValue ? placeholder : ' '}
             aria-invalid={ariaInvalid}
             aria-describedby={ariaDescribedBy}
+            {...inputProps}
             onFocus={(e) => {
               setFocused(true);
               onFocus?.(e);

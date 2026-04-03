@@ -429,7 +429,7 @@ const Atualizar = () => {
         dataNascimento: new Date(formData.dataNascimento).toISOString(),
         sexo: formData.sexo || "",
         outroGenero: formData.outroGenero?.trim() || "",
-        email: formData.email?.trim() || "",
+        email: formData.email?.trim().toLowerCase() || "",
         telefone: (formData.telefone || "").replace(/\D/g, ""),
         tipoParticipacao: formData.tipoParticipacao || "",
         nomeCompletoResponsavel:

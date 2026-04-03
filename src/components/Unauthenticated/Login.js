@@ -233,7 +233,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const trimmedEmail = formData.email.trim();
+    const trimmedEmail = formData.email.trim().toLowerCase();
     const nextFieldErrors = {
       email: '',
       password: '',
@@ -269,12 +269,23 @@ const Login = () => {
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);
-      localStorage.setItem('userEmail', formData.email);
+      localStorage.setItem('userEmail', trimmedEmail);
       localStorage.setItem('isVerified', user.isVerified);
       localStorage.setItem('userId', user.id);
       localStorage.setItem('role', user.role);
       localStorage.setItem('nome', user.name);
       localStorage.setItem('email', user.email);
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          userEmail: user.email,
+          isVerified: user.isVerified,
+          role: user.role || null,
+        })
+      );
 
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + 7);

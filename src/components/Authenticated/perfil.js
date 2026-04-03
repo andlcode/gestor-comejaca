@@ -407,7 +407,7 @@ const Profile = () => {
         {
           userIdInt,
           nome: nomeCompleto,
-          email,
+          email: String(email || '').trim().toLowerCase(),
           telefone,
     
           senha: newPassword || null, // só envia se tiver nova senha

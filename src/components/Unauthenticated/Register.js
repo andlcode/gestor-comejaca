@@ -258,7 +258,8 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmedName = formData.name.trim();
-    const trimmedEmail = formData.email.trim();
+    const trimmedEmail = formData.email.trim().toLowerCase();
+    const verificationRoute = '/verificar';
     const nextFieldErrors = {
       name: '',
       email: '',
@@ -315,6 +316,14 @@ const Register = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('[Register] antes do submit', {
+        apiUrl: API_URL,
+        requestUrl: `${API_URL}/api/auth/registrar`,
+        payload: {
+          name: trimmedName,
+          email: trimmedEmail,
+        },
+      });
 
       const response = await axios.post(`${API_URL}/api/auth/registrar`, {
         name: trimmedName,
@@ -322,23 +331,56 @@ const Register = () => {
         password: formData.password,
       });
 
+      console.log('[Register] resposta de sucesso recebida', {
+        status: response?.status,
+        data: response?.data,
+      });
+
+      if (!(response?.status >= 200 && response?.status < 300)) {
+        throw new Error('O cadastro não retornou um status de sucesso esperado.');
+      }
+
+      const authToken = response?.data?.token;
+      const responseUser = response?.data?.user || {};
+      const verificationContext = {
+        email: trimmedEmail,
+        name: responseUser?.name || trimmedName,
+      };
+
+      if (!authToken) {
+        throw new Error(
+          'Cadastro concluído, mas o token necessário para a verificação não foi retornado.'
+        );
+      }
+
+      localStorage.setItem('token', authToken);
+      localStorage.setItem('userEmail', trimmedEmail);
+      localStorage.setItem('isVerified', String(responseUser?.isVerified ?? false));
+
+      if (responseUser?.id || responseUser?.name || trimmedEmail) {
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            id: responseUser?.id || null,
+            name: responseUser?.name || trimmedName,
+            userEmail: trimmedEmail,
+          })
+        );
+      }
+
       toast.success('Sucesso. Verifique seu email.', {
         position: 'bottom-center',
         autoClose: 4000,
       });
 
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+      console.log('[Register] navegando para verificação', {
+        route: verificationRoute,
+        state: verificationContext,
+      });
 
-        const { id, name, email } = response.data.user;
-        localStorage.setItem(
-          'user',
-          JSON.stringify({ name, userEmail: email, id })
-        );
-        localStorage.setItem('isVerified', 'false');
-
-        navigate('/verificar');
-      }
+      navigate(verificationRoute, {
+        state: verificationContext,
+      });
 
       setFormData({
         name: '',
@@ -347,6 +389,12 @@ const Register = () => {
         confirmPassword: '',
       });
     } catch (err) {
+      console.error('[Register] erro no fluxo de cadastro', {
+        message: err?.message,
+        status: err?.response?.status,
+        data: err?.response?.data,
+        stack: err?.stack,
+      });
       setError(
         err.response?.data?.error || err.message || 'Erro ao registrar usuário'
       );

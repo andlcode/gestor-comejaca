@@ -453,6 +453,10 @@ const IePage = () => {
 
     try {
       const token = localStorage.getItem('token');
+      const normalizedFormData = {
+        ...formData,
+        email: String(formData.email || '').trim().toLowerCase(),
+      };
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -461,7 +465,7 @@ const IePage = () => {
 
       if (formMode === 'adicionar') {
         console.log('Tentando adicionar nova instituição');
-        await axios.post(`${API_URL}/api/auth/novainstituicao`, formData, config);
+        await axios.post(`${API_URL}/api/auth/novainstituicao`, normalizedFormData, config);
         alert('Instituição adicionada com sucesso!');
 
         // Limpar o formulário após a adição
@@ -487,7 +491,7 @@ const IePage = () => {
         console.log('Tentando alterar instituição com id:', selectedInstitution.id);
         await axios.put(
           `${API_URL}/api/auth/editarinstituicao/${selectedInstitution.id}`,
-          formData,
+          normalizedFormData,
           config
         );
         alert('Instituição atualizada com sucesso!');
