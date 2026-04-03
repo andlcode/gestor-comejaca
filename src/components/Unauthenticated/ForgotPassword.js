@@ -16,6 +16,7 @@ import {
   AuthLoginAuxRouterLink,
   AuthLoginFieldStack,
   AuthLoginForm,
+  AuthPremiumInlineError,
   AuthPrimaryButton,
 } from './auth/authStyles';
 import { getSafeApiErrorMessage, getSafeMessage } from '../../utils/safeMessage';
@@ -129,6 +130,7 @@ const ForgotPassword = () => {
   const [disabled, setDisabled] = useState(false);
   const [countdown, setCountdown] = useState(COOLDOWN_SECONDS);
   const [feedback, setFeedback] = useState(createFeedbackState());
+  const [emailError, setEmailError] = useState('');
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -174,6 +176,7 @@ const ForgotPassword = () => {
   const handleEmailChange = (event) => {
     const nextEmail = getSafeMessage(event?.target?.value, '');
     setEmail(nextEmail);
+    setEmailError('');
 
     if (feedback.message) {
       setFeedback(createFeedbackState());
@@ -184,18 +187,17 @@ const ForgotPassword = () => {
     event?.preventDefault?.();
 
     const normalizedEmail = email.trim().toLowerCase();
+    setEmailError('');
 
     if (!normalizedEmail) {
-      const message = 'Informe seu e-mail.';
-      setFeedback(createFeedbackState('error', message));
-      toast.error(message, { position: 'top-center' });
+      setEmailError('Informe seu e-mail.');
+      setFeedback(createFeedbackState());
       return;
     }
 
     if (!isValidEmail(normalizedEmail)) {
-      const message = 'Informe um e-mail válido.';
-      setFeedback(createFeedbackState('error', message));
-      toast.error(message, { position: 'top-center' });
+      setEmailError('Digite um e-mail válido.');
+      setFeedback(createFeedbackState());
       return;
     }
 
@@ -269,20 +271,29 @@ const ForgotPassword = () => {
               <AuthLoginFieldStack>
                 <PremiumAuthField
                   id="forgot-password-email"
-                  type="email"
+                  type="text"
                   name="email"
                   label="E-mail"
                   icon={faEnvelope}
                   value={email}
                   onChange={handleEmailChange}
-                  required
                   disabled={loading || disabled}
                   autoComplete="email"
                   inputMode="email"
                   placeholder="nome@dominio.com"
-                  aria-invalid={feedback.type === 'error'}
-                  aria-describedby={feedback.message ? 'forgot-password-feedback' : undefined}
+                  error={Boolean(emailError)}
+                  aria-invalid={Boolean(emailError)}
+                  aria-describedby={emailError ? 'forgot-password-email-error' : undefined}
                 />
+                {emailError ? (
+                  <AuthPremiumInlineError
+                    id="forgot-password-email-error"
+                    $login
+                    role="alert"
+                  >
+                    {emailError}
+                  </AuthPremiumInlineError>
+                ) : null}
               </AuthLoginFieldStack>
 
               {feedback.type === 'success' ? (

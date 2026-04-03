@@ -2,8 +2,7 @@ import React, { forwardRef, useState } from 'react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const tShell =
-  'background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease';
+const tShell = 'all 0.2s ease';
 const tLabel =
   'top 0.18s ease, transform 0.18s ease, font-size 0.18s ease, font-weight 0.18s ease, color 0.18s ease, letter-spacing 0.18s ease';
 const tInput = 'color 0.18s ease, padding 0.18s ease';
@@ -14,9 +13,9 @@ export const InputShell = styled.div`
   min-height: 48px;
   border-radius: 18px;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: rgba(15, 23, 42, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.045);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.018);
   transition: ${tShell};
 
   @supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
@@ -31,15 +30,17 @@ export const InputShell = styled.div`
   }
 
   &:hover:not(:focus-within) {
-    background: rgba(255, 255, 255, 0.76);
-    border-color: rgba(0, 0, 0, 0.08);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: rgba(15, 23, 42, 0.022);
+    border-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.024);
   }
 
   &:focus-within {
-    background: rgba(255, 255, 255, 0.82);
-    border-color: rgba(80, 120, 255, 0.4);
-    box-shadow: 0 0 0 3px rgba(80, 120, 255, 0.08);
+    background: rgba(255, 255, 255, 0.78);
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow:
+      0 0 0 3px rgba(${({ theme }) => theme.primaryRgb}, 0.08),
+      0 8px 20px -16px rgba(${({ theme }) => theme.primaryRgb}, 0.14);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -49,20 +50,20 @@ export const InputShell = styled.div`
   ${({ $error }) =>
     $error &&
     `
-    background: #fffafa;
-    border-color: rgba(220, 100, 100, 0.24);
+    background: rgba(255, 250, 250, 0.86);
+    border-color: rgba(220, 100, 100, 0.18);
     box-shadow:
       0 2px 8px rgba(17, 24, 39, 0.03),
-      0 6px 14px -18px rgba(220, 95, 95, 0.14);
+      0 10px 18px -18px rgba(220, 95, 95, 0.1);
 
     &:hover:not(:focus-within) {
-      border-color: rgba(220, 100, 100, 0.3);
+      border-color: rgba(220, 100, 100, 0.22);
     }
 
     &:focus-within {
-      background: #ffffff;
-      border-color: rgba(220, 95, 95, 0.52);
-      box-shadow: 0 0 0 3px rgba(220, 95, 95, 0.1);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(220, 95, 95, 0.32);
+      box-shadow: 0 0 0 3px rgba(220, 95, 95, 0.07);
     }
   `}
 `;
@@ -90,17 +91,17 @@ export const InputIconSlot = styled.div`
   transition: color 0.18s ease, opacity 0.18s ease;
 
   ${InputShell}:focus-within:not([data-error='true']) & {
-    color: #2563eb;
-    opacity: 0.96;
+    color: ${({ theme }) => theme.primary};
+    opacity: 0.9;
   }
 
   ${InputShell}[data-error='true'] & {
-    color: rgba(210, 95, 95, 0.86);
-    opacity: 0.92;
+    color: rgba(185, 102, 102, 0.78);
+    opacity: 0.88;
   }
 
   ${InputShell}[data-error='true']:focus-within & {
-    color: rgba(200, 78, 78, 0.92);
+    color: rgba(185, 96, 96, 0.84);
   }
 `;
 
@@ -133,7 +134,7 @@ export const FloatingLabel = styled.label`
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.02em;
-    color: ${$error ? 'rgba(198, 82, 82, 0.92)' : 'rgba(37, 99, 235, 0.72)'};
+    color: ${$error ? 'rgba(156, 101, 101, 0.84)' : 'rgba(71, 85, 105, 0.72)'};
   `
       : `
     top: 50%;
@@ -142,7 +143,7 @@ export const FloatingLabel = styled.label`
     font-size: 14px;
     font-weight: 500;
     letter-spacing: -0.014em;
-    color: ${$error ? 'rgba(126, 95, 95, 0.84)' : '#475569'};
+    color: ${$error ? 'rgba(129, 107, 111, 0.82)' : 'rgba(71, 85, 105, 0.82)'};
   `}
 
   @media (prefers-reduced-motion: reduce) {

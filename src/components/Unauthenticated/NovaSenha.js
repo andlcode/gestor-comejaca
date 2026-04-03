@@ -14,6 +14,7 @@ import {
   AuthLoginActions,
   AuthLoginFieldStack,
   AuthLoginForm,
+  AuthPremiumInlineError,
   AuthPrimaryButton,
 } from './auth/authStyles';
 import { getSafeApiErrorMessage, getSafeMessage } from '../../utils/safeMessage';
@@ -179,6 +180,10 @@ const NovaSenha = () => {
   const [invalidToken, setInvalidToken] = useState(false);
   const [userName, setUserName] = useState('');
   const [status, setStatus] = useState(createStatusState());
+  const [fieldErrors, setFieldErrors] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
 
   const passwordFeedback = useMemo(() => {
     if (!newPassword) return '';
@@ -279,17 +284,28 @@ const NovaSenha = () => {
       return;
     }
 
-    if (!passwordIsValid) {
-      const message = 'A senha deve ter pelo menos 8 caracteres e uma letra maiúscula.';
-      setStatus(createStatusState('error', message));
-      toast.error(message);
-      return;
+    const nextFieldErrors = {
+      newPassword: '',
+      confirmPassword: '',
+    };
+
+    if (!newPassword.trim()) {
+      nextFieldErrors.newPassword = 'Senha é obrigatória.';
+    } else if (!passwordIsValid) {
+      nextFieldErrors.newPassword =
+        'A senha deve ter pelo menos 8 caracteres e uma letra maiúscula.';
     }
 
-    if (newPassword !== confirmPassword) {
-      const message = 'A confirmação da senha não coincide.';
-      setStatus(createStatusState('error', message));
-      toast.error(message);
+    if (!confirmPassword.trim()) {
+      nextFieldErrors.confirmPassword = 'Confirme sua nova senha.';
+    } else if (newPassword !== confirmPassword) {
+      nextFieldErrors.confirmPassword = 'As senhas não coincidem.';
+    }
+
+    setFieldErrors(nextFieldErrors);
+
+    if (nextFieldErrors.newPassword || nextFieldErrors.confirmPassword) {
+      setStatus(createStatusState());
       return;
     }
 
@@ -371,16 +387,32 @@ const NovaSenha = () => {
                       value={newPassword}
                       onChange={(event) => {
                         setNewPassword(getSafeMessage(event?.target?.value, ''));
+                        setFieldErrors((previousErrors) => ({
+                          ...previousErrors,
+                          newPassword: '',
+                        }));
                         if (status.message) {
                           setStatus(createStatusState());
                         }
                       }}
-                      required
                       disabled={loading}
                       autoComplete="new-password"
                       placeholder="Digite sua nova senha"
-                      aria-invalid={status.type === 'error'}
+                      error={Boolean(fieldErrors.newPassword)}
+                      aria-invalid={Boolean(fieldErrors.newPassword)}
+                      aria-describedby={
+                        fieldErrors.newPassword ? 'reset-password-new-password-error' : undefined
+                      }
                     />
+                    {fieldErrors.newPassword ? (
+                      <AuthPremiumInlineError
+                        id="reset-password-new-password-error"
+                        $login
+                        role="alert"
+                      >
+                        {fieldErrors.newPassword}
+                      </AuthPremiumInlineError>
+                    ) : null}
 
                     {passwordFeedback ? (
                       <PasswordFeedback $valid={passwordIsValid}>{passwordFeedback}</PasswordFeedback>
@@ -395,20 +427,34 @@ const NovaSenha = () => {
                       value={confirmPassword}
                       onChange={(event) => {
                         setConfirmPassword(getSafeMessage(event?.target?.value, ''));
+                        setFieldErrors((previousErrors) => ({
+                          ...previousErrors,
+                          confirmPassword: '',
+                        }));
                         if (status.message) {
                           setStatus(createStatusState());
                         }
                       }}
-                      required
                       disabled={loading}
                       autoComplete="new-password"
                       placeholder="Confirme sua nova senha"
-                      error={confirmPasswordMismatch}
-                      aria-invalid={confirmPasswordMismatch}
+                      error={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
+                      aria-invalid={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
+                      aria-describedby={
+                        fieldErrors.confirmPassword || confirmPasswordMismatch
+                          ? 'reset-password-confirm-password-error'
+                          : undefined
+                      }
                     />
 
-                    {confirmPasswordMismatch ? (
-                      <PasswordFeedback>As senhas não coincidem</PasswordFeedback>
+                    {fieldErrors.confirmPassword || confirmPasswordMismatch ? (
+                      <AuthPremiumInlineError
+                        id="reset-password-confirm-password-error"
+                        $login
+                        role="alert"
+                      >
+                        {fieldErrors.confirmPassword || 'As senhas não coincidem'}
+                      </AuthPremiumInlineError>
                     ) : null}
                   </AuthLoginFieldStack>
 

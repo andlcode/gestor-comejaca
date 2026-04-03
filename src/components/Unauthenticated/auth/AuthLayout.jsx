@@ -1,4 +1,5 @@
 import React from 'react';
+import { ThemeProvider } from 'styled-components';
 import {
   AuthPageShell,
   AuthCardWrap,
@@ -15,6 +16,7 @@ import {
   AuthPageTitle,
   AuthPageSubtitle,
 } from './authStyles';
+import { authTheme } from './authTheme';
 
 const AuthLayout = ({
   title,
@@ -25,57 +27,54 @@ const AuthLayout = ({
   const isLogin = layoutPreset === 'login';
 
   return (
-    <AuthPageShell $login={isLogin}>
-      <AuthCardWrap $login={isLogin}>
-        <AuthCard $login={isLogin}>
+    <ThemeProvider theme={authTheme}>
+      <AuthPageShell $login={isLogin}>
+        <AuthCardWrap $login={isLogin}>
+          <AuthCard $login={isLogin}>
 
-          {/* HEADER */}
-          <AuthCardHeader $login={isLogin}>
-            <AuthBrandBlock $login={isLogin}>
-              
-              <AuthBrandTitle $login={isLogin}>
-                <AuthBrandOrdinal $login={isLogin}>
-                  47º
-                </AuthBrandOrdinal>
+            {/* HEADER */}
+            <AuthCardHeader $login={isLogin}>
+              <AuthBrandBlock $login={isLogin}>
+                <AuthBrandTitle $login={isLogin}>
+                  <AuthBrandOrdinal $login={isLogin}>
+                    47º
+                  </AuthBrandOrdinal>
 
-                <AuthBrandName $login={isLogin}>
-                  COMEJACA
-                </AuthBrandName>
+                  <AuthBrandName $login={isLogin}>
+                    COMEJACA
+                  </AuthBrandName>
 
-                <AuthBrandYear $login={isLogin}>
-                  2026
-                </AuthBrandYear>
-              </AuthBrandTitle>
+                  <AuthBrandYear $login={isLogin}>
+                    2026
+                  </AuthBrandYear>
+                </AuthBrandTitle>
 
-              <AuthBrandSubtitle $login={isLogin}>
-                Sistema de inscrições
-              </AuthBrandSubtitle>
+                <AuthBrandSubtitle $login={isLogin}>
+                  Sistema de inscrições
+                </AuthBrandSubtitle>
+              </AuthBrandBlock>
+            </AuthCardHeader>
 
-            </AuthBrandBlock>
-          </AuthCardHeader>
+            {/* BODY */}
+            <AuthCardBody $login={isLogin}>
+              <AuthContentInner $login={isLogin}>
+                <AuthPageTitle $login={isLogin}>
+                  {title}
+                </AuthPageTitle>
 
-          {/* BODY */}
-          <AuthCardBody $login={isLogin}>
-            <AuthContentInner $login={isLogin}>
-              
-              <AuthPageTitle $login={isLogin}>
-                {title}
-              </AuthPageTitle>
+                {subtitle && (
+                  <AuthPageSubtitle $login={isLogin}>
+                    {subtitle}
+                  </AuthPageSubtitle>
+                )}
 
-              {subtitle && (
-                <AuthPageSubtitle $login={isLogin}>
-                  {subtitle}
-                </AuthPageSubtitle>
-              )}
-
-              {children}
-
-            </AuthContentInner>
-          </AuthCardBody>
-
-        </AuthCard>
-      </AuthCardWrap>
-    </AuthPageShell>
+                {children}
+              </AuthContentInner>
+            </AuthCardBody>
+          </AuthCard>
+        </AuthCardWrap>
+      </AuthPageShell>
+    </ThemeProvider>
   );
 };
 

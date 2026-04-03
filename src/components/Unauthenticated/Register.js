@@ -21,6 +21,7 @@ import {
   AuthLoginAuxRouterLink,
   AuthLoginFieldStack,
   AuthLoginForm,
+  AuthPremiumInlineError,
   AuthPrimaryButton,
 } from './auth/authStyles';
 
@@ -79,20 +80,35 @@ const RegisterSubmitButton = styled(AuthPrimaryButton)`
   height: 48px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+  background: ${({ theme }) => theme.primaryGradient};
   color: #f8fafc;
-  box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
-  transition: all 0.2s ease;
+  box-shadow:
+    0 10px 22px rgba(91, 124, 250, 0.15),
+    0 4px 10px rgba(91, 124, 250, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 -1px 0 rgba(73, 88, 192, 0.08) inset;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    background 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #5b7cfa, #7b5cfa);
+    background: ${({ theme }) => theme.primaryGradient};
+    filter: brightness(1.04);
     transform: scale(0.98);
-    box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+    box-shadow:
+      0 12px 26px rgba(91, 124, 250, 0.18),
+      0 6px 12px rgba(91, 124, 250, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset;
   }
 
   &:active:not(:disabled) {
+    filter: brightness(0.99);
     transform: scale(0.98);
-    box-shadow: 0 8px 20px rgba(91, 124, 250, 0.25);
+    box-shadow:
+      0 8px 18px rgba(91, 124, 250, 0.14),
+      0 4px 8px rgba(91, 124, 250, 0.06);
   }
 
   &:disabled {
@@ -226,17 +242,6 @@ const Register = () => {
   const confirmPasswordMismatch =
     formData.confirmPassword !== '' && formData.confirmPassword !== formData.password;
 
-  const isFormValid = () => {
-    const { name, email, password, confirmPassword } = formData;
-
-    return (
-      name.trim() !== '' &&
-      isValidEmail(email.trim()) &&
-      passwordValidation.valid &&
-      confirmPassword === password
-    );
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -267,6 +272,20 @@ const Register = () => {
       nextFieldErrors.name = 'Informe seu nome completo.';
       setFieldErrors(nextFieldErrors);
       setError(nextFieldErrors.name);
+      return;
+    }
+
+    if (!trimmedEmail) {
+      nextFieldErrors.email = 'Informe seu e-mail.';
+      setFieldErrors(nextFieldErrors);
+      setError(nextFieldErrors.email);
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      nextFieldErrors.password = 'Senha é obrigatória.';
+      setFieldErrors(nextFieldErrors);
+      setError(nextFieldErrors.password);
       return;
     }
 
@@ -344,7 +363,7 @@ const Register = () => {
     >
       <RegisterContentStack>
         <RegisterFormShell>
-          <AuthLoginForm onSubmit={handleSubmit}>
+          <AuthLoginForm onSubmit={handleSubmit} noValidate>
             <AuthLoginFieldStack>
               <PremiumAuthField
                 id="register-name"
@@ -354,30 +373,40 @@ const Register = () => {
                 icon={faUser}
                 value={formData.name}
                 onChange={handleChange}
-                required
                 disabled={loading}
                 autoComplete="name"
                 placeholder="Digite seu nome completo"
                 error={Boolean(fieldErrors.name)}
                 aria-invalid={Boolean(fieldErrors.name)}
+                aria-describedby={fieldErrors.name ? 'register-name-error' : undefined}
               />
+              {fieldErrors.name ? (
+                <AuthPremiumInlineError id="register-name-error" $login role="alert">
+                  {fieldErrors.name}
+                </AuthPremiumInlineError>
+              ) : null}
 
               <PremiumAuthField
                 id="register-email"
-                type="email"
+                type="text"
                 name="email"
                 label="E-mail"
                 icon={faEnvelope}
                 value={formData.email}
                 onChange={handleChange}
-                required
                 disabled={loading}
                 autoComplete="email"
                 inputMode="email"
                 placeholder="nome@dominio.com"
                 error={Boolean(fieldErrors.email)}
                 aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? 'register-email-error' : undefined}
               />
+              {fieldErrors.email ? (
+                <AuthPremiumInlineError id="register-email-error" $login role="alert">
+                  {fieldErrors.email}
+                </AuthPremiumInlineError>
+              ) : null}
 
               <PremiumAuthField
                 id="register-password"
@@ -387,13 +416,18 @@ const Register = () => {
                 icon={faLock}
                 value={formData.password}
                 onChange={handleChange}
-                required
                 disabled={loading}
                 autoComplete="new-password"
                 placeholder="Digite sua senha"
                 error={Boolean(fieldErrors.password)}
                 aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? 'register-password-error' : undefined}
               />
+              {fieldErrors.password ? (
+                <AuthPremiumInlineError id="register-password-error" $login role="alert">
+                  {fieldErrors.password}
+                </AuthPremiumInlineError>
+              ) : null}
 
               {passwordValidation.show ? (
                 <PasswordFeedback $valid={passwordValidation.valid}>
@@ -409,23 +443,32 @@ const Register = () => {
                 icon={faLock}
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                required
                 disabled={loading}
                 autoComplete="new-password"
                 placeholder="Confirme sua senha"
                 error={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
                 aria-invalid={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
+                aria-describedby={
+                  fieldErrors.confirmPassword || confirmPasswordMismatch
+                    ? 'register-confirm-password-error'
+                    : undefined
+                }
               />
-
-              {confirmPasswordMismatch ? (
-                <PasswordFeedback $valid={false}>As senhas não coincidem</PasswordFeedback>
+              {fieldErrors.confirmPassword || confirmPasswordMismatch ? (
+                <AuthPremiumInlineError
+                  id="register-confirm-password-error"
+                  $login
+                  role="alert"
+                >
+                  {fieldErrors.confirmPassword || 'As senhas não coincidem'}
+                </AuthPremiumInlineError>
               ) : null}
             </AuthLoginFieldStack>
 
             {error ? <RegisterAlert>{error}</RegisterAlert> : null}
 
             <AuthLoginActions>
-              <RegisterSubmitButton type="submit" disabled={!isFormValid() || loading}>
+              <RegisterSubmitButton type="submit" disabled={loading}>
                 <SubmitButtonContent>
                   {loading ? <SubmitSpinner icon={faSpinner} spin /> : null}
                   <span>{loading ? 'Registrando...' : 'Criar conta'}</span>

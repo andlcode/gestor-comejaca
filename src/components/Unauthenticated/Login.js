@@ -13,10 +13,13 @@ import {
   AuthLoginAuxDivider,
   AuthLoginAuxLinks,
   AuthLoginAuxRouterLink,
+  AuthPremiumInlineError,
   AuthLoginFieldStack,
   AuthLoginForm,
   AuthPrimaryButton,
 } from './auth/authStyles';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const LoginContentStack = styled.div`
   display: flex;
@@ -63,10 +66,18 @@ const LoginSubmitButton = styled(AuthPrimaryButton)`
   height: 52px;
   border-radius: 16px;
   border: none;
-  background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
+  background: ${({ theme }) => theme.primaryGradient};
   color: #f8fafc;
-  box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
-  transition: all 0.2s ease;
+  box-shadow:
+    0 10px 24px rgba(91, 124, 250, 0.16),
+    0 4px 10px rgba(91, 124, 250, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 -1px 0 rgba(73, 88, 192, 0.08) inset;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    background 0.2s ease;
 
   &::before {
     content: '';
@@ -74,18 +85,25 @@ const LoginSubmitButton = styled(AuthPrimaryButton)`
     inset: 1px;
     border-radius: 16px;
     pointer-events: none;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
+    background: ${({ theme }) => theme.primaryGradient};
+    filter: brightness(1.04);
     transform: scale(0.98);
-    box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
+    box-shadow:
+      0 14px 28px rgba(91, 124, 250, 0.2),
+      0 6px 12px rgba(91, 124, 250, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset;
   }
 
   &:active:not(:disabled) {
+    filter: brightness(0.99);
     transform: scale(0.98);
-    box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
+    box-shadow:
+      0 8px 18px rgba(91, 124, 250, 0.16),
+      0 4px 8px rgba(91, 124, 250, 0.06);
   }
 
   &:focus {
@@ -94,7 +112,7 @@ const LoginSubmitButton = styled(AuthPrimaryButton)`
 
   &:focus-visible {
     box-shadow:
-      0 0 0 3px rgba(99, 102, 241, 0.14),
+      0 0 0 3px rgba(${({ theme }) => theme.primaryRgb}, 0.14),
       0 16px 30px -18px rgba(79, 110, 247, 0.32);
   }
 
@@ -171,6 +189,10 @@ const Login = () => {
   });
 
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({
+    email: '',
+    password: '',
+  });
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -185,9 +207,15 @@ const Login = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    setError(null);
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+    setFieldErrors((previousErrors) => ({
+      ...previousErrors,
+      [name]: '',
     }));
   };
 
@@ -204,13 +232,39 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const trimmedEmail = formData.email.trim();
+    const nextFieldErrors = {
+      email: '',
+      password: '',
+    };
+
+    setError(null);
+    setFieldErrors(nextFieldErrors);
+
+    if (!trimmedEmail) {
+      nextFieldErrors.email = 'Informe seu e-mail.';
+    } else if (!EMAIL_REGEX.test(trimmedEmail)) {
+      nextFieldErrors.email = 'Digite um e-mail válido.';
+    }
+
+    if (!formData.password.trim()) {
+      nextFieldErrors.password = 'Senha é obrigatória.';
+    }
+
+    if (nextFieldErrors.email || nextFieldErrors.password) {
+      setFieldErrors(nextFieldErrors);
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
       clearAuthStorage();
 
-      const response = await axios.post(`${API_URL}/api/auth/entrar`, formData);
+      const response = await axios.post(`${API_URL}/api/auth/entrar`, {
+        ...formData,
+        email: trimmedEmail,
+      });
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);
@@ -250,25 +304,29 @@ const Login = () => {
     >
       <LoginContentStack>
         <ContentWrapper>
-          <AuthLoginForm onSubmit={handleSubmit}>
+          <AuthLoginForm onSubmit={handleSubmit} noValidate>
             <AuthLoginFieldStack>
               <PremiumAuthField
                 id="login-email"
-                type="email"
+                type="text"
                 name="email"
                 label="E-mail"
                 icon={faEnvelope}
                 value={formData.email}
                 onChange={handleChange}
-                required
                 disabled={loading}
                 autoComplete="username"
                 inputMode="email"
                 placeholder="nome@dominio.com"
-                error={Boolean(error)}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? 'login-feedback' : undefined}
+                error={Boolean(fieldErrors.email)}
+                aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
               />
+              {fieldErrors.email ? (
+                <AuthPremiumInlineError id="login-email-error" $login role="alert">
+                  {fieldErrors.email}
+                </AuthPremiumInlineError>
+              ) : null}
 
               <PremiumAuthField
                 id="login-password"
@@ -278,14 +336,18 @@ const Login = () => {
                 icon={faLock}
                 value={formData.password}
                 onChange={handleChange}
-                required
                 disabled={loading}
                 autoComplete="current-password"
                 placeholder="Digite sua senha"
-                error={Boolean(error)}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? 'login-feedback' : undefined}
+                error={Boolean(fieldErrors.password)}
+                aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
               />
+              {fieldErrors.password ? (
+                <AuthPremiumInlineError id="login-password-error" $login role="alert">
+                  {fieldErrors.password}
+                </AuthPremiumInlineError>
+              ) : null}
             </AuthLoginFieldStack>
 
             {error ? (

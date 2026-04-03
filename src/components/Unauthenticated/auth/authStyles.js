@@ -731,11 +731,12 @@ export const AuthCard = styled.div`
     $login &&
     css`
     border-radius: 20px;
-    border: 1px solid #e5e7eb;
-    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    background: rgba(255, 255, 255, 0.94);
     box-shadow:
-      0 20px 48px rgba(15, 23, 42, 0.14),
-      0 8px 20px rgba(15, 23, 42, 0.06);
+      0 22px 54px rgba(15, 23, 42, 0.06),
+      0 10px 24px rgba(15, 23, 42, 0.04),
+      0 1px 0 rgba(255, 255, 255, 0.82) inset;
 
     @media (min-width: 640px) {
       width: 100%;
@@ -744,17 +745,19 @@ export const AuthCard = styled.div`
       justify-content: space-between;
       min-height: 520px;
       border-radius: 20px;
-      border: 1px solid #e5e7eb;
-      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      background: rgba(255, 255, 255, 0.94);
       box-shadow:
-        0 24px 56px rgba(15, 23, 42, 0.16),
-        0 10px 24px rgba(15, 23, 42, 0.08);
+        0 28px 70px rgba(15, 23, 42, 0.06),
+        0 12px 28px rgba(15, 23, 42, 0.045),
+        0 1px 0 rgba(255, 255, 255, 0.86) inset;
     }
 
     @media (min-width: 1200px) {
       box-shadow:
-        0 28px 64px rgba(15, 23, 42, 0.17),
-        0 12px 26px rgba(15, 23, 42, 0.08);
+        0 32px 82px rgba(15, 23, 42, 0.065),
+        0 14px 30px rgba(15, 23, 42, 0.045),
+        0 1px 0 rgba(255, 255, 255, 0.88) inset;
     }
 
     @media (max-width: 639px) {
@@ -799,12 +802,12 @@ export const AuthCardHeader = styled.header`
     $login &&
     `
     background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.055);
     padding: 1.2rem 1.45rem 1.08rem;
 
     @media (min-width: 640px) {
       background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.055);
       padding: 1.5rem 1.75rem 1.25rem;
     }
 
@@ -828,17 +831,17 @@ export const AuthBrandBlock = styled.div`
   ${({ $login }) =>
     $login &&
     `
-    gap: 0.26rem;
+    gap: 0.22rem;
     position: relative;
 
     &::after {
       content: '';
-      width: 2.25rem;
-      height: 2px;
-      margin-top: 0.18rem;
+      width: 1.5rem;
+      height: 1px;
+      margin-top: 0.12rem;
       border-radius: 999px;
       background: linear-gradient(90deg, #6d5df6 0%, #4f6ef7 100%);
-      opacity: 0.78;
+      opacity: 0.42;
     }
   `}
 `;
@@ -856,8 +859,8 @@ export const AuthBrandTitle = styled.h1`
     $login &&
     `
     font-size: clamp(0.96875rem, 2.2vw, 1.0625rem);
-    font-weight: 800;
-    letter-spacing: -0.018em;
+    font-weight: 850;
+    letter-spacing: -0.022em;
     color: #0f172a;
   `}
 `;
@@ -865,13 +868,13 @@ export const AuthBrandTitle = styled.h1`
 export const AuthBrandOrdinal = styled.span`
   font-weight: 700;
   margin-right: 0.28em;
-  color: #5b4cdb;
+  color: ${({ theme }) => theme.primary};
   letter-spacing: -0.02em;
 
   ${({ $login, $mutedBrand }) =>
     $login &&
     `
-    color: ${$mutedBrand ? '#64748b' : '#5b4cdb'};
+    color: ${$mutedBrand ? '#64748b' : 'inherit'};
     opacity: 0.98;
     margin-right: 0.32em;
   `}
@@ -925,11 +928,11 @@ export const AuthBrandSubtitle = styled.p`
     $login &&
     `
     color: #64748b;
-    font-size: clamp(0.6875rem, 1.7vw, 0.75rem);
+    font-size: clamp(0.65625rem, 1.65vw, 0.71875rem);
     font-weight: 500;
     letter-spacing: 0.02em;
     margin-top: 0.06rem;
-    opacity: 0.88;
+    opacity: 0.68;
   `}
 `;
 
@@ -1189,7 +1192,7 @@ export const AuthPageTitle = styled.h1`
     `
     font-size: clamp(1.875rem, 4vw, 2.125rem);
     font-weight: 700;
-    letter-spacing: -0.038em;
+    letter-spacing: -0.2px;
     line-height: 1.08;
     color: #111827;
     margin-bottom: 8px;
@@ -1231,8 +1234,9 @@ export const AuthPageSubtitle = styled.p`
     max-width: 32rem;
     margin-bottom: 20px;
     color: #6b7280;
-    font-size: 0.90625rem;
-    line-height: 1.58;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    opacity: 0.92;
 
     @media (max-width: 639px) {
       margin-bottom: 24px;
@@ -1989,13 +1993,13 @@ export const AuthPremiumInlineError = styled.p`
   margin: 0;
   padding: 0.125rem 0 0 0.5rem;
   margin-left: 0.1rem;
-  border-left: 2px solid rgba(168, 142, 152, 0.45);
+  border-left: 2px solid rgba(177, 153, 159, 0.34);
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.71875rem;
   font-weight: 500;
   letter-spacing: 0.01em;
   line-height: 1.46;
-  color: rgba(105, 92, 98, 0.94);
+  color: rgba(110, 98, 103, 0.86);
   animation: ${authInlineFeedbackIn} 0.28s ease-out both;
 
   @media (max-width: 639px) {
@@ -2012,10 +2016,10 @@ export const AuthPremiumInlineError = styled.p`
     $login &&
     `
     padding: 0.14rem 0 0 0.45rem;
-    border-left: 2px solid rgba(212, 118, 118, 0.3);
+    border-left: 2px solid rgba(203, 135, 135, 0.24);
     font-size: 0.7109375rem;
     letter-spacing: 0.006em;
-    color: rgba(126, 95, 95, 0.9);
+    color: rgba(132, 104, 104, 0.82);
   `}
 `;
 
@@ -2083,40 +2087,54 @@ export const AuthPrimaryButton = styled.button`
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
-  transition: all 0.2s ease;
+  background: ${({ theme }) => theme.primaryGradient};
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    background 0.2s ease;
 
   ${({ $flat }) =>
     $flat
       ? css`
-          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.07);
+          box-shadow:
+            0 2px 8px rgba(91, 124, 250, 0.1),
+            0 1px 0 rgba(255, 255, 255, 0.2) inset,
+            0 -1px 0 rgba(73, 88, 192, 0.08) inset;
 
           &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
+            background: ${({ theme }) => theme.primaryGradient};
+            filter: brightness(1.04);
             transform: scale(0.98);
-            box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
+            box-shadow: 0 12px 24px rgba(91, 124, 250, 0.18);
           }
 
           &:active:not(:disabled) {
             transform: scale(0.98);
-            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+            filter: brightness(0.99);
+            background: ${({ theme }) => theme.primaryGradient};
+            box-shadow: 0 6px 14px rgba(91, 124, 250, 0.14);
             transition-duration: 0.12s;
           }
         `
       : css`
-          box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
+          box-shadow:
+            0 10px 24px rgba(91, 124, 250, 0.16),
+            0 1px 0 rgba(255, 255, 255, 0.22) inset,
+            0 -1px 0 rgba(73, 88, 192, 0.08) inset;
 
           &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
+            background: ${({ theme }) => theme.primaryGradient};
+            filter: brightness(1.04);
             transform: scale(0.98);
-            box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
+            box-shadow: 0 14px 28px rgba(91, 124, 250, 0.2);
           }
 
           &:active:not(:disabled) {
             transform: scale(0.98);
-            background: linear-gradient(135deg, #5b7cfa 0%, #6e63f6 50%, #7b5cfa 100%);
-            box-shadow: 0 10px 25px rgba(91, 124, 250, 0.35);
+            filter: brightness(0.99);
+            background: ${({ theme }) => theme.primaryGradient};
+            box-shadow: 0 6px 16px rgba(91, 124, 250, 0.16);
             transition-duration: 0.12s;
           }
         `}
@@ -2126,7 +2144,7 @@ export const AuthPrimaryButton = styled.button`
     opacity: 0.55;
     transform: none;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-    background: #a8a2e8;
+    background: #b9b7e9;
 
     ${({ $loading }) =>
       $loading &&
@@ -2203,27 +2221,30 @@ export const AuthPrimaryButton = styled.button`
     font-size: 0.96875rem;
     font-weight: 700;
     letter-spacing: -0.024em;
-    background: #1c1c1e;
+    background: linear-gradient(180deg, #272a40 0%, #1d2034 100%);
     box-shadow:
-      0 6px 16px -10px rgba(17, 24, 39, 0.32),
-      0 12px 24px -20px rgba(17, 24, 39, 0.24),
-      0 1px 0 rgba(255, 255, 255, 0.14) inset;
+      0 10px 22px rgba(32, 43, 91, 0.16),
+      0 4px 10px rgba(17, 24, 39, 0.06),
+      0 1px 0 rgba(255, 255, 255, 0.18) inset,
+      0 -1px 0 rgba(15, 23, 42, 0.16) inset;
 
     &:hover:not(:disabled) {
-      background: #2a2a2d;
-      transform: translateY(-1px);
+      background: linear-gradient(180deg, #2c3048 0%, #23263d 100%);
+      filter: brightness(1.04);
+      transform: scale(0.98);
       box-shadow:
-        0 12px 24px -14px rgba(15, 23, 42, 0.32),
-        0 18px 36px -28px rgba(15, 23, 42, 0.22),
+        0 14px 28px rgba(32, 43, 91, 0.18),
+        0 6px 12px rgba(17, 24, 39, 0.06),
         0 1px 0 rgba(255, 255, 255, 0.18) inset;
     }
 
     &:active:not(:disabled) {
-      transform: translateY(1px);
-      background: #141417;
+      transform: scale(0.98);
+      filter: brightness(0.99);
+      background: linear-gradient(180deg, #22253a 0%, #191c2e 100%);
       box-shadow:
-        0 6px 14px -12px rgba(15, 23, 42, 0.28),
-        0 10px 20px -20px rgba(15, 23, 42, 0.18);
+        0 8px 18px rgba(32, 43, 91, 0.14),
+        0 4px 8px rgba(17, 24, 39, 0.05);
     }
 
     &:disabled {
@@ -2403,7 +2424,7 @@ const authLoginAuxLinkShared = css`
   font-weight: 500;
   letter-spacing: -0.012em;
   line-height: 1.3;
-  color: #334155;
+  color: rgba(51, 65, 85, 0.78);
   text-decoration: none;
   background: transparent;
   border: none;
@@ -2411,17 +2432,19 @@ const authLoginAuxLinkShared = css`
   -webkit-tap-highlight-color: transparent;
   transition:
     color 0.2s ease,
+    opacity 0.2s ease,
     background 0.2s ease,
     box-shadow 0.2s ease,
     transform 0.2s ease;
 
   &:hover {
-    color: #1f2937;
-    background: rgba(15, 23, 42, 0.04);
+    color: rgba(31, 41, 55, 0.96);
+    background: rgba(15, 23, 42, 0.03);
+    opacity: 1;
   }
 
   &:active {
-    background: rgba(15, 23, 42, 0.06);
+    background: rgba(15, 23, 42, 0.045);
     transform: translateY(0);
   }
 
@@ -2430,11 +2453,11 @@ const authLoginAuxLinkShared = css`
   }
 
   &:focus-visible {
-    color: #1f2937;
-    background: rgba(15, 23, 42, 0.04);
+    color: rgba(31, 41, 55, 0.96);
+    background: rgba(15, 23, 42, 0.03);
     box-shadow:
-      0 0 0 3px rgba(99, 102, 241, 0.1),
-      0 4px 12px -12px rgba(15, 23, 42, 0.12);
+      0 0 0 3px rgba(99, 102, 241, 0.08),
+      0 4px 12px -12px rgba(15, 23, 42, 0.1);
   }
 
   &:only-child {
@@ -2544,7 +2567,7 @@ export const AuthAuxDivider = styled.span`
 export const AuthLoginAuxDivider = styled(AuthAuxDivider)`
   align-self: stretch;
   height: auto;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(15, 23, 42, 0.08);
   margin: 0;
 `;
 
