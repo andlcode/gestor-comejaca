@@ -18,8 +18,9 @@ import {
   AuthPrimaryButton,
 } from './auth/authStyles';
 import { getSafeApiErrorMessage, getSafeMessage } from '../../utils/safeMessage';
+import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+const API_URL = getApiBaseUrl();
 const REQUEST_TIMEOUT_MS = 15000;
 
 const ResetPasswordContentStack = styled.div`

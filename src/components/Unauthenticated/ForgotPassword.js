@@ -20,8 +20,8 @@ import {
   AuthPrimaryButton,
 } from './auth/authStyles';
 import { getSafeApiErrorMessage, getSafeMessage } from '../../utils/safeMessage';
+import { getApiBaseUrl, getApiDebugContext } from '../../utils/apiBaseUrl';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 const REQUEST_TIMEOUT_MS = 15000;
 const COOLDOWN_SECONDS = 30;
 
@@ -32,18 +32,25 @@ const ForgotPasswordContentStack = styled.div`
   min-height: 100%;
   width: 100%;
   gap: 0;
+  justify-content: space-between;
+
+  @media (max-width: 639px) {
+    min-height: 0;
+  }
 `;
 
 const ForgotPasswordContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   justify-content: center;
   width: 100%;
 
   @media (max-width: 639px) {
+    flex: 1 1 auto;
     min-height: 0;
+    justify-content: center;
   }
 `;
 
@@ -83,6 +90,8 @@ const ForgotPasswordFooter = styled.div`
   width: 100%;
   background: rgba(255, 255, 255, 0.85);
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 
   @supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
     -webkit-backdrop-filter: blur(12px);
@@ -93,7 +102,8 @@ const ForgotPasswordFooter = styled.div`
     width: calc(100% + 32px);
     margin-left: -16px;
     margin-right: -16px;
-    padding: 10px 0 max(10px, env(safe-area-inset-bottom, 0px));
+    margin-top: auto;
+    padding: 10px 16px max(10px, env(safe-area-inset-bottom, 0px));
     background: rgba(255, 255, 255, 0.96);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -124,6 +134,8 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
   const redirectTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
+  const API_URL = getApiBaseUrl();
+  const endpoint = `${API_URL}/api/auth/forgot-password`;
 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -133,6 +145,10 @@ const ForgotPassword = () => {
   const [emailError, setEmailError] = useState('');
 
   useEffect(() => {
+    console.log('[ForgotPassword] tela renderizada', {
+      ...getApiDebugContext(),
+      endpoint,
+    });
     isMountedRef.current = true;
 
     return () => {
@@ -185,6 +201,12 @@ const ForgotPassword = () => {
 
   const handleReset = async (event) => {
     event?.preventDefault?.();
+    console.log('[ForgotPassword] handleReset iniciado', {
+      eventType: event?.type || null,
+      defaultPrevented: event?.defaultPrevented || false,
+      emailState: email,
+      endpoint,
+    });
 
     const normalizedEmail = email.trim().toLowerCase();
     setEmailError('');
@@ -210,11 +232,21 @@ const ForgotPassword = () => {
         redirectTimeoutRef.current = null;
       }
 
-      const response = await axios.post(
-        `${API_URL}/api/auth/forgot-password`,
-        { email: normalizedEmail },
-        { timeout: REQUEST_TIMEOUT_MS }
-      );
+      console.log('[ForgotPassword] antes do axios.post', {
+        method: 'POST',
+        url: endpoint,
+        payload: { email: normalizedEmail },
+        timeout: REQUEST_TIMEOUT_MS,
+        ...getApiDebugContext(),
+      });
+
+      const response = await axios.post(endpoint, { email: normalizedEmail }, { timeout: REQUEST_TIMEOUT_MS });
+
+      console.log('[ForgotPassword] resposta recebida', {
+        status: response?.status,
+        data: response?.data,
+        headers: response?.headers,
+      });
 
       if (!isMountedRef.current) {
         return;
@@ -240,6 +272,25 @@ const ForgotPassword = () => {
         }
       }, 4200);
     } catch (error) {
+      console.error('[ForgotPassword] erro no axios.post', {
+        message: error?.message,
+        code: error?.code,
+        name: error?.name,
+        stack: error?.stack,
+        config: {
+          method: error?.config?.method,
+          url: error?.config?.url,
+          timeout: error?.config?.timeout,
+          data: error?.config?.data,
+        },
+        response: {
+          status: error?.response?.status,
+          data: error?.response?.data,
+          headers: error?.response?.headers,
+        },
+        requestPresent: Boolean(error?.request),
+      });
+
       if (!isMountedRef.current) {
         return;
       }
@@ -321,6 +372,14 @@ const ForgotPassword = () => {
                   type="submit"
                   disabled={loading || disabled}
                   aria-busy={loading ? 'true' : 'false'}
+                  onClick={() => {
+                    console.log('[ForgotPassword] botão submit clicado', {
+                      type: 'submit',
+                      disabled: loading || disabled,
+                      emailValue: email,
+                      endpoint,
+                    });
+                  }}
                 >
                   {loading ? <AuthButtonSpinner /> : null}
                   <AuthFlowButtonLabelWide>

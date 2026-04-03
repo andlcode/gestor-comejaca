@@ -24,6 +24,7 @@ import {
   AuthPremiumInlineError,
   AuthPrimaryButton,
 } from './auth/authStyles';
+import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 
 const RegisterContentStack = styled.div`
   display: flex;
@@ -206,7 +207,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const API_URL = getApiBaseUrl();
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 

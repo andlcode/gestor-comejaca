@@ -18,6 +18,7 @@ import {
   AuthLoginForm,
   AuthPrimaryButton,
 } from './auth/authStyles';
+import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -196,7 +197,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const API_URL = getApiBaseUrl();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
