@@ -25,6 +25,7 @@ import AppHeader, {
   APP_HEADER_HEIGHT_MOBILE,
   AppHeaderBadge,
 } from "../shared/AppHeader";
+import { EVENT } from "../../config/eventConfig";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
@@ -505,7 +506,7 @@ const Atualizar = () => {
         <AppHeader
           showBack
           onBack={() => navigate(-1)}
-          rightContent={<AppHeaderBadge>COMEJACA 2026</AppHeaderBadge>}
+          rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
         />
         <LoadingWrap>
           <LoadingCard>
@@ -525,7 +526,7 @@ const Atualizar = () => {
         <AppHeader
           showBack
           onBack={() => navigate(-1)}
-          rightContent={<AppHeaderBadge>COMEJACA 2026</AppHeaderBadge>}
+          rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
         />
 
         <PageContent>
@@ -916,7 +917,7 @@ const Atualizar = () => {
 
                 <FormGrid>
                   <Field>
-                    <Label><FiClock /> É sua primeira COMEJACA? *</Label>
+                    <Label><FiClock /> É sua primeira {EVENT.name}? *</Label>
                     <CheckRow>
                       <CheckInput
       type="checkbox"
@@ -925,7 +926,7 @@ const Atualizar = () => {
       onChange={handleChange}
     />
                       <CheckText>
-                        Sim, esta é minha primeira COMEJACA.
+                        Sim, esta é minha primeira {EVENT.name}.
                       </CheckText>
                     </CheckRow>
                   </Field>
@@ -1123,7 +1124,7 @@ const Atualizar = () => {
                   </ReviewItem>
 
                   <ReviewItem>
-                    <ReviewLabel>Primeira COMEJACA</ReviewLabel>
+                    <ReviewLabel>Primeira {EVENT.name}</ReviewLabel>
                     <ReviewValue>
                       {formData.primeiraComejaca ? "Sim" : "Não"}
                     </ReviewValue>

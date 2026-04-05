@@ -7,6 +7,7 @@ import AppHeader, {
   APP_HEADER_HEIGHT,
   APP_HEADER_HEIGHT_MOBILE,
 } from '../shared/AppHeader';
+import { EVENT } from '../../config/eventConfig';
 
 const PAGE_MAX_WIDTH = '960px';
 
@@ -608,9 +609,9 @@ const IePage = () => {
           onBack={() => navigate(-1)}
           titleContent={
             <HeaderIdentity>
-              <HeaderBrand>COMEJACA</HeaderBrand>
+              <HeaderBrand>{EVENT.name}</HeaderBrand>
               <HeaderPageTitleRow>
-                <HeaderPageTitle>Sistema de inscrições</HeaderPageTitle>
+                <HeaderPageTitle>{EVENT.systemName}</HeaderPageTitle>
                 <HeaderPageMeta>Gestão e atualização</HeaderPageMeta>
               </HeaderPageTitleRow>
             </HeaderIdentity>

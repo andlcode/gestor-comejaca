@@ -554,7 +554,7 @@ const Profile = () => {
                 checked={communication1} 
                 onChange={() => setCommunication1(!communication1)} 
               />
-              Aceito receber comunicações oficiais sobre a Confraternização das Mocidades Espíritas de Jacarepaguá.
+              Aceito receber comunicações oficiais sobre o evento.
             </CheckboxLabel>
 
             <CheckboxLabel>

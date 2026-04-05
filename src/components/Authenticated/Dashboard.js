@@ -11,6 +11,7 @@ import {
   FiPlus,
   FiPrinter,
   FiSearch,
+  FiSettings,
   FiX,
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +21,8 @@ import {
   getInscricaoLifecycle,
 } from '../../utils/subscriptionCycle';
 import { getPaymentStatusVariant, getStatusPagamento } from '../../utils/paymentStatus';
+import { EVENT } from '../../config/eventConfig';
+import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 import AppHeader, {
   APP_HEADER_HEIGHT,
   APP_HEADER_HEIGHT_MOBILE,
@@ -728,6 +731,156 @@ const ArchiveActionButton = styled.button`
   }
 `;
 
+const EventInfoShell = styled(ArchiveShell)`
+  margin-bottom: 18px;
+`;
+
+const EventInfoList = styled.div`
+  padding: 0 18px 14px;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 0 16px 12px;
+  }
+`;
+
+const EventInfoSummary = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(15, 23, 42, 0.05);
+
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
+`;
+
+const EventInfoTopGrid = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 14px 18px;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+`;
+
+const EventInfoIdentity = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+`;
+
+const EventInfoEyebrow = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #94a3b8;
+`;
+
+const EventInfoHeadline = styled.h4`
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: #1f2937;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
+`;
+
+const EventInfoSubheadline = styled.p`
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+`;
+
+const EventInfoMetaGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+`;
+
+const EventInfoMetaItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+`;
+
+const EventInfoLabel = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+`;
+
+const EventInfoValue = styled.span`
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #334155;
+  white-space: pre-line;
+`;
+
+const EventInfoValuesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+`;
+
+const EventInfoValueCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.82);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+`;
+
+const EventInfoValueAmount = styled.span`
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1f2937;
+`;
+
+const EventInfoAddressLink = styled.a`
+  display: inline-flex;
+  align-items: flex-start;
+  width: fit-content;
+  max-width: 100%;
+  color: #334155;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    color: #111827;
+    opacity: 0.86;
+    transform: translateY(-1px);
+  }
+`;
+
 const ConfirmOverlay = styled.div`
   position: fixed;
   inset: 0;
@@ -957,6 +1110,67 @@ const getFirstName = (name = '') =>
     .split(/\s+/)
     .filter(Boolean)[0] || 'participante';
 
+const isEventConfigured = (evento) =>
+  Boolean(
+    evento &&
+      [
+        evento.nome,
+        evento.nomeExibicao,
+        evento.ano,
+        evento.dataInicio,
+        evento.dataFim,
+        evento.localNome,
+        evento.localEndereco,
+        evento.valorTrabalhador,
+        evento.valorConfraternista,
+        evento.valorPequenoCompanheiro,
+      ].some((value) => String(value || '').trim() !== '')
+  );
+
+const formatEventDate = (value) => {
+  if (!value) return 'Nao informado';
+
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  return new Intl.DateTimeFormat('pt-BR').format(parsed);
+};
+
+const formatEventMoney = (value) => {
+  if (value === '' || value == null) return 'Nao informado';
+
+  const normalized = Number(String(value).replace(',', '.'));
+  if (!Number.isFinite(normalized)) return String(value);
+
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(normalized);
+};
+
+const formatEventPeriod = (start, end) => {
+  if (!start && !end) return 'Nao informado';
+  if (start && end) return `${formatEventDate(start)} ate ${formatEventDate(end)}`;
+  return formatEventDate(start || end);
+};
+
+const isIosDevice = () => {
+  if (typeof navigator === 'undefined') return false;
+
+  const userAgent = navigator.userAgent || '';
+  return /iPad|iPhone|iPod/.test(userAgent);
+};
+
+const buildMapSearchUrl = (address) => {
+  const normalizedAddress = String(address || '').trim();
+  if (!normalizedAddress) return '';
+
+  const query = encodeURIComponent(normalizedAddress);
+  return isIosDevice()
+    ? `http://maps.apple.com/?q=${query}`
+    : `https://www.google.com/maps/search/?api=1&query=${query}`;
+};
+
 const buildReenrollmentPayload = (item = {}) => {
   const pickValue = (...keys) => {
     for (const key of keys) {
@@ -1019,14 +1233,17 @@ const Dashboard = () => {
   const [inscricoes, setInscricoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [eventoAtual, setEventoAtual] = useState(null);
+  const [eventoLoaded, setEventoLoaded] = useState(false);
   const [loadingItemId, setLoadingItemId] = useState(null);
   const [isArchivedExpanded, setIsArchivedExpanded] = useState(false);
+  const [isEventInfoExpanded, setIsEventInfoExpanded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pendingReenrollmentItem, setPendingReenrollmentItem] = useState(null);
   const [isReenrollmentLoading, setIsReenrollmentLoading] = useState(false);
 
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const API_URL = getApiBaseUrl();
   const isAdmin = useMemo(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -1035,6 +1252,15 @@ const Dashboard = () => {
     } catch {
       const role = localStorage.getItem('role');
       return role === 'admin' || role === 'admin_total';
+    }
+  }, []);
+  const isAdminTotal = useMemo(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      const role = storedUser?.role || localStorage.getItem('role');
+      return role === 'admin_total';
+    } catch {
+      return localStorage.getItem('role') === 'admin_total';
     }
   }, []);
   const currentUser = useMemo(() => {
@@ -1122,6 +1348,57 @@ const Dashboard = () => {
     fetchInscricoes();
   }, [API_URL, navigate]);
 
+  useEffect(() => {
+    const fetchEventoAtual = async () => {
+      if (!isAdminTotal) {
+        setEventoLoaded(true);
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/api/evento`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = response.data?.data;
+        setEventoAtual(isEventConfigured(data) ? data : null);
+      } catch (requestError) {
+        if (![401, 403].includes(requestError?.response?.status)) {
+          console.error('[dashboard] erro ao buscar evento atual:', requestError);
+        }
+        setEventoAtual(null);
+      } finally {
+        setEventoLoaded(true);
+      }
+    };
+
+    fetchEventoAtual();
+  }, [API_URL, isAdminTotal]);
+
+  const eventInfoData = useMemo(() => {
+    if (!eventoAtual) return null;
+
+    const endereco = eventoAtual.localEndereco || '';
+    const nomePrincipal = eventoAtual.nomeExibicao || eventoAtual.nome || 'Nao informado';
+    const nomeSecundario = eventoAtual.nomeCompleto || eventoAtual.nome || 'Nao informado';
+
+    return {
+      nome: eventoAtual.nome || 'Nao informado',
+      nomeExibicao: eventoAtual.nomeExibicao || 'Nao informado',
+      nomeCompleto: eventoAtual.nomeCompleto || 'Nao informado',
+      nomePrincipal,
+      nomeSecundario,
+      periodo: formatEventPeriod(eventoAtual.dataInicio, eventoAtual.dataFim),
+      local: eventoAtual.localNome || 'Nao informado',
+      endereco: endereco || 'Nao informado',
+      enderecoUrl: endereco ? buildMapSearchUrl(endereco) : '',
+      valorTrabalhador: formatEventMoney(eventoAtual.valorTrabalhador),
+      valorConfraternista: formatEventMoney(eventoAtual.valorConfraternista),
+      valorPequenoCompanheiro: formatEventMoney(eventoAtual.valorPequenoCompanheiro),
+    };
+  }, [eventoAtual]);
+
   const filteredData = useMemo(() => {
     if (!Array.isArray(inscricoes)) return [];
 
@@ -1156,6 +1433,11 @@ const Dashboard = () => {
   const handleNavigateToInstitution = () => {
     setIsMobileMenuOpen(false);
     navigate('/instituicao');
+  };
+
+  const handleNavigateToEventConfig = () => {
+    setIsMobileMenuOpen(false);
+    navigate('/admin/evento');
   };
 
   const openReenrollmentConfirm = (item) => {
@@ -1234,7 +1516,7 @@ const Dashboard = () => {
         glass
         titleContent={
           <HeaderIdentity>
-            <HeaderBrand>COMEJACA</HeaderBrand>
+            <HeaderBrand>{EVENT.name}</HeaderBrand>
             <HeaderMetaRow>
               <HeaderPageTitleRow>
                 <HeaderPageTitle>Inscrições {ACTIVE_REGISTRATION_YEAR}</HeaderPageTitle>
@@ -1284,6 +1566,12 @@ const Dashboard = () => {
               </DrawerNavButton>
             </>
           )}
+          {isAdminTotal && (
+            <DrawerNavButton type="button" onClick={handleNavigateToEventConfig}>
+              <FiSettings size={16} />
+              Configurar Evento
+            </DrawerNavButton>
+          )}
         </DrawerNav>
 
         <DrawerFooter>
@@ -1307,6 +1595,96 @@ const Dashboard = () => {
       </DrawerPanel>
 
       <Content>
+        {eventoLoaded && isAdminTotal ? (
+          <EventInfoShell>
+            <ArchiveToggle
+              type="button"
+              onClick={() => setIsEventInfoExpanded((prev) => !prev)}
+              aria-expanded={isEventInfoExpanded}
+              aria-controls="dashboard-event-info"
+            >
+              <ArchiveTitle>
+                <ArchiveTitleMain>
+                  <span>Informações do encontro</span>
+                </ArchiveTitleMain>
+                <ArchiveHint>
+                  {isEventInfoExpanded ? 'Toque para recolher' : 'Toque para expandir'}
+                </ArchiveHint>
+              </ArchiveTitle>
+
+              <ArchiveChevron $expanded={isEventInfoExpanded} />
+            </ArchiveToggle>
+
+            <ArchivePanel id="dashboard-event-info" $expanded={isEventInfoExpanded}>
+              {eventInfoData ? (
+                <EventInfoList>
+                  <EventInfoSummary>
+                    <EventInfoTopGrid>
+                      <EventInfoIdentity>
+                        <EventInfoEyebrow>Encontro</EventInfoEyebrow>
+                        <EventInfoHeadline>{eventInfoData.nomePrincipal}</EventInfoHeadline>
+                        {eventInfoData.nomeSecundario !== eventInfoData.nomePrincipal ? (
+                          <EventInfoSubheadline>{eventInfoData.nomeSecundario}</EventInfoSubheadline>
+                        ) : null}
+                      </EventInfoIdentity>
+
+                      <EventInfoMetaGrid>
+                        <EventInfoMetaItem>
+                          <EventInfoLabel>Periodo</EventInfoLabel>
+                          <EventInfoValue>{eventInfoData.periodo}</EventInfoValue>
+                        </EventInfoMetaItem>
+
+                        <EventInfoMetaItem>
+                          <EventInfoLabel>Local</EventInfoLabel>
+                          <EventInfoValue>{eventInfoData.local}</EventInfoValue>
+                        </EventInfoMetaItem>
+
+                        <EventInfoMetaItem style={{ gridColumn: '1 / -1' }}>
+                          <EventInfoLabel>Endereco</EventInfoLabel>
+                          {eventInfoData.enderecoUrl ? (
+                            <EventInfoAddressLink
+                              href={eventInfoData.enderecoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <EventInfoValue>{eventInfoData.endereco}</EventInfoValue>
+                            </EventInfoAddressLink>
+                          ) : (
+                            <EventInfoValue>{eventInfoData.endereco}</EventInfoValue>
+                          )}
+                        </EventInfoMetaItem>
+                      </EventInfoMetaGrid>
+                    </EventInfoTopGrid>
+
+                    <EventInfoValuesGrid>
+                      <EventInfoValueCard>
+                        <EventInfoLabel>Trabalhador</EventInfoLabel>
+                        <EventInfoValueAmount>{eventInfoData.valorTrabalhador}</EventInfoValueAmount>
+                      </EventInfoValueCard>
+
+                      <EventInfoValueCard>
+                        <EventInfoLabel>Confraternista</EventInfoLabel>
+                        <EventInfoValueAmount>{eventInfoData.valorConfraternista}</EventInfoValueAmount>
+                      </EventInfoValueCard>
+
+                      <EventInfoValueCard>
+                        <EventInfoLabel>Pequeno companheiro</EventInfoLabel>
+                        <EventInfoValueAmount>
+                          {eventInfoData.valorPequenoCompanheiro}
+                        </EventInfoValueAmount>
+                      </EventInfoValueCard>
+                    </EventInfoValuesGrid>
+                  </EventInfoSummary>
+                </EventInfoList>
+              ) : (
+                <ArchiveList>
+                  <InlineEmpty>Nenhuma informação do encontro cadastrada ainda.</InlineEmpty>
+                </ArchiveList>
+              )}
+            </ArchivePanel>
+          </EventInfoShell>
+        ) : null}
+
         <TopActionBar>
           <MobileOnly>
             <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
@@ -1333,6 +1711,12 @@ const Dashboard = () => {
                     Adicionar IE
                   </SecondaryActionButton>
                 </>
+              )}
+              {isAdminTotal && (
+                <SecondaryActionButton type="button" onClick={handleNavigateToEventConfig}>
+                  <FiSettings size={16} />
+                  Configurar Evento
+                </SecondaryActionButton>
               )}
 
               <GhostActionButton type="button" onClick={handleLogout}>
@@ -1495,6 +1879,7 @@ const Dashboard = () => {
             )}
           </>
         )}
+
       </Content>
     </Container>
   );

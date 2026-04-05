@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate,useLocation } from "react-router-dom";
 import styled, { ThemeProvider } from 'styled-components';
 import { FiUser, FiLogOut, FiMoon,FiDownload, FiMenu, FiPlus, FiUpload } from "react-icons/fi";
+import { EVENT } from "../../config/eventConfig";
 
 // Temas otimizados
 export const themes = {
@@ -295,7 +296,7 @@ const HeaderMain = ({className }) => {
       <Container>
         <Header className={className}>
           <Wrapper><ImagemResponsiva src="/favicon.png" alt="Banner do evento" />
-          <Title>46º COMEJACA 2025</Title>
+          <Title>{EVENT.displayName}</Title>
     </Wrapper>          <Nav>
 
 

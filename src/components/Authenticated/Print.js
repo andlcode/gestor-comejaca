@@ -4,6 +4,7 @@ import styled, { keyframes } from "styled-components";
 import axios from "axios";
 
 import { jsPDF } from "jspdf"; 
+import { EVENT } from "../../config/eventConfig";
 
 const Container = styled.div`
   font-family: 'Inter', Arial, sans-serif;
@@ -343,6 +344,7 @@ const getToken = () => {
   
     const age = calculateAge(participant.dataNascimento);
     const isMinor = age < 18;
+  const fullDisplayName = [EVENT.displayName, EVENT.fullName].filter(Boolean).join(" - ");
   
     return (
 
@@ -357,10 +359,10 @@ const getToken = () => {
         </LoaderWrapper>
       ) : (  <DocumentWrapper id="ficha-inscricao">
    <Header>
-        <img src="/favicon.png" alt="Logo COMEJACA" />
+        <img src="/favicon.png" alt={`Logo ${EVENT.name}`} />
         <div>
-          <h1>COMEJACA 2025</h1>
-          <h2>Confraternização das Mocidades Espíritas de Jacarepaguá</h2>
+          <h1>{EVENT.displayName}</h1>
+          <h2>{EVENT.fullName}</h2>
         </div>
       </Header>
         <Section>
@@ -591,7 +593,7 @@ const getToken = () => {
       <FieldValue>
         <div style={{ textAlign: "justify", borderTop: "1px solid #fff", width: "100%", height: "15px" }}></div>
         <span style={{ display:"block", textAlign: "justify", fontSize: "12px", color: "#666" }}>Eu, __________________________________________, portador(a) do documento de identidade nº ______________________, responsável legal pelo(a) menor __________________________________________,
-autorizo sua participação na 46ª COMEJACA – Confraternização das Mocidades Espíritas de Jacarepaguá, a ser realizada nos dias 19 e 20 de julho de 2025. </span><br></br>
+autorizo sua participação na {fullDisplayName || EVENT.displayName}, a ser realizada nos dias 19 e 20 de julho de 2025. </span><br></br>
       </FieldValue>
     </FieldRow>
 
@@ -621,7 +623,7 @@ autorizo sua participação na 46ª COMEJACA – Confraternização das Mocidade
             <p>
               Eu, {participant.nomeCompletoResponsavel || "[Nome do Responsável]"}, portador(a) do{" "}
               {participant.documentoResponsavel || "[Documento]"}, autorizo a participação de{" "}
-              {participant.nomeCompleto} no evento COMEJACA 2025 nos dias x e y de Julho de 2025.
+              {participant.nomeCompleto} no evento {EVENT.displayName} nos dias x e y de Julho de 2025.
             </p>
           </AuthorizationBox>
         )} */}

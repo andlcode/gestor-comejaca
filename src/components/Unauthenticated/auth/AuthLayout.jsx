@@ -17,47 +17,58 @@ import {
   AuthPageSubtitle,
 } from './authStyles';
 import { authTheme } from './authTheme';
+import { EVENT } from '../../../config/eventConfig';
 
 const AuthLayout = ({
   title,
   subtitle,
   children,
   layoutPreset = 'default',
+  mobileScrollMode = 'card',
 }) => {
   const isLogin = layoutPreset === 'login';
+  const usePageScroll = mobileScrollMode === 'page';
+  const displayPrefix = EVENT.displayName
+    .replace(EVENT.name, '')
+    .replace(EVENT.year, '')
+    .trim();
 
   return (
     <ThemeProvider theme={authTheme}>
-      <AuthPageShell $login={isLogin}>
-        <AuthCardWrap $login={isLogin}>
-          <AuthCard $login={isLogin}>
+      <AuthPageShell $login={isLogin} $pageScroll={usePageScroll}>
+        <AuthCardWrap $login={isLogin} $pageScroll={usePageScroll}>
+          <AuthCard $login={isLogin} $pageScroll={usePageScroll}>
 
             {/* HEADER */}
             <AuthCardHeader $login={isLogin}>
               <AuthBrandBlock $login={isLogin}>
                 <AuthBrandTitle $login={isLogin}>
-                  <AuthBrandOrdinal $login={isLogin}>
-                    47º
-                  </AuthBrandOrdinal>
+                  {displayPrefix ? (
+                    <AuthBrandOrdinal $login={isLogin}>
+                      {displayPrefix}
+                    </AuthBrandOrdinal>
+                  ) : null}
 
                   <AuthBrandName $login={isLogin}>
-                    COMEJACA
+                    {EVENT.name}
                   </AuthBrandName>
 
-                  <AuthBrandYear $login={isLogin}>
-                    2026
-                  </AuthBrandYear>
+                  {EVENT.year ? (
+                    <AuthBrandYear $login={isLogin}>
+                      {EVENT.year}
+                    </AuthBrandYear>
+                  ) : null}
                 </AuthBrandTitle>
 
                 <AuthBrandSubtitle $login={isLogin}>
-                  Sistema de inscrições
+                  {EVENT.systemName}
                 </AuthBrandSubtitle>
               </AuthBrandBlock>
             </AuthCardHeader>
 
             {/* BODY */}
-            <AuthCardBody $login={isLogin}>
-              <AuthContentInner $login={isLogin}>
+            <AuthCardBody $login={isLogin} $pageScroll={usePageScroll}>
+              <AuthContentInner $login={isLogin} $pageScroll={usePageScroll}>
                 <AuthPageTitle $login={isLogin}>
                   {title}
                 </AuthPageTitle>

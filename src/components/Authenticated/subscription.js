@@ -27,6 +27,7 @@ import AppHeader, {
   APP_HEADER_HEIGHT_MOBILE,
   AppHeaderBadge,
 } from "../shared/AppHeader";
+import { EVENT } from "../../config/eventConfig";
 
 const fadeIn = keyframes`
   from {
@@ -817,6 +818,7 @@ const CloseButton = styled.button`
 
 const PlanoGeralModal = ({ isOpen, onClose }) => {
   const [visible, setVisible] = useState(isOpen);
+  const fullDisplayName = [EVENT.displayName, EVENT.fullName].filter(Boolean).join(" - ");
 
   useEffect(() => {
     if (isOpen) {
@@ -833,16 +835,15 @@ const PlanoGeralModal = ({ isOpen, onClose }) => {
         <ModalContent>
           <CloseButton onClick={onClose}>✕</CloseButton>
 
-          <ModalTitle>Plano Geral — XLVI COMEJACA 2025</ModalTitle>
+          <ModalTitle>Plano Geral — {EVENT.displayName}</ModalTitle>
           <ModalSubtitle>
-            Confraternização das Mocidades Espíritas de Jacarepaguá
+            {EVENT.fullName}
           </ModalSubtitle>
 
           <section>
             <h3>1. Dados de Identificação</h3>
             <p>
-              <strong>1.1 Evento:</strong> XLVI COMEJACA – Confraternização das Mocidades
-              Espíritas de Jacarepaguá.
+              <strong>1.1 Evento:</strong> {fullDisplayName || EVENT.displayName}.
             </p>
             <p>
               <strong>1.2 Promoção e Coordenação Geral:</strong> Área de Educação do 20º CEU I e II / CEERJ
@@ -1243,7 +1244,7 @@ const Formulario = () => {
           <AppHeader
             showBack
             onBack={handleBack}
-            rightContent={<AppHeaderBadge>COMEJACA 2026</AppHeaderBadge>}
+            rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
           />
 
           <Content>
@@ -1467,7 +1468,7 @@ const Formulario = () => {
                               onChange={handleChange}
                             />
                             <CheckboxLabel>
-                              Esta será minha primeira COMEJACA.
+                              Esta será minha primeira {EVENT.name}.
                             </CheckboxLabel>
                           </CheckboxContainer>
                         </FullWidth>
@@ -1765,8 +1766,8 @@ const Formulario = () => {
                   <CheckboxInput type="checkbox" required />
                   <CheckboxLabel $final>
                     Li e estou de acordo com as orientações do{" "}
-                    <LinkText onClick={() => setModalOpen(true)}>plano geral</LinkText> da XLVI
-                    COMEJACA. *
+                    <LinkText onClick={() => setModalOpen(true)}>plano geral</LinkText> da{" "}
+                    {EVENT.displayName}. *
                   </CheckboxLabel>
                 </CheckboxContainer>
               </Section>

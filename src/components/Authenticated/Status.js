@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiActivity, FiAlertCircle } from 'react-icons/fi';
 import { FaLeaf, FaWheelchair } from 'react-icons/fa';
 import { getPaymentStatusVariant, getStatusPagamento } from '../../utils/paymentStatus';
+import { EVENT } from '../../config/eventConfig';
 import GraficoTrabalhadoresPorComissao from './GraficoTrabalhadoresPorComissao';
 import AppHeader, {
   APP_HEADER_HEIGHT,
@@ -534,7 +535,7 @@ const ListaParticipantes = () => {
           glass
           onBack={() => navigate(-1)}
           title="Inscritos"
-          rightContent={<AppHeaderBadge>2026</AppHeaderBadge>}
+          rightContent={<AppHeaderBadge>{EVENT.year}</AppHeaderBadge>}
           maxWidth="1560px"
         />
 

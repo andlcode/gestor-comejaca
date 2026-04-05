@@ -198,6 +198,22 @@ export const AuthPageShell = styled.div`
       justify-content: stretch;
       padding: 0;
     `}
+    ${({ $pageScroll }) =>
+      $pageScroll &&
+      `
+      height: auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: auto;
+      align-items: stretch;
+      justify-content: flex-start;
+      padding:
+        max(0.9rem, env(safe-area-inset-top, 0px))
+        clamp(0.9rem, 4vw, 1.1rem)
+        max(1.5rem, env(safe-area-inset-bottom, 0px));
+    `}
     box-sizing: border-box;
   }
 `;
@@ -594,6 +610,13 @@ export const AuthCardWrap = styled.div`
     }
   `}
 
+  ${({ $pageScroll }) =>
+    $pageScroll &&
+    `
+    width: 100%;
+    max-width: min(100%, 720px);
+  `}
+
   @media (min-width: 900px) {
     width: min(92vw, 532px);
     max-width: min(92vw, 532px);
@@ -660,6 +683,14 @@ export const AuthCardWrap = styled.div`
         display: none;
       }
     `}
+
+    ${({ $pageScroll }) =>
+      $pageScroll &&
+      `
+      height: auto;
+      min-height: auto;
+      overflow: visible;
+    `}
   }
 `;
 
@@ -721,6 +752,19 @@ export const AuthCard = styled.div`
       0 4px 20px rgba(15, 23, 42, 0.07),
       0 0 0 1px rgba(15, 23, 42, 0.04);
     animation: ${authCardEnter} 0.22s ease-out both;
+
+    ${({ $pageScroll }) =>
+      $pageScroll &&
+      `
+      height: auto;
+      max-height: none;
+      overflow: visible;
+      border-radius: 24px;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.72) inset,
+        0 10px 28px -18px rgba(15, 23, 42, 0.16),
+        0 0 0 1px rgba(15, 23, 42, 0.045);
+    `}
   }
 
   @media (max-width: 639px) and (prefers-reduced-motion: reduce) {
@@ -1092,6 +1136,13 @@ export const AuthCardBody = styled.div`
         max(20px, env(safe-area-inset-bottom, 0px))
         max(20px, env(safe-area-inset-left, 0px));
       overflow: hidden;
+
+      ${({ $pageScroll }) =>
+        $pageScroll &&
+        `
+        overflow: visible;
+        padding: 18px 16px 20px;
+      `}
     }
   `}
 `;
@@ -1134,6 +1185,14 @@ export const AuthContentInner = styled.div`
     flex-direction: column;
     justify-content: flex-start;
     overflow: hidden;
+
+    ${({ $pageScroll }) =>
+      $pageScroll &&
+      `
+      height: auto;
+      min-height: auto;
+      overflow: visible;
+    `}
   }
 `;
 

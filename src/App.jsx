@@ -14,6 +14,7 @@ import ForgotPassword from './components/Unauthenticated/ForgotPassword';
 import NovaSenha from './components/Unauthenticated/NovaSenha';
 import NotFound from './components/Unauthenticated/NotFound';
 import ProtectedRoute from './routes/ProtectedRoutes';
+import AdminTotalRoute from './routes/AdminTotalRoute';
 import { AuthProvider } from './context/AuthContext';
 import ServerStatus from './components/Unauthenticated/ServerStatus';
 import SessaoInfo from './components/Unauthenticated/SessaoInfo';
@@ -26,6 +27,7 @@ import PendingPage from './components/Authenticated/PendingPage';
 import FailurePage from './components/Authenticated/FailurePage';
 import SuccessPage from './components/Authenticated/SuccessPage';
 import ListaParticipantes from './components/Authenticated/Status.js';
+import AdminEvento from './components/Authenticated/AdminEvento.jsx';
 
 import Admin from './components/Authenticated/Admin.js';
 function App() {
@@ -97,6 +99,16 @@ function AppContent() {
       <Route path="/pagamento-pendente" element={<ProtectedRoute><PendingPage /></ProtectedRoute>} />
       <Route path="/imprimir/:id" element={<ProtectedRoute><FichaInscricao /></ProtectedRoute>} />
       <Route path="/pagamentos" element={<ProtectedRoute><ListaParticipantes /></ProtectedRoute>} />
+      <Route
+        path="/admin/evento"
+        element={
+          <ProtectedRoute>
+            <AdminTotalRoute>
+              <AdminEvento />
+            </AdminTotalRoute>
+          </ProtectedRoute>
+        }
+      />
             <Route path="/admin" element={<ProtectedRoute><admin /></ProtectedRoute>} />
 
     </Routes>
