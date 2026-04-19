@@ -468,6 +468,10 @@ const Atualizar = () => {
         valor: formData.valor || 0,
       };
 
+      console.log("[nomeCracha][front] antes do submit", {
+        formDataNomeCracha: formData.nomeCracha,
+        payloadNomeCracha: payload.nomeCracha,
+      });
       console.log("PAYLOAD INSCRIÇÃO:", payload);
 
       const response = await axios.put(

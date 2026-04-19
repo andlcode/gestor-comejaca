@@ -161,9 +161,19 @@ const appHeaderTheme = {
   inputFocus: '#2563eb',
 };
 
+const getInitialAnoInscricao = () => {
+  const parsed = parseInt(String(EVENT.year || '').trim(), 10);
+  if (Number.isFinite(parsed) && parsed >= 1990 && parsed <= 2100) {
+    return parsed;
+  }
+  return new Date().getFullYear();
+};
+
 const ListaParticipantes = () => {
   const [participantes, setParticipantes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAno, setSelectedAno] = useState(getInitialAnoInscricao);
+  const [anosDisponiveis, setAnosDisponiveis] = useState([]);
   const [filtroIE, setFiltroIE] = useState('');
   const [abaAtiva, setAbaAtiva] = useState('lista');
   const [filtro, setFiltro] = useState('');
@@ -195,26 +205,47 @@ const ListaParticipantes = () => {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchParticipantes = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(`${API_URL}/api/auth/pagamentos/`, {
+        const response = await axios.get(`${API_URL}/api/auth/pagamentos`, {
+          params: { ano: selectedAno },
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
 
+        if (cancelled) return;
+
         if (response.data.success) {
+          const anos = Array.isArray(response.data.meta?.anosDisponiveis)
+            ? response.data.meta.anosDisponiveis
+                .map((y) => Number(y))
+                .filter((y) => Number.isFinite(y))
+            : [];
+          setAnosDisponiveis(anos);
           setParticipantes(response.data.data);
+          if (anos.length > 0 && !anos.includes(selectedAno)) {
+            setSelectedAno(anos[0]);
+          }
         }
       } catch (error) {
         console.error('Erro ao buscar participantes:', error);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchParticipantes();
-  }, [API_URL]);
+    void fetchParticipantes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [API_URL, selectedAno]);
 
   useEffect(() => {
     if (!isParticipantModalOpen) return undefined;
@@ -549,6 +580,23 @@ const ListaParticipantes = () => {
               </PageSubtitle>
             </TitleBlock>
           </PageHeader>
+
+          <YearFilterBar>
+            <FilterGroup>
+              <FilterLabel htmlFor="filtro-ano-inscricao">Ano da inscrição</FilterLabel>
+              <YearSelect
+                id="filtro-ano-inscricao"
+                value={selectedAno}
+                onChange={(e) => setSelectedAno(Number(e.target.value))}
+              >
+                {(anosDisponiveis.length > 0 ? anosDisponiveis : [selectedAno]).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </YearSelect>
+            </FilterGroup>
+          </YearFilterBar>
 
           <Tabs>
             <TabButton
@@ -1284,6 +1332,31 @@ const FilterBar = styled.div`
 
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
+  }
+`;
+
+const YearFilterBar = styled(FilterBar)`
+  max-width: min(100%, 320px);
+`;
+
+const YearSelect = styled.select`
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
   }
 `;
 
