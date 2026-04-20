@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled, { ThemeProvider, keyframes, css } from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUser,
+  faUserTag,
+  faIdBadge,
+  faCalendarDays,
+  faShieldHalved,
+  faIdCard,
+  faPhone,
+  faVenusMars,
+  faPen,
+  faEnvelope,
+  faPeopleGroup,
+  faSitemap,
+  faMapLocationDot,
+  faBuilding,
+  faCircleInfo,
+  faSeedling,
+  faShirt,
+} from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -19,7 +40,6 @@ import {
   FiHome,
   FiHeart,
 } from "react-icons/fi";
-import { FaWhatsapp } from "react-icons/fa";
 import { ptBR } from "date-fns/locale";
 import axios from "axios";
 import AppHeader, {
@@ -28,6 +48,17 @@ import AppHeader, {
   AppHeaderBadge,
 } from "../shared/AppHeader";
 import { EVENT } from "../../config/eventConfig";
+import { authTheme } from "../Unauthenticated/auth/authTheme";
+import { AuthGradientLoginButton } from "../Unauthenticated/auth/authStyles";
+import PremiumAuthField, {
+  InputShell,
+  InputInner,
+  InputIconSlot,
+  FieldTrack,
+  FloatingLabel,
+  PremiumAuthSelect,
+  PremiumAuthTextarea,
+} from "../Unauthenticated/auth/PremiumAuthField";
 
 const fadeIn = keyframes`
   from {
@@ -118,29 +149,31 @@ const StepBackButton = styled.button`
   align-items: center;
   justify-content: center;
 
-  min-height: 52px;
+  min-height: 50px;
   width: 100%;
-  gap: 7px;
-  padding: 0 16px;
-  border: 1px solid #e2e2e7;
-  background: #ffffff;
-  border-radius: 16px;
-  color: #4b5563;
-  font-size: 15px;
+  gap: 6px;
+  padding: 0 14px;
+  border: 1px solid #ececf1;
+  background: #f8f9fc;
+  border-radius: 14px;
+  color: #64748b;
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
 
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.16s ease;
 
   svg {
     color: currentColor;
-    font-size: 15px;
+    font-size: 14px;
+    opacity: 0.9;
   }
 
   &:hover {
-    background: #f9fafb;
-    border-color: #d1d5db;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
   }
 
   &:active {
@@ -149,8 +182,8 @@ const StepBackButton = styled.button`
 
   &:focus-visible {
     outline: none;
-    border-color: ${({ theme }) => theme.inputFocus};
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    border-color: rgba(100, 128, 247, 0.45);
+    box-shadow: 0 0 0 3px rgba(100, 128, 247, 0.12);
   }
 
   &:disabled {
@@ -159,7 +192,7 @@ const StepBackButton = styled.button`
   }
 
   @media (max-width: 768px) {
-    min-height: 50px;
+    min-height: 48px;
   }
 `;
 
@@ -315,192 +348,175 @@ const InputGroup = styled.div`
   }
 `;
 
+const SubscriptionStaticLabel = styled.p`
+  margin: 0 0 10px 0;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.014em;
+  color: rgba(71, 85, 105, 0.82);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.45;
+`;
+
 const FullWidth = styled.div`
   grid-column: 1 / -1;
 `;
 
-const InputLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.secondaryText};
-  margin-bottom: 0;
-  font-weight: 500;
-  line-height: 1.45;
-  letter-spacing: -0.01em;
+const CAMISA_TAMANHOS = ["PP", "P", "M", "G", "GG", "XG"];
+
+const ParticipationSelectWrap = styled.div`
+  grid-column: 1 / -1;
+  margin-bottom: 22px;
 
   @media (max-width: 768px) {
-    font-size: 13px;
-    line-height: 1.4;
+    margin-bottom: 18px;
   }
 `;
 
-const fieldBaseStyles = css`
-  width: 100%;
-  min-height: 56px;
-  padding: 0 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  background: ${({ theme }) => theme.inputBackground};
-  color: #1d1d1f;
+const ParticipationShirtFields = styled.div`
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 8px;
+
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
+`;
+
+const ParticipationInfoCard = styled.div`
+  grid-column: 1 / -1;
+  background: #f8f9fc;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  @media (max-width: 768px) {
+    padding: 18px 16px;
+    gap: 18px;
+  }
+`;
+
+const ParticipationInfoHeading = styled.h3`
+  margin: 0 0 10px 0;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 15px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  outline: none;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  color: #0f172a;
+  line-height: 1.3;
+`;
 
-  &::placeholder {
-    color: #8e8e93;
-    opacity: 1;
+const ParticipationInfoList = styled.ul`
+  margin: 0;
+  padding: 0 0 0 1.15rem;
+  list-style: disc;
+
+  li {
+    margin-bottom: 10px;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.58;
+    color: #64748b;
   }
 
-  &:hover {
-    border-color: #d7dbe3;
+  li:last-child {
+    margin-bottom: 0;
   }
 
-  &:focus {
-    border-color: ${({ theme }) => theme.inputFocus};
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
-  }
-
-  &[aria-invalid="true"],
-  &[data-error="true"] {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
-  }
-
-  &:disabled {
-    background: #f3f4f6;
-    color: #6b7280;
-    border-color: #e5e7eb;
-    cursor: not-allowed;
+  strong {
+    color: #475569;
+    font-weight: 600;
   }
 `;
 
-const AppField = styled.input`
-  ${fieldBaseStyles}
-`;
-
-const InputField = AppField;
-const StyledInput = AppField;
-
-const AppSelect = styled.select`
-  ${fieldBaseStyles}
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 40px;
-`;
-
-const Select = AppSelect;
-
-const AppTextArea = styled.textarea`
+const DatePickerAuthTrack = styled.div`
   width: 100%;
-  min-height: 124px;
-  padding: 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  background: ${({ theme }) => theme.inputBackground};
-  color: #1d1d1f;
-  resize: vertical;
-  font-family: inherit;
-  font-size: 15px;
-  line-height: 1.6;
-  transition: all 0.2s ease;
-  outline: none;
+  padding-top: 4px;
 
-  &::placeholder {
-    color: #8e8e93;
-    opacity: 1;
+  & .MuiInputBase-root {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
   }
 
-  &:hover {
-    border-color: #d7dbe3;
+  & .MuiInputBase-input {
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.014em;
+    color: #111827;
+    padding: 6px 0 0 !important;
   }
 
-  &:focus {
-    border-color: ${({ theme }) => theme.inputFocus};
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  & .MuiSvgIcon-root {
+    color: #9aa4b2;
   }
 
-  &[aria-invalid="true"],
-  &[data-error="true"] {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
-  }
-
-  &:disabled {
-    background: #f3f4f6;
-    color: #6b7280;
-    border-color: #e5e7eb;
-    cursor: not-allowed;
-  }
-`;
-
-const TextArea = AppTextArea;
-
-const AppDatePicker = styled(DatePicker)`
-  width: 100%;
-
-  .MuiInputBase-root {
-    min-height: 56px;
-    border-radius: 16px;
-    background: ${({ theme }) => theme.inputBackground};
-    border: 1px solid #e5e7eb;
-    font-family: inherit;
-    color: #1d1d1f;
-    transition: all 0.2s ease;
-    padding-right: 12px;
-  }
-
-  .MuiInputBase-root:hover {
-    border-color: #d7dbe3;
-  }
-
-  .MuiInputBase-root.Mui-focused {
-    border-color: ${({ theme }) => theme.inputFocus};
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
-  }
-
-  .MuiInputBase-root.Mui-error {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
-  }
-
-  .MuiInputBase-root.Mui-disabled {
-    background: #f3f4f6;
-    color: #6b7280;
-    border-color: #e5e7eb;
-  }
-
-  .MuiOutlinedInput-notchedOutline {
+  & .MuiOutlinedInput-notchedOutline {
     border: none;
   }
 
-  input {
-    padding: 15px 16px;
-    font-size: 15px;
-    color: #1d1d1f;
-    -webkit-text-fill-color: #1d1d1f;
-    opacity: 1;
-  }
-
-  .MuiSvgIcon-root {
-    color: #8e8e93;
-    font-size: 1.1rem;
-  }
-
-  .MuiInputBase-input::placeholder {
-    color: #8e8e93;
-    opacity: 1;
+  & .MuiInputBase-input::placeholder {
+    color: transparent;
+    opacity: 0;
   }
 `;
 
-const StyledDatePicker = AppDatePicker;
+function SubscriptionBirthDateField({ id, label, value, onChange, maxDate }) {
+  const [focused, setFocused] = useState(false);
+  const active = focused || Boolean(value);
+
+  return (
+    <InputShell data-error={undefined}>
+      <InputInner>
+        <InputIconSlot>
+          <FontAwesomeIcon
+            icon={faCalendarDays}
+            style={{ display: "block", width: "1.125rem", height: "1.125rem" }}
+            aria-hidden
+          />
+        </InputIconSlot>
+        <FieldTrack>
+          <FloatingLabel htmlFor={id} $active={active} $error={false}>
+            {label}
+          </FloatingLabel>
+          <DatePickerAuthTrack>
+            <DatePicker
+              value={value}
+              onChange={onChange}
+              maxDate={maxDate}
+              format="dd/MM/yyyy"
+              slotProps={{
+                textField: {
+                  id,
+                  variant: "standard",
+                  fullWidth: true,
+                  placeholder: " ",
+                  InputProps: { disableUnderline: true },
+                  inputProps: { placeholder: " " },
+                  onFocus: () => setFocused(true),
+                  onBlur: () => setFocused(false),
+                },
+              }}
+            />
+          </DatePickerAuthTrack>
+        </FieldTrack>
+      </InputInner>
+    </InputShell>
+  );
+}
 
 const checkboxBaseStyles = css`
   appearance: none;
@@ -508,7 +524,7 @@ const checkboxBaseStyles = css`
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(148, 163, 184, 0.45);
   background: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -518,18 +534,18 @@ const checkboxBaseStyles = css`
   margin: 0;
 
   &:hover {
-    border-color: #bfc5d0;
+    border-color: rgba(100, 128, 247, 0.45);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
-    border-color: ${({ theme }) => theme.inputFocus};
+    box-shadow: 0 0 0 3px rgba(${({ theme }) => theme.primaryRgb}, 0.12);
+    border-color: ${({ theme }) => theme.primary};
   }
 
   &:checked {
-    border-color: ${({ theme }) => theme.inputFocus};
-    background: ${({ theme }) => theme.inputFocus};
+    border-color: ${({ theme }) => theme.primary};
+    background: ${({ theme }) => theme.primary};
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
     background-position: center;
     background-repeat: no-repeat;
@@ -553,19 +569,25 @@ const ChipLabel = styled.label`
   gap: 9px;
   min-height: 42px;
   padding: 0 18px;
-  border-radius: 5px;
-  background: ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.1)" : "#f8f8fa")};
-  border: 1px solid ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.35)" : "#e6e6eb")};
-  color: ${({ $selected }) => ($selected ? "#4c1d95" : "#3a3a3c")};
+  border-radius: 18px;
+  background: ${({ $selected, theme }) =>
+    $selected ? `rgba(${theme.primaryRgb}, 0.1)` : "rgba(15, 23, 42, 0.02)"};
+  border: 1px solid
+    ${({ $selected, theme }) =>
+      $selected ? `rgba(${theme.primaryRgb}, 0.35)` : "rgba(0, 0, 0, 0.06)"};
+  color: ${({ $selected, theme }) => ($selected ? theme.primary : "#3a3a3c")};
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 14px;
   font-weight: ${({ $selected }) => ($selected ? 600 : 500)};
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: ${({ $selected }) => ($selected ? "0 1px 3px rgba(139, 92, 246, 0.12)" : "none")};
+  box-shadow: ${({ $selected, theme }) =>
+    $selected ? `0 1px 3px rgba(${theme.primaryRgb}, 0.12)` : "none"};
 
   &:hover {
     background: #ffffff;
-    border-color: ${({ $selected }) => ($selected ? "rgba(139, 92, 246, 0.45)" : "#d6d6dc")};
+    border-color: ${({ $selected, theme }) =>
+      $selected ? `rgba(${theme.primaryRgb}, 0.45)` : "rgba(0, 0, 0, 0.08)"};
     transform: translateY(-1px);
   }
 
@@ -583,14 +605,15 @@ const CheckboxContainer = styled.label`
   margin-top: ${({ $final }) => ($final ? "24px" : "18px")};
   cursor: pointer;
   padding: ${({ $final }) => ($final ? "16px 18px" : "0")};
-  border-radius: ${({ $final }) => ($final ? "14px" : "0")};
-  background: ${({ $final }) => ($final ? "rgba(255, 255, 255, 0.7)" : "transparent")};
-  border: ${({ $final }) => ($final ? "1px solid #e8eaf0" : "none")};
+  border-radius: ${({ $final }) => ($final ? "18px" : "0")};
+  background: ${({ $final }) => ($final ? "rgba(15, 23, 42, 0.02)" : "transparent")};
+  border: ${({ $final }) => ($final ? "1px solid rgba(0, 0, 0, 0.06)" : "none")};
+  font-family: "Inter", system-ui, sans-serif;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${({ $final }) => ($final ? "#dcdfea" : "transparent")};
-    background: ${({ $final }) => ($final ? "#ffffff" : "transparent")};
+    border-color: ${({ $final }) => ($final ? "rgba(0, 0, 0, 0.08)" : "transparent")};
+    background: ${({ $final }) => ($final ? "rgba(255, 255, 255, 0.78)" : "transparent")};
   }
 
   @media (max-width: 768px) {
@@ -620,68 +643,69 @@ const CheckboxLabel = styled.span`
   }
 `;
 
+const ParticipationCheckboxRow = styled(FullWidth)`
+  margin-top: 32px;
+
+  @media (max-width: 768px) {
+    margin-top: 26px;
+  }
+`;
+
+const ParticipationFirstComeCheckbox = styled(CheckboxContainer)`
+  margin-top: 0 !important;
+  padding: 18px 20px !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  gap: 12px;
+
+  &:hover {
+    border-color: rgba(15, 23, 42, 0.12) !important;
+    background: #fafbff !important;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 16px !important;
+  }
+
+  ${CheckboxLabel} {
+    font-size: 15px;
+    color: #334155;
+    font-weight: 500;
+    line-height: 1.55;
+  }
+`;
+
+const ParticipationComissaoGroup = styled(InputGroup)`
+  margin-top: 20px;
+
+  @media (max-width: 768px) {
+    margin-top: 16px;
+  }
+`;
+
 const FooterActions = styled.div`
   margin-top: 34px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
+  align-items: stretch;
 
   @media (max-width: 768px) {
     margin-top: 28px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 12px;
   }
 `;
 
-const SubmitButton = styled.button`
+const SubscriptionFooterPrimaryButton = styled(AuthGradientLoginButton)`
   width: 100%;
-  min-height: 52px;
-  padding: 0 24px;
-  background: ${({ theme }) => theme.buttonBackground};
-  color: #fff;
-  border: none;
-  border-radius: 16px;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.16s ease, box-shadow 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 5px 12px rgba(17, 17, 17, 0.1);
-  white-space: nowrap;
+  box-sizing: border-box;
   grid-column: ${({ $hasBack }) => ($hasBack ? "auto" : "1 / -1")};
 
   @media (max-width: 768px) {
-    width: 100%;
-    min-height: 50px;
-    font-size: 15px;
     grid-column: ${({ $hasBack }) => ($hasBack ? "auto" : "1 / -1")};
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.buttonHover};
-    transform: translateY(-1px);
-    box-shadow: 0 8px 16px rgba(17, 17, 17, 0.13);
-  }
-
-  &:active {
-    transform: scale(0.985);
-    box-shadow: 0 4px 10px rgba(17, 17, 17, 0.14);
-  }
-
-  &:disabled {
-    opacity: 0.72;
-    box-shadow: none;
-    transform: none;
-    cursor: not-allowed;
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16);
   }
 
   .spin {
@@ -816,9 +840,25 @@ const CloseButton = styled.button`
   cursor: pointer;
 `;
 
+const RulesHighlight = styled.div`
+  background: rgba(255, 59, 48, 0.06);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  margin: 0.5rem 0 0;
+
+  ul {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  li {
+    margin-bottom: 0.4rem;
+  }
+`;
+
 const PlanoGeralModal = ({ isOpen, onClose }) => {
   const [visible, setVisible] = useState(isOpen);
-  const fullDisplayName = [EVENT.displayName, EVENT.fullName].filter(Boolean).join(" - ");
 
   useEffect(() => {
     if (isOpen) {
@@ -837,47 +877,92 @@ const PlanoGeralModal = ({ isOpen, onClose }) => {
 
           <ModalTitle>Plano Geral — {EVENT.displayName}</ModalTitle>
           <ModalSubtitle>
-            {EVENT.fullName}
+            {EVENT.fullName || "Confraternização das Mocidades Espíritas de Jacarepaguá"}
           </ModalSubtitle>
 
           <section>
-            <h3>1. Dados de Identificação</h3>
+            <h3>1. Dados de identificação</h3>
             <p>
-              <strong>1.1 Evento:</strong> {fullDisplayName || EVENT.displayName}.
+              <strong>1.1 Evento:</strong> XLVII COMEJACA – Confraternização das Mocidades Espíritas de
+              Jacarepaguá.
             </p>
             <p>
               <strong>1.2 Promoção e Coordenação Geral:</strong> Área de Educação do 20º CEU I e II / CEERJ
             </p>
             <p>
-              <strong>1.3 Período:</strong> 19 e 20 de julho de 2025
+              <strong>1.3 Período do evento:</strong> 04 e 05 de julho de 2026
             </p>
             <ul>
-              <li><strong>Início:</strong> 19/07 (Sábado)</li>
-              <li><strong>Término:</strong> 20/07 (Domingo)</li>
+              <li>
+                <strong>Início da COMEJACA:</strong> 04/07/2026 (sábado)
+              </li>
+              <li>
+                <strong>Encerramento:</strong> 05/07/2026 (domingo)
+              </li>
             </ul>
 
-            <p><strong>1.4 Público-Alvo:</strong></p>
+            <p>
+              <strong>1.4 Categorias e clientela (texto informativo e regras)</strong>
+            </p>
             <ul>
-              <li><strong>Confraternistas:</strong> Jovens espíritas de 11 a 21 anos completos até a data do evento.</li>
-              <li><strong>Tarefeiros do Bem:</strong> Espíritas de 22 a 26 anos completos até a data do evento.</li>
-              <li><strong>Membros de Equipe:</strong> Espíritas a partir de 18 anos até a data do evento.</li>
-              <li><strong>Pequenos Companheiros:</strong> Filhos de membros de equipe, de 3 a 10 anos.</li>
-              <li><strong>Pais:</strong> Participantes há mais de 1 ano em uma Instituição Espírita.</li>
-              <li><strong>Demais CEUs/CEERJ:</strong> Inscrições aceitas desde que atendam os critérios.</li>
+              <li>
+                <strong>Confraternistas:</strong> jovens espíritas de 11 a 21 anos completos até a data do
+                evento, frequentando reuniões do Setor de Juventude de uma Instituição Espírita por no mínimo 1
+                ano até a data da inscrição, com 70% de frequência.
+              </li>
+              <li>
+                <strong>Tarefeiros do Bem:</strong> espíritas de 22 a 26 anos completos até a data do evento,
+                vinculados ao setor de juventude ou a outro setor de uma Instituição Espírita por no mínimo 1 ano,
+                com 70% de frequência. Além das atividades de estudo, poderão participar de atividades nas
+                equipes, como estágio e trabalho voluntário.
+              </li>
+              <li>
+                <strong>Membros de Equipe:</strong> espíritas a partir de 18 anos até a data do evento,
+                participando ativamente há pelo menos 1 ano de uma Instituição Espírita. Ao se inscrever, convém
+                listar as tarefas que tem habilidade para desempenhar, colocando-se à disposição da Coordenação
+                Geral para aproveitamento em alguma equipe. Para participar da equipe de estudos, o participante
+                deve estar atuando como evangelizador de algum ciclo de juventude ou de infância, se for
+                evangelizar Pequenos Companheiros.
+              </li>
+              <li>
+                <strong>Pequenos Companheiros:</strong> filhos de Membros de Equipe, de 3 a 10 anos de idade na
+                data do evento.
+              </li>
+              <li>
+                <strong>Pais:</strong> participantes há mais de 1 ano em uma Instituição Espírita e que sejam pais
+                ou responsáveis de um jovem presente na COMEJACA.
+              </li>
+              <li>
+                <strong>Demais CEUs / CEERJ:</strong> aceitar inscrições de outros CEUs/CEERJ, desde que atendam
+                aos critérios estabelecidos para Confraternistas, Tarefeiros do Bem, Pais e Membros de Equipe. A
+                ficha de inscrição deve ser assinada pelo presidente da Instituição Espírita a que pertença.
+              </li>
+            </ul>
+            <p>
+              <strong>Uso desta ficha eletrônica:</strong> escolha <strong>Confraternista</strong> quando se
+              enquadrar como confraternista, pai/responsável ou perfil equivalente previsto no plano; escolha{" "}
+              <strong>Membro de Equipe / Tarefeiro do Bem</strong> quando for atuar em equipe (incluindo
+              tarefeiros em equipe) e informe a área de interesse. O valor de Pequeno Companheiro é aplicado pelo
+              sistema conforme a idade na data do evento (3 a 10 anos), alinhado ao plano geral. Utilize o passo
+              final e observações, se precisar, para detalhar tarefas ou contexto da instituição.
+            </p>
+          </section>
+
+          <section>
+            <h3>2. Objetivo do evento</h3>
+            <p>Oferecer aos participantes condições que os levem:</p>
+            <ul>
+              <li>à valorização do estudo sistemático da Doutrina Espírita;</li>
+              <li>
+                à sensibilização para a vivência dos ensinamentos cristãos, consigo mesmo, perante a família, a
+                Instituição Espírita e a sociedade;
+              </li>
+              <li>à intensificação da unificação do Movimento Espírita da região.</li>
             </ul>
           </section>
 
           <section>
-            <h3>2. Objetivo</h3>
-            <ul>
-              <li>Valorizar o estudo sistemático da Doutrina Espírita.</li>
-              <li>Estimular a vivência dos ensinamentos cristãos.</li>
-              <li>Fortalecer a unificação do Movimento Espírita local.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h3>3. Metodologias de Ação</h3>
+            <h3>3. Metodologias de ação</h3>
             <ul>
               <li>Reuniões de estudo</li>
               <li>Atividades complementares</li>
@@ -886,22 +971,116 @@ const PlanoGeralModal = ({ isOpen, onClose }) => {
           </section>
 
           <section>
-            <h3>4. Tema Central</h3>
+            <h3>4. Tema central</h3>
             <blockquote>
-              <p><strong>Mediunidade... precisamos conversar!</strong></p>
-              <footer>“Vossos filhos e vossas filhas profetizarão.” — Atos 2:17</footer>
+              <p>
+                <strong>Espiritismo: o que me atrai e o que me afasta!</strong>
+              </p>
             </blockquote>
           </section>
 
           <section>
-            <h3>5. Inscrições</h3>
-            <p><strong>Período:</strong> 13/04/2025 a 15/06/2025</p>
-            <p><strong>Repasse das fichas:</strong> Até 15/06/2025</p>
-            <p><strong>Investimento:</strong> R$ 60,00 ou mais / R$ 45,00 para Pequenos Companheiros</p>
-            <p><strong>PIX:</strong> coordenacaogeral@comejaca.org.br</p>
-            <p><strong>Observação:</strong> A inscrição é pessoal e intransferível.</p>
+            <h3>5. Período de inscrição e investimento</h3>
+            <p>
+              <strong>Abertura das inscrições:</strong> 19/04/2026
+            </p>
+            <p>
+              <strong>Encerramento das inscrições:</strong> 07/06/2026
+            </p>
+            <p>
+              <strong>Data limite para repasse das fichas para a Coordenação Geral:</strong> 07/06/2026
+            </p>
+            <p>
+              <strong>Investimento:</strong>
+            </p>
+            <ul>
+              <li>
+                <strong>R$ 65,00 ou mais:</strong> Confraternistas, Tarefeiros do Bem, Pais e Membros de Equipe
+              </li>
+              <li>
+                <strong>R$ 50,00:</strong> Pequenos Companheiros
+              </li>
+            </ul>
+            <p>
+              <strong>Observações:</strong>
+            </p>
+            <ul>
+              <li>
+                Este investimento destina-se às despesas de alimentação, material de estudo, material de limpeza e
+                materiais diversos necessários para a realização da COMEJACA.
+              </li>
+              <li>
+                Todos deverão contribuir com a importância acima mencionada até a data limite da inscrição.
+              </li>
+              <li>
+                Qualquer dificuldade deverá ser resolvida pela Instituição Espírita do participante, que então
+                repassará para a Coordenação Geral através de comunicado por escrito.
+              </li>
+            </ul>
+          </section>
 
-            <p style={{ textAlign: "center", marginTop: "2rem" }}>
+          <section>
+            <h3>6. Dados de pagamento</h3>
+            <ul>
+              <li>
+                <strong>PIX (e-mail):</strong> coordenacaogeral@comejaca.org.br
+              </li>
+              <li>
+                <strong>Banco:</strong> Itaú (341)
+              </li>
+              <li>
+                <strong>Agência:</strong> 7151
+              </li>
+              <li>
+                <strong>Conta poupança:</strong> 08882-5
+              </li>
+              <li>
+                <strong>Favorecido:</strong> Vicente Jose L. Crisostomo
+              </li>
+            </ul>
+            <p>
+              <strong>Instruções obrigatórias:</strong> o comprovante deverá ser enviado por e-mail para{" "}
+              <strong>coordenacaogeral@comejaca.org.br</strong> com a informação dos beneficiários deste
+              pagamento. As fichas deverão ser entregues à Coordenação Geral até o dia{" "}
+              <strong>07 de junho de 2026</strong> na <strong>3ª RGP</strong>.
+            </p>
+          </section>
+
+          <section>
+            <h3>7. Regras importantes</h3>
+            <RulesHighlight>
+              <ul>
+                <li>Não serão aceitas inscrições após 07/06/2026.</li>
+                <li>Não serão feitas inscrições no local do evento.</li>
+                <li>A inscrição é pessoal e intransferível.</li>
+                <li>Não são permitidas substituições.</li>
+                <li>
+                  O representante da Área de Educação da Instituição Espírita deve assegurar que todos os dados da
+                  ficha estejam preenchidos corretamente, principalmente a data de nascimento.
+                </li>
+              </ul>
+            </RulesHighlight>
+          </section>
+
+          <section>
+            <h3>8. Confirmação de inscrição</h3>
+            <ul>
+              <li>
+                <strong>Confraternistas, Tarefeiros do Bem, Pequenos Companheiros e Pais:</strong> confirmação
+                através de comunicação da Coordenação Geral diretamente para os participantes via e-mail.
+              </li>
+              <li>
+                <strong>Membros de Equipe:</strong> confirmação através da participação nas Reuniões Gerais e nas
+                reuniões de Equipe.
+              </li>
+            </ul>
+            <p>
+              <strong>Observação:</strong> procure saber as datas das reuniões das equipes e frequentá-las
+              assiduamente (mínimo de 70%), garantindo assim o direito de participar da COMEJACA.
+            </p>
+          </section>
+
+          <p style={{ textAlign: "center", marginTop: "2rem" }}>
               <a
                 href="#"
                 onClick={onClose}
@@ -917,7 +1096,6 @@ const PlanoGeralModal = ({ isOpen, onClose }) => {
                 Voltar
               </a>
             </p>
-          </section>
         </ModalContent>
       )}
     </ModalOverlay>
@@ -947,7 +1125,7 @@ const Formulario = () => {
     documentoResponsavel: "",
     telefoneResponsavel: "",
     comissao: "",
-    camisa: false,
+    comprarCamisa: "",
     tamanhoCamisa: "",
     cep: "",
     estado: "",
@@ -979,7 +1157,7 @@ const Formulario = () => {
   const [errors, setErrors] = useState([]);
   const [institutions, setInstitutions] = useState([]);
   const [isMinor, setIsMinor] = useState(false);
-  const [theme] = useState(themes.dashboardLike);
+  const [theme] = useState(() => ({ ...themes.dashboardLike, ...authTheme }));
 
   const goNextStep = () => {
     setStep((current) => Math.min(TOTAL_STEPS, current + 1));
@@ -1025,13 +1203,26 @@ const Formulario = () => {
     if (!reenrollment || hasAppliedReenrollment) return;
 
     const incoming = reenrollment.prefillData || {};
+    const { camisa: incomingCamisa, ...incomingRest } = incoming;
 
     setFormData((prev) => ({
       ...prev,
-      ...incoming,
+      ...incomingRest,
       dataNascimento: incoming.dataNascimento || prev.dataNascimento,
       primeiraComejaca: false,
       comissao: "",
+      comprarCamisa:
+        incomingCamisa === true
+          ? "sim"
+          : incomingCamisa === false
+            ? "nao"
+            : prev.comprarCamisa || "",
+      tamanhoCamisa:
+        incomingCamisa === true
+          ? String(incoming.tamanhoCamisa || prev.tamanhoCamisa || "")
+          : incomingCamisa === false
+            ? ""
+            : prev.tamanhoCamisa || "",
     }));
 
     if (incoming?.dataNascimento) {
@@ -1076,6 +1267,15 @@ const Formulario = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     let formattedValue = value;
+
+    if (name === "comprarCamisa") {
+      setFormData((prev) => ({
+        ...prev,
+        comprarCamisa: value,
+        ...(value !== "sim" ? { tamanhoCamisa: "" } : {}),
+      }));
+      return;
+    }
 
     if (name === "telefone" || name === "telefoneResponsavel") {
       formattedValue = formatPhone(value);
@@ -1170,8 +1370,13 @@ const Formulario = () => {
         return;
       }
 
+      const { comprarCamisa, ...restForm } = formData;
+      const querCamisa = comprarCamisa === "sim";
+
       const payload = {
-        ...formData,
+        ...restForm,
+        camisa: querCamisa,
+        tamanhoCamisa: querCamisa ? String(formData.tamanhoCamisa || "").trim() : "",
         email: (formData.email || "").trim().toLowerCase(),
         comissao: String(formData.comissao),
         dataNascimento: dataNascimento.toISOString().split("T")[0],
@@ -1258,7 +1463,7 @@ const Formulario = () => {
 
                 {prefillNoticeName && (
                   <PrefillNotice>
-                    Formulario preenchido com base na inscrição anterior de{" "}
+                    Formulário preenchido com base na inscrição anterior de{" "}
                     <strong>{prefillNoticeName}</strong>. Revise os dados antes de continuar.
                   </PrefillNotice>
                 )}
@@ -1292,31 +1497,36 @@ const Formulario = () => {
                     {step === 1 && (
                       <>
                         <InputGroup>
-                          <InputLabel><FiUser /> Nome completo *</InputLabel>
-                          <InputField
+                          <PremiumAuthField
+                            id="sub-nomeCompleto"
                             name="nomeCompleto"
-                            placeholder=""
+                            label="Nome completo *"
+                            icon={faUser}
                             value={formData.nomeCompleto}
                             onChange={handleChange}
                             required
+                            autoComplete="name"
                           />
                         </InputGroup>
 
                         <InputGroup>
-                          <InputLabel><FiUser /> Nome social</InputLabel>
-                          <InputField
+                          <PremiumAuthField
+                            id="sub-nomeSocial"
                             name="nomeSocial"
-                            placeholder=""
+                            label="Nome social"
+                            icon={faUserTag}
                             value={formData.nomeSocial}
                             onChange={handleChange}
+                            autoComplete="nickname"
                           />
                         </InputGroup>
 
                         <InputGroup>
-                          <InputLabel><FiUser /> Nome no crachá *</InputLabel>
-                          <InputField
+                          <PremiumAuthField
+                            id="sub-nomeCracha"
                             name="nomeCracha"
-                            placeholder=""
+                            label="Nome no crachá *"
+                            icon={faIdBadge}
                             value={formData.nomeCracha}
                             onChange={handleChange}
                             required
@@ -1324,11 +1534,11 @@ const Formulario = () => {
                         </InputGroup>
 
                         <InputGroup>
-                          <InputLabel><FiCalendar /> Data de nascimento *</InputLabel>
-                          <StyledDatePicker
+                          <SubscriptionBirthDateField
+                            id="sub-dataNascimento"
+                            label="Data de nascimento *"
                             value={formData.dataNascimento}
                             onChange={handleDateChange}
-                            format="dd/MM/yyyy"
                             maxDate={today}
                           />
                         </InputGroup>
@@ -1336,35 +1546,40 @@ const Formulario = () => {
                         {isMinor && (
                           <>
                             <InputGroup>
-                              <InputLabel><FiShield /> Nome do responsável *</InputLabel>
-                              <InputField
+                              <PremiumAuthField
+                                id="sub-nomeCompletoResponsavel"
                                 name="nomeCompletoResponsavel"
+                                label="Nome do responsável *"
+                                icon={faShieldHalved}
                                 value={formData.nomeCompletoResponsavel}
                                 onChange={handleChange}
-                                placeholder=""
                                 required={isMinor}
                               />
                             </InputGroup>
 
                             <InputGroup>
-                              <InputLabel><FiFileText /> Documento do responsável *</InputLabel>
-                              <InputField
+                              <PremiumAuthField
+                                id="sub-documentoResponsavel"
                                 name="documentoResponsavel"
+                                label="Documento do responsável *"
+                                icon={faIdCard}
                                 value={formData.documentoResponsavel || ""}
                                 onChange={handleChange}
-                                placeholder="CPF ou RG"
                                 maxLength={14}
                                 required={isMinor}
                               />
                             </InputGroup>
 
                             <InputGroup>
-                              <InputLabel><FiPhone /> Telefone do responsável *</InputLabel>
-                              <InputField
+                              <PremiumAuthField
+                                id="sub-telefoneResponsavel"
                                 name="telefoneResponsavel"
+                                label="Telefone do responsável *"
+                                icon={faPhone}
                                 value={formData.telefoneResponsavel}
                                 onChange={handleChange}
-                                placeholder="Número para contato"
+                                inputMode="tel"
+                                autoComplete="tel"
                                 required={isMinor}
                               />
                             </InputGroup>
@@ -1372,49 +1587,64 @@ const Formulario = () => {
                         )}
 
                         <InputGroup>
-                          <InputLabel><FiUser /> Gênero *</InputLabel>
-                          <Select name="sexo" value={formData.sexo} onChange={handleChange} required>
-                            <option value="">Selecione</option>
+                          <PremiumAuthSelect
+                            id="sub-sexo"
+                            name="sexo"
+                            label="Gênero *"
+                            icon={faVenusMars}
+                            value={formData.sexo}
+                            onChange={handleChange}
+                            required
+                          >
+                            <option value=""> </option>
                             <option value="Masculino">Masculino</option>
                             <option value="Feminino">Feminino</option>
                             <option value="prefironaoresponder">Prefiro não responder</option>
                             <option value="outro">Outro</option>
-                          </Select>
+                          </PremiumAuthSelect>
                         </InputGroup>
 
                         {formData.sexo === "outro" && (
                           <InputGroup>
-                            <InputLabel>Como você prefere se identificar</InputLabel>
-                            <InputField
+                            <PremiumAuthField
+                              id="sub-outroGenero"
                               type="text"
                               name="outroGenero"
+                              label="Como você prefere se identificar *"
+                              icon={faPen}
                               value={formData.outroGenero}
-                              placeholder="Escreva aqui"
                               onChange={handleChange}
+                              placeholder="Escreva aqui"
                               required
                             />
                           </InputGroup>
                         )}
 
                         <InputGroup>
-                          <InputLabel><FaWhatsapp /> WhatsApp *</InputLabel>
-                          <InputField
+                          <PremiumAuthField
+                            id="sub-telefone"
                             name="telefone"
+                            label="WhatsApp *"
+                            icon={faWhatsapp}
                             value={formData.telefone}
                             onChange={handleChange}
-                            placeholder=""
+                            inputMode="tel"
+                            autoComplete="tel"
                             required
                           />
                         </InputGroup>
 
                         <InputGroup>
-                          <InputLabel><FiMail /> E-mail *</InputLabel>
-                          <InputField
+                          <PremiumAuthField
+                            id="sub-email"
                             type="email"
                             name="email"
+                            label="E-mail *"
+                            icon={faEnvelope}
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder=""
+                            autoComplete="email"
+                            inputMode="email"
                             required
                           />
                         </InputGroup>
@@ -1423,29 +1653,115 @@ const Formulario = () => {
 
                     {step === 2 && (
                       <>
-                        <InputGroup>
-                          <InputLabel>Como você vai participar? *</InputLabel>
-                          <Select
-                            name="tipoParticipacao"
-                            value={formData.tipoParticipacao}
-                            onChange={handleChange}
-                            required
-                          >
-                            <option value="">Selecione</option>
-                            <option value="Confraternista">Confraternista</option>
-                            <option value="Trabalhador">Trabalhador</option>
-                          </Select>
-                        </InputGroup>
+                        <ParticipationSelectWrap>
+                          <InputGroup>
+                            <PremiumAuthSelect
+                              id="sub-tipoParticipacao"
+                              name="tipoParticipacao"
+                              label="Como você vai participar? *"
+                              icon={faPeopleGroup}
+                              value={formData.tipoParticipacao}
+                              onChange={handleChange}
+                              required
+                            >
+                              <option value=""></option>
+                              <option value="Confraternista">Confraternista</option>
+                              <option value="Trabalhador">Membro de Equipe / Tarefeiro do Bem</option>
+                            </PremiumAuthSelect>
+                          </InputGroup>
+                        </ParticipationSelectWrap>
+
+                        <ParticipationShirtFields>
+                          <InputGroup>
+                            <PremiumAuthSelect
+                              id="sub-comprarCamisa"
+                              name="comprarCamisa"
+                              label="Deseja comprar camisa? *"
+                              icon={faShirt}
+                              value={formData.comprarCamisa}
+                              onChange={handleChange}
+                              required
+                            >
+                              <option value=""> </option>
+                              <option value="nao">Não</option>
+                              <option value="sim">Sim</option>
+                            </PremiumAuthSelect>
+                          </InputGroup>
+
+                          {formData.comprarCamisa === "sim" && (
+                            <InputGroup>
+                              <PremiumAuthSelect
+                                id="sub-tamanhoCamisa"
+                                name="tamanhoCamisa"
+                                label="Tamanho da camisa *"
+                                icon={faShirt}
+                                value={formData.tamanhoCamisa}
+                                onChange={handleChange}
+                                required
+                              >
+                                <option value=""> </option>
+                                {CAMISA_TAMANHOS.map((t) => (
+                                  <option key={t} value={t}>
+                                    {t}
+                                  </option>
+                                ))}
+                              </PremiumAuthSelect>
+                            </InputGroup>
+                          )}
+                        </ParticipationShirtFields>
+
+                        <ParticipationInfoCard>
+                          <div>
+                            <ParticipationInfoHeading>Tipos de participação</ParticipationInfoHeading>
+                            <ParticipationInfoList>
+                              <li>
+                                <strong>Confraternista</strong> — jovens de 11 a 21 anos (idade na data do evento).
+                              </li>
+                              <li>
+                                <strong>Membro de Equipe / Tarefeiro do Bem</strong> — quem atua em equipe no
+                                encontro.
+                              </li>
+                              <li>
+                                <strong>Pequeno Companheiro</strong> — crianças de 3 a 10 anos; o valor é calculado
+                                automaticamente pela idade.
+                              </li>
+                            </ParticipationInfoList>
+                          </div>
+
+                          <div>
+                            <ParticipationInfoHeading>Informações importantes</ParticipationInfoHeading>
+                            <ParticipationInfoList>
+                              <li>O tipo selecionado define o valor da inscrição.</li>
+                              <li>
+                                Pequeno Companheiro é calculado automaticamente pela idade na data do evento.
+                              </li>
+                            </ParticipationInfoList>
+                          </div>
+
+                          <div>
+                            <ParticipationInfoHeading>Datas</ParticipationInfoHeading>
+                            <ParticipationInfoList>
+                              <li>
+                                <strong>Inscrições:</strong> 19/04 a 07/06/2026
+                              </li>
+                              <li>
+                                <strong>Evento:</strong> 04 e 05/07/2026
+                              </li>
+                            </ParticipationInfoList>
+                          </div>
+                        </ParticipationInfoCard>
 
                         {formData.tipoParticipacao === "Trabalhador" && (
-                          <InputGroup>
-                            <InputLabel>Em qual equipe você gostaria de atuar? *</InputLabel>
-                            <Select
+                          <ParticipationComissaoGroup>
+                            <PremiumAuthSelect
+                              id="sub-comissao"
                               name="comissao"
+                              label="Em qual equipe você gostaria de atuar? *"
+                              icon={faSitemap}
                               value={formData.comissao}
                               onChange={handleChange}
                             >
-                              <option value="">Selecione</option>
+                              <option value=""> </option>
                               <option value="Alimentação">Alimentação</option>
                               <option value="Atendimento Fraterno">Atendimento Fraterno</option>
                               <option value="Coordenação Geral">Coordenação Geral</option>
@@ -1455,12 +1771,12 @@ const Formulario = () => {
                               <option value="Secretaria">Secretaria</option>
                               <option value="Serviços Gerais">Serviços Gerais</option>
                               <option value="Recepção">Recepção</option>
-                            </Select>
-                          </InputGroup>
+                            </PremiumAuthSelect>
+                          </ParticipationComissaoGroup>
                         )}
 
-                        <FullWidth>
-                          <CheckboxContainer>
+                        <ParticipationCheckboxRow>
+                          <ParticipationFirstComeCheckbox>
                             <CheckboxInput
                               type="checkbox"
                               name="primeiraComejaca"
@@ -1470,8 +1786,8 @@ const Formulario = () => {
                             <CheckboxLabel>
                               Esta será minha primeira {EVENT.name}.
                             </CheckboxLabel>
-                          </CheckboxContainer>
-                        </FullWidth>
+                          </ParticipationFirstComeCheckbox>
+                        </ParticipationCheckboxRow>
                       </>
                     )}
                   </FormGrid>
@@ -1494,103 +1810,125 @@ const Formulario = () => {
 
                 <FormGrid>
                   <InputGroup>
-                    <InputLabel><FiMapPin /> CEP *</InputLabel>
-                    <InputField
+                    <PremiumAuthField
+                      id="sub-cep"
                       name="cep"
+                      label="CEP *"
+                      icon={faMapLocationDot}
                       value={formData.cep}
-                      placeholder="Digite seu CEP"
                       onChange={handleCepChange}
+                      inputMode="numeric"
+                      autoComplete="postal-code"
                       required
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiMapPin /> Estado *</InputLabel>
-                    <InputField
+                    <PremiumAuthField
+                      id="sub-estado"
                       name="estado"
-                      disabled
+                      label="Estado *"
+                      icon={faMapLocationDot}
                       value={formData.estado}
                       onChange={handleChange}
+                      disabled
                       required
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiMapPin /> Cidade *</InputLabel>
-                    <InputField
+                    <PremiumAuthField
+                      id="sub-cidade"
                       name="cidade"
-                      disabled
+                      label="Cidade *"
+                      icon={faMapLocationDot}
                       value={formData.cidade}
                       onChange={handleChange}
+                      disabled
                       required
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiMapPin /> Bairro *</InputLabel>
-                    <InputField
+                    <PremiumAuthField
+                      id="sub-bairro"
                       name="bairro"
-                      disabled
+                      label="Bairro *"
+                      icon={faMapLocationDot}
                       value={formData.bairro}
                       onChange={handleChange}
+                      disabled
                       required
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiMapPin /> Logradouro *</InputLabel>
-                    <InputField
+                    <PremiumAuthField
+                      id="sub-logradouro"
                       name="logradouro"
-                      disabled
+                      label="Logradouro *"
+                      icon={faMapLocationDot}
                       value={formData.logradouro}
                       onChange={handleChange}
+                      disabled
                       required
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiMapPin /> Número *</InputLabel>
-                    <InputField
+                    <PremiumAuthField
+                      id="sub-numero"
                       name="numero"
+                      label="Número *"
+                      icon={faMapLocationDot}
                       value={formData.numero}
                       onChange={handleChange}
-                      placeholder="Número"
+                      autoComplete="address-line2"
                       required
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiMapPin /> Complemento</InputLabel>
-                    <InputField
+                    <PremiumAuthField
+                      id="sub-complemento"
                       name="complemento"
+                      label="Complemento"
+                      icon={faMapLocationDot}
                       value={formData.complemento}
                       onChange={handleChange}
-                      placeholder="Apartamento, bloco, referência..."
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiMapPin /> Instituição espírita *</InputLabel>
-                    <Select name="IE" value={formData.IE} onChange={handleChange} required>
-                      <option value="">Selecione</option>
+                    <PremiumAuthSelect
+                      id="sub-IE"
+                      name="IE"
+                      label="Instituição espírita *"
+                      icon={faBuilding}
+                      value={formData.IE}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value=""> </option>
                       {institutions.map((inst) => (
                         <option key={inst.id} value={inst.nome}>
                           {inst.nome}
                         </option>
                       ))}
                       <option value="outro">Outra</option>
-                    </Select>
+                    </PremiumAuthSelect>
                   </InputGroup>
 
                   {formData.IE === "outro" && (
                     <InputGroup>
-                      <InputLabel>Nome da instituição</InputLabel>
-                      <InputField
+                      <PremiumAuthField
+                        id="sub-otherInstitution"
                         type="text"
                         name="otherInstitution"
+                        label="Nome da instituição *"
+                        icon={faBuilding}
                         value={formData.otherInstitution}
                         onChange={handleChange}
-                        placeholder="Escreva o nome da instituição"
                         required
                       />
                     </InputGroup>
@@ -1614,41 +1952,48 @@ const Formulario = () => {
                 </SectionHeader>
 
                 <FormGrid>
-            
-
                   <InputGroup>
-                    <InputLabel><FiInfo /> Alergias ou restrições alimentares</InputLabel>
-                    <TextArea
+                    <PremiumAuthTextarea
+                      id="sub-alergia"
                       name="alergia"
-                      placeholder="Se quiser, conte aqui o que devemos considerar."
+                      label="Alergias ou restrições alimentares"
+                      icon={faCircleInfo}
                       value={formData.alergia}
                       onChange={handleChange}
+                      rows={4}
                     />
                   </InputGroup>
 
                   <InputGroup>
-                    <InputLabel><FiInfo /> Uso de medicamento</InputLabel>
-                    <TextArea
+                    <PremiumAuthTextarea
+                      id="sub-medicacao"
                       name="medicacao"
-                      placeholder="Você faz uso de algum medicamento atualmente? Se quiser, conte aqui."
+                      label="Uso de medicamento"
+                      icon={faCircleInfo}
                       value={formData.medicacao}
                       onChange={handleChange}
+                      rows={4}
                     />
                   </InputGroup>
                   <FullWidth>
                     <InputGroup>
-                      <InputLabel><FiInfo /> Algo mais que você queira nos contar?</InputLabel>
-                      <TextArea
+                      <PremiumAuthTextarea
+                        id="sub-outrasInformacoes"
                         name="outrasInformacoes"
-                        placeholder="Esse espaço é seu, caso queira compartilhar alguma informação importante."
+                        label="Algo mais que você queira nos contar?"
+                        icon={faCircleInfo}
                         value={formData.outrasInformacoes}
                         onChange={handleChange}
+                        rows={5}
                       />
                     </InputGroup>
                   </FullWidth>
                   <FullWidth>
                     <InputGroup>
-                      <InputLabel><FiInfo /> Existe alguma condição que você gostaria que soubéssemos?</InputLabel>
+                      <SubscriptionStaticLabel>
+                        <FiInfo aria-hidden />
+                        Existe alguma condição que você gostaria que soubéssemos?
+                      </SubscriptionStaticLabel>
                       <ChipsGroup>
                         <ChipLabel $selected={formData.deficienciaAuditiva}>
                           <input
@@ -1726,33 +2071,34 @@ const Formulario = () => {
                   {formData.deficienciaOutra && (
                     <FullWidth>
                       <InputGroup>
-                        <InputLabel>Se quiser, explique melhor</InputLabel>
-                        <StyledInput
+                        <PremiumAuthField
+                          id="sub-deficienciaOutraDescricao"
                           type="text"
                           name="deficienciaOutraDescricao"
+                          label="Se quiser, explique melhor"
+                          icon={faPen}
                           value={formData.deficienciaOutraDescricao}
                           onChange={handleChange}
-                          placeholder="Escreva aqui"
                         />
                       </InputGroup>
                     </FullWidth>
                   )}
 
-            
-
-                        <InputGroup>
-                    <InputLabel><FiInfo /> Alimentação *</InputLabel>
-                    <Select
+                  <InputGroup>
+                    <PremiumAuthSelect
+                      id="sub-vegetariano"
                       name="vegetariano"
+                      label="Alimentação *"
+                      icon={faSeedling}
                       value={formData.vegetariano}
                       onChange={handleChange}
                       required
                     >
-                      <option value="">Como é sua alimentação?</option>
-                      <option value="Não">Sem restrição vegetariana</option>
+                      <option value=""> </option>
+                      <option value="Não">Sem restrição</option>
                       <option value="Vegetariano">Vegetariana</option>
                       <option value="Vegano">Vegana</option>
-                    </Select>
+                    </PremiumAuthSelect>
                   </InputGroup>
                 </FormGrid>
               </Section>
@@ -1784,11 +2130,20 @@ const Formulario = () => {
                 )}
 
                 {step < TOTAL_STEPS ? (
-                  <SubmitButton type="button" onClick={handleNextStep}>
+                  <SubscriptionFooterPrimaryButton
+                    type="button"
+                    $hasBack={step > 1}
+                    onClick={handleNextStep}
+                  >
                     Próximo
-                  </SubmitButton>
+                  </SubscriptionFooterPrimaryButton>
                 ) : (
-                  <SubmitButton type="submit" disabled={isSubmitting}>
+                  <SubscriptionFooterPrimaryButton
+                    type="submit"
+                    disabled={isSubmitting}
+                    $hasBack={step > 1}
+                    aria-busy={isSubmitting ? "true" : undefined}
+                  >
                     {isSubmitting ? (
                       <>
                         <FiLoader className="spin" />
@@ -1800,7 +2155,7 @@ const Formulario = () => {
                         Finalizar inscrição
                       </>
                     )}
-                  </SubmitButton>
+                  </SubscriptionFooterPrimaryButton>
                 )}
               </FooterActions>
             </FormCard>

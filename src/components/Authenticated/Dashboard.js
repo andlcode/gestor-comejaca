@@ -4,6 +4,7 @@ import { FaInstagram } from 'react-icons/fa';
 import {
   FiBarChart2,
   FiChevronDown,
+  FiCreditCard,
   FiEdit,
   FiLoader,
   FiLogOut,
@@ -20,13 +21,19 @@ import {
   ACTIVE_REGISTRATION_YEAR,
   getInscricaoLifecycle,
 } from '../../utils/subscriptionCycle';
-import { getPaymentStatusVariant, getStatusPagamento } from '../../utils/paymentStatus';
+import { getPaymentStatusVariant } from '../../utils/paymentStatus';
 import { EVENT } from '../../config/eventConfig';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 import AppHeader, {
   APP_HEADER_HEIGHT,
   APP_HEADER_HEIGHT_MOBILE,
 } from '../shared/AppHeader';
+import {
+  MercadoPagoCheckoutModal,
+  MercadoPagoReturnHintModal,
+  markMercadoPagoCheckoutPending,
+  tryConsumeMercadoPagoCheckoutPending,
+} from '../shared/MercadoPagoCheckoutModal.jsx';
 
 const PAGE_MAX_WIDTH = '760px';
 
@@ -196,13 +203,16 @@ const SearchInput = styled.input`
   }
 `;
 
+/** “Nova inscrição”: gradiente alinhado ao login (azul/roxo), sem fundo escuro sólido. */
 const PrimaryButton = styled.button`
+  position: relative;
+  overflow: hidden;
   height: 42px;
-  padding: 0 14px;
-  border: 1px solid var(--btn-primary-bg);
-  border-radius: 13px;
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #5a8dee 0%, #6c63ff 100%);
+  color: #f8fafc;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -210,22 +220,60 @@ const PrimaryButton = styled.button`
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  box-shadow:
+    0 10px 22px rgba(90, 141, 238, 0.22),
+    0 4px 10px rgba(108, 99, 255, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 11px;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  & svg {
+    flex-shrink: 0;
+  }
 
   &:hover {
-    background: #2a2a2d;
-    border-color: #2a2a2d;
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow:
+      0 14px 28px rgba(90, 141, 238, 0.28),
+      0 6px 14px rgba(108, 99, 255, 0.16),
+      0 1px 0 rgba(255, 255, 255, 0.22) inset;
   }
 
   &:active {
-    transform: scale(0.99);
+    transform: translateY(0) scale(0.99);
+    filter: brightness(0.98);
+    box-shadow:
+      0 6px 16px rgba(90, 141, 238, 0.18),
+      0 2px 6px rgba(108, 99, 255, 0.1),
+      0 1px 0 rgba(255, 255, 255, 0.16) inset;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 10px 22px rgba(90, 141, 238, 0.22),
+      0 4px 10px rgba(108, 99, 255, 0.12),
+      0 0 0 3px rgba(90, 141, 238, 0.35),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset;
   }
 
   @media (max-width: 768px) {
     width: 100%;
     height: 42px;
     min-width: 0;
-    padding: 0 12px;
+    padding: 0 14px;
   }
 `;
 
@@ -433,74 +481,42 @@ const RegistrationCard = styled.article`
   }
 `;
 
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 10px;
-
-  @media (max-width: 768px) {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 10px;
-  }
-`;
-
-const CardIdentity = styled.div`
+const CardIdentityBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
-  flex: 1 1 auto;
+  margin-bottom: 16px;
 `;
 
-const CardName = styled.h3`
+const CardParticipantName = styled.h3`
   margin: 0;
   color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 750;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-`;
-
-const CardStatusRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const StatusChip = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 30px;
-  width: fit-content;
-  padding: 0 12px;
-  border-radius: 999px;
-  color: ${({ $appearance }) => $appearance?.textColor || '#64748b'};
-  background: ${({ $appearance }) => $appearance?.backgroundColor || 'rgba(148, 163, 184, 0.14)'};
-  border: 1px solid ${({ $appearance }) => $appearance?.borderColor || 'rgba(148, 163, 184, 0.22)'};
-  font-size: 12px;
+  font-size: 1.125rem;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
 `;
 
-const StatusDot = styled.span`
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: ${({ $appearance }) => $appearance?.dotColor || '#94a3b8'};
+const CardInstitution = styled.p`
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #6b7280;
 `;
 
-const Actions = styled.div`
+/** Linha de ações: secundárias à esquerda, Pagar à direita (desktop); coluna no mobile. */
+const CardActionsBar = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 10px 14px;
 
   @media (max-width: 768px) {
-    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 `;
 
@@ -509,6 +525,8 @@ const SecondaryActions = styled.div`
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 0;
 
   @media (max-width: 768px) {
     width: 100%;
@@ -517,55 +535,87 @@ const SecondaryActions = styled.div`
   }
 `;
 
-const PrimaryAction = styled.div`
+/** Pagar à direita no desktop; largura total abaixo das outras ações no mobile. */
+const PayAction = styled.div`
   display: inline-flex;
-  margin-left: auto;
   flex-shrink: 0;
-  min-width: 152px;
+  margin-left: auto;
 
   @media (max-width: 768px) {
     width: 100%;
-    min-width: 0;
     margin-left: 0;
     justify-content: stretch;
   }
 `;
 
 const Button = styled.button`
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 10px;
+  min-height: ${({ $variant }) => ($variant === 'outline' ? '36px' : '40px')};
+  padding: ${({ $variant }) => ($variant === 'outline' ? '0 15px' : '0 14px')};
+  border-radius: ${({ $variant }) => ($variant === 'outline' ? '10px' : '10px')};
   min-width: ${({ $variant }) => ($variant === 'primary' ? '152px' : '0')};
   border: 1px solid
     ${({ $variant }) =>
-      $variant === 'primary' ? 'transparent' : 'rgba(15, 23, 42, 0.08)'};
+      $variant === 'primary'
+        ? 'transparent'
+        : $variant === 'outline'
+          ? 'rgba(109, 93, 246, 0.28)'
+          : 'rgba(15, 23, 42, 0.08)'};
   background: ${({ $variant }) =>
-    $variant === 'primary' ? '#1c1c1e' : 'rgba(248, 250, 252, 0.92)'};
-  color: ${({ $variant }) => ($variant === 'primary' ? '#ffffff' : '#334155')};
+    $variant === 'primary'
+      ? '#1c1c1e'
+      : $variant === 'outline'
+        ? 'linear-gradient(165deg, rgba(255, 255, 255, 0.96) 0%, rgba(109, 93, 246, 0.1) 100%)'
+        : 'rgba(248, 250, 252, 0.92)'};
+  color: ${({ $variant }) =>
+    $variant === 'primary' ? '#ffffff' : $variant === 'outline' ? '#4a54d0' : '#334155'};
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: ${({ $variant }) => ($variant === 'outline' ? '7px' : '6px')};
+  font-size: ${({ $variant }) => ($variant === 'outline' ? '13px' : '13px')};
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
   box-shadow: ${({ $variant }) =>
     $variant === 'primary'
       ? '0 2px 8px rgba(0, 0, 0, 0.12)'
-      : '0 1px 2px rgba(15, 23, 42, 0.03)'};
+      : $variant === 'outline'
+        ? '0 1px 3px rgba(79, 110, 247, 0.1)'
+        : '0 1px 2px rgba(15, 23, 42, 0.03)'};
   transform: scale(1);
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+
+  & svg {
+    flex-shrink: 0;
+  }
 
   &:hover {
     background: ${({ $variant }) =>
-      $variant === 'primary' ? '#1c1c1e' : '#ffffff'};
+      $variant === 'primary'
+        ? '#1c1c1e'
+        : $variant === 'outline'
+          ? 'linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(109, 93, 246, 0.16) 100%)'
+          : '#ffffff'};
     border-color: ${({ $variant }) =>
-      $variant === 'primary' ? 'transparent' : 'rgba(15, 23, 42, 0.1)'};
+      $variant === 'primary'
+        ? 'transparent'
+        : $variant === 'outline'
+          ? 'rgba(79, 110, 247, 0.42)'
+          : 'rgba(15, 23, 42, 0.1)'};
+    color: ${({ $variant }) =>
+      $variant === 'primary' ? '#ffffff' : $variant === 'outline' ? '#3d47c4' : undefined};
     box-shadow: ${({ $variant }) =>
       $variant === 'primary'
         ? '0 2px 8px rgba(0, 0, 0, 0.12)'
-        : '0 2px 4px rgba(15, 23, 42, 0.04)'};
+        : $variant === 'outline'
+          ? '0 2px 12px rgba(79, 110, 247, 0.2)'
+          : '0 2px 4px rgba(15, 23, 42, 0.04)'};
   }
 
   &:active:not(:disabled) {
@@ -580,7 +630,9 @@ const Button = styled.button`
     box-shadow: ${({ $variant }) =>
       $variant === 'primary'
         ? '0 8px 18px -14px rgba(0, 0, 0, 0.28)'
-        : '0 1px 2px rgba(15, 23, 42, 0.03)'};
+        : $variant === 'outline'
+          ? '0 1px 3px rgba(79, 110, 247, 0.08)'
+          : '0 1px 2px rgba(15, 23, 42, 0.03)'};
   }
 
   @media (max-width: 768px) {
@@ -1096,19 +1148,21 @@ const Spinner = styled(FiLoader)`
   }
 `;
 
-const getFirstTwoNames = (name = '') =>
-  name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .join(' ');
-
 const getFirstName = (name = '') =>
   String(name)
     .trim()
     .split(/\s+/)
     .filter(Boolean)[0] || 'participante';
+
+/** Rótulo da IE para o card (IE guarda o nome da lista; "outro" usa otherInstitution). */
+const getInstitutionDisplayName = (item = {}) => {
+  const ie = String(item.IE ?? '').trim();
+  const other = String(item.otherInstitution ?? '').trim();
+  if (!ie && !other) return '';
+  const ieLower = ie.toLowerCase();
+  if (ieLower === 'outro') return other || '';
+  return ie;
+};
 
 const isEventConfigured = (evento) =>
   Boolean(
@@ -1241,6 +1295,8 @@ const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pendingReenrollmentItem, setPendingReenrollmentItem] = useState(null);
   const [isReenrollmentLoading, setIsReenrollmentLoading] = useState(false);
+  const [mpCheckout, setMpCheckout] = useState({ open: false, url: '' });
+  const [mpReturnHintOpen, setMpReturnHintOpen] = useState(false);
 
   const navigate = useNavigate();
   const API_URL = getApiBaseUrl();
@@ -1310,7 +1366,7 @@ const Dashboard = () => {
       });
 
       if (response.data?.init_point) {
-        window.open(response.data.init_point, '_blank');
+        setMpCheckout({ open: true, url: response.data.init_point });
       } else {
         alert('Não foi possível gerar o link de pagamento.');
       }
@@ -1347,6 +1403,12 @@ const Dashboard = () => {
 
     fetchInscricoes();
   }, [API_URL, navigate]);
+
+  useEffect(() => {
+    if (tryConsumeMercadoPagoCheckoutPending()) {
+      setMpReturnHintOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchEventoAtual = async () => {
@@ -1757,47 +1819,21 @@ const Dashboard = () => {
               ) : groupedSections.active.length > 0 ? (
                 <ActiveGrid>
                   {groupedSections.active.map((item) => {
-                    const statusAppearance = getStatusPagamento(item.statusPagamento, 'dashboard');
                     const statusVariant = getPaymentStatusVariant(item.statusPagamento);
-                    const shortName = getFirstTwoNames(item.nomeCompleto);
+                    const institutionLabel = getInstitutionDisplayName(item);
+                    const showPay =
+                      item.lifecycle.actions.canPay && statusVariant !== 'pago';
 
                     return (
                       <RegistrationCard key={item.id}>
-                        <CardHeader>
-                          <CardIdentity>
-                            <CardName>{shortName || item.nomeCompleto}</CardName>
+                        <CardIdentityBlock>
+                          <CardParticipantName>{item.nomeCompleto}</CardParticipantName>
+                          {institutionLabel ? (
+                            <CardInstitution>{institutionLabel}</CardInstitution>
+                          ) : null}
+                        </CardIdentityBlock>
 
-                            <CardStatusRow>
-                              <StatusChip $appearance={statusAppearance}>
-                                <StatusDot $appearance={statusAppearance} />
-                                <span>{statusAppearance.label}</span>
-                              </StatusChip>
-                            </CardStatusRow>
-                          </CardIdentity>
-
-                          {item.lifecycle.actions.canPay &&
-                            statusVariant !== 'pago' && (
-                              <PrimaryAction>
-                                <Button
-                                  type="button"
-                                  $variant="primary"
-                                  onClick={() => handlePagamento(item.id)}
-                                  disabled={loadingItemId === item.id}
-                                >
-                                  {loadingItemId === item.id ? (
-                                    <>
-                                      <Spinner size={14} />
-                                      Processando
-                                    </>
-                                  ) : (
-                                    'Pagar'
-                                  )}
-                                </Button>
-                              </PrimaryAction>
-                            )}
-                        </CardHeader>
-
-                        <Actions>
+                        <CardActionsBar>
                           <SecondaryActions>
                             <Button
                               type="button"
@@ -1815,7 +1851,30 @@ const Dashboard = () => {
                               Editar
                             </Button>
                           </SecondaryActions>
-                        </Actions>
+
+                          {showPay ? (
+                            <PayAction>
+                              <Button
+                                type="button"
+                                $variant="outline"
+                                onClick={() => handlePagamento(item.id)}
+                                disabled={loadingItemId === item.id}
+                              >
+                                {loadingItemId === item.id ? (
+                                  <>
+                                    <Spinner size={14} />
+                                    Processando
+                                  </>
+                                ) : (
+                                  <>
+                                    <FiCreditCard size={15} strokeWidth={2.25} aria-hidden />
+                                    Pagar
+                                  </>
+                                )}
+                              </Button>
+                            </PayAction>
+                          ) : null}
+                        </CardActionsBar>
                       </RegistrationCard>
                     );
                   })}
@@ -1881,6 +1940,22 @@ const Dashboard = () => {
         )}
 
       </Content>
+
+      <MercadoPagoCheckoutModal
+        isOpen={mpCheckout.open}
+        initPoint={mpCheckout.url}
+        onCancel={() => setMpCheckout({ open: false, url: '' })}
+        onConfirm={(url) => {
+          markMercadoPagoCheckoutPending();
+          setMpCheckout({ open: false, url: '' });
+          window.location.href = url;
+        }}
+      />
+
+      <MercadoPagoReturnHintModal
+        isOpen={mpReturnHintOpen}
+        onClose={() => setMpReturnHintOpen(false)}
+      />
     </Container>
   );
 };

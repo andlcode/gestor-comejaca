@@ -121,6 +121,7 @@ export const FloatingLabel = styled.label`
   left: 0;
   right: 0;
   pointer-events: none;
+  z-index: 1;
   font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.15;
   transition: ${tLabel};
@@ -135,6 +136,12 @@ export const FloatingLabel = styled.label`
     font-weight: 600;
     letter-spacing: 0.02em;
     color: ${$error ? 'rgba(156, 101, 101, 0.84)' : 'rgba(71, 85, 105, 0.72)'};
+    background: rgba(255, 255, 255, 0.94);
+    padding: 0 6px 1px 0;
+    margin-left: -1px;
+    border-radius: 5px;
+    width: fit-content;
+    max-width: calc(100% - 4px);
   `
       : `
     top: 50%;
@@ -144,6 +151,12 @@ export const FloatingLabel = styled.label`
     font-weight: 500;
     letter-spacing: -0.014em;
     color: ${$error ? 'rgba(129, 107, 111, 0.82)' : 'rgba(71, 85, 105, 0.82)'};
+    background: transparent;
+    padding: 0;
+    margin-left: 0;
+    border-radius: 0;
+    width: auto;
+    max-width: none;
   `}
 
   @media (prefers-reduced-motion: reduce) {
@@ -169,9 +182,8 @@ export const StyledInput = styled.input`
   transition: ${tInput};
 
   &::placeholder {
-    color: rgba(0, 0, 0, 0.4);
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    color: transparent;
+    opacity: 0;
   }
 
   &:disabled {
@@ -207,7 +219,7 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
     label,
     icon,
     value,
-    placeholder = ' ',
+    placeholder: _placeholderUnused,
     onChange,
     onFocus,
     onBlur,
@@ -260,10 +272,10 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
             onChange={onChange}
             disabled={disabled}
             $active={active}
-            placeholder={active && !hasValue ? placeholder : ' '}
             aria-invalid={ariaInvalid}
             aria-describedby={ariaDescribedBy}
             {...inputProps}
+            placeholder=" "
             onFocus={(e) => {
               setFocused(true);
               onFocus?.(e);
@@ -280,5 +292,237 @@ const PremiumAuthField = forwardRef(function PremiumAuthField(
 });
 
 PremiumAuthField.displayName = 'PremiumAuthField';
+
+const selectChevron = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa4b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`;
+
+const StyledSelectInner = styled.select`
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.014em;
+  color: #111827;
+  line-height: 1.4;
+  padding: ${({ $active }) => ($active ? '6px 0 0' : '0')};
+  margin: 0;
+  min-height: 22px;
+  box-sizing: border-box;
+  transition: ${tInput};
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: ${selectChevron};
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+  background-size: 12px 12px;
+  padding-right: 22px;
+
+  &:disabled {
+    opacity: 0.62;
+    cursor: not-allowed;
+  }
+`;
+
+export const PremiumAuthSelect = forwardRef(function PremiumAuthSelect(
+  {
+    label,
+    icon,
+    value,
+    onChange,
+    onFocus,
+    onBlur,
+    error = false,
+    disabled = false,
+    required = false,
+    id,
+    name,
+    className,
+    children,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': ariaDescribedBy,
+  },
+  ref
+) {
+  const [focused, setFocused] = useState(false);
+  const hasValue = value != null && String(value).length > 0;
+  const active = focused || hasValue;
+  const safeLabel = typeof label === 'string' ? label : '';
+  const canRenderIcon = isValidFontAwesomeIcon(icon);
+
+  return (
+    <InputShell
+      className={className}
+      $error={error}
+      data-error={error ? 'true' : undefined}
+    >
+      <InputInner>
+        <InputIconSlot>
+          {canRenderIcon ? <IconFa icon={icon} aria-hidden /> : null}
+        </InputIconSlot>
+
+        <FieldTrack>
+          <FloatingLabel htmlFor={id} $active={active} $error={error}>
+            {safeLabel}
+          </FloatingLabel>
+
+          <StyledSelectInner
+            ref={ref}
+            id={id}
+            name={name}
+            value={value ?? ''}
+            onChange={onChange}
+            disabled={disabled}
+            required={required}
+            $active={active}
+            aria-invalid={ariaInvalid}
+            aria-describedby={ariaDescribedBy}
+            onFocus={(e) => {
+              setFocused(true);
+              onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setFocused(false);
+              onBlur?.(e);
+            }}
+          >
+            {children}
+          </StyledSelectInner>
+        </FieldTrack>
+      </InputInner>
+    </InputShell>
+  );
+});
+
+PremiumAuthSelect.displayName = 'PremiumAuthSelect';
+
+const TextareaShell = styled(InputShell)`
+  min-height: 128px;
+`;
+
+const TextareaInner = styled(InputInner)`
+  align-items: flex-start;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  min-height: 108px;
+`;
+
+const TextareaIconSlot = styled(InputIconSlot)`
+  align-self: flex-start;
+  margin-top: 6px;
+`;
+
+const TextareaFieldTrack = styled(FieldTrack)`
+  padding-bottom: 10px;
+  min-height: 96px;
+`;
+
+const StyledTextareaInner = styled.textarea`
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.014em;
+  color: #111827;
+  line-height: 1.5;
+  padding: ${({ $active }) => ($active ? '8px 0 6px' : '4px 0 6px')};
+  margin: 0;
+  min-height: 88px;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: ${tInput};
+
+  &::placeholder {
+    color: transparent;
+    opacity: 0;
+  }
+
+  &:disabled {
+    opacity: 0.62;
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.12s;
+  }
+`;
+
+export const PremiumAuthTextarea = forwardRef(function PremiumAuthTextarea(
+  {
+    label,
+    icon,
+    value,
+    placeholder: _placeholderUnusedTextarea,
+    onChange,
+    onFocus,
+    onBlur,
+    error = false,
+    disabled = false,
+    required = false,
+    id,
+    name,
+    rows = 4,
+    className,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': ariaDescribedBy,
+  },
+  ref
+) {
+  const [focused, setFocused] = useState(false);
+  const hasValue = value != null && String(value).length > 0;
+  const active = focused || hasValue;
+  const safeLabel = typeof label === 'string' ? label : '';
+  const canRenderIcon = isValidFontAwesomeIcon(icon);
+
+  return (
+    <TextareaShell
+      className={className}
+      $error={error}
+      data-error={error ? 'true' : undefined}
+    >
+      <TextareaInner>
+        <TextareaIconSlot>
+          {canRenderIcon ? <IconFa icon={icon} aria-hidden /> : null}
+        </TextareaIconSlot>
+
+        <TextareaFieldTrack>
+          <FloatingLabel htmlFor={id} $active={active} $error={error}>
+            {safeLabel}
+          </FloatingLabel>
+
+          <StyledTextareaInner
+            ref={ref}
+            id={id}
+            name={name}
+            rows={rows}
+            required={required}
+            disabled={disabled}
+            value={value ?? ''}
+            onChange={onChange}
+            $active={active}
+            placeholder=" "
+            aria-invalid={ariaInvalid}
+            aria-describedby={ariaDescribedBy}
+            onFocus={(e) => {
+              setFocused(true);
+              onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setFocused(false);
+              onBlur?.(e);
+            }}
+          />
+        </TextareaFieldTrack>
+      </TextareaInner>
+    </TextareaShell>
+  );
+});
+
+PremiumAuthTextarea.displayName = 'PremiumAuthTextarea';
 
 export default PremiumAuthField;

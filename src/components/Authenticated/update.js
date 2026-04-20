@@ -75,7 +75,7 @@ const INITIAL_FORM = {
 
 const PARTICIPATION_OPTIONS = [
   { value: "Confraternista", label: "Confraternista" },
-  { value: "Trabalhador", label: "Trabalhador" },
+  { value: "Trabalhador", label: "Membro de Equipe / Tarefeiro do Bem" },
 ];
 
 const COMISSOES = [

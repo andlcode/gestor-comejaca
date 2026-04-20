@@ -2325,6 +2325,85 @@ export const AuthPrimaryButton = styled.button`
   `}
 `;
 
+/** Gradiente azul e interações — mesmo visual do botão principal da tela de Login. */
+export const AuthGradientLoginButton = styled(AuthPrimaryButton)`
+  margin-top: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: none;
+  background: ${({ theme }) => theme.primaryGradient};
+  color: #f8fafc;
+  box-shadow:
+    0 10px 24px rgba(91, 124, 250, 0.16),
+    0 4px 10px rgba(91, 124, 250, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 -1px 0 rgba(73, 88, 192, 0.08) inset;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    background 0.2s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 16px;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.primaryGradient};
+    filter: brightness(1.04);
+    transform: scale(0.98);
+    box-shadow:
+      0 14px 28px rgba(91, 124, 250, 0.2),
+      0 6px 12px rgba(91, 124, 250, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+
+  &:active:not(:disabled) {
+    filter: brightness(0.99);
+    transform: scale(0.98);
+    box-shadow:
+      0 8px 18px rgba(91, 124, 250, 0.16),
+      0 4px 8px rgba(91, 124, 250, 0.06);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 3px rgba(${({ theme }) => theme.primaryRgb}, 0.14),
+      0 16px 30px -18px rgba(79, 110, 247, 0.32);
+  }
+
+  &:disabled {
+    background: #c7ced8;
+    color: rgba(255, 255, 255, 0.96);
+    box-shadow: none;
+
+    &::before {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  &[aria-busy='true'] {
+    cursor: wait;
+  }
+
+  @media (max-width: 639px) {
+    min-height: 52px;
+    height: 52px;
+  }
+`;
+
 export const AuthRecoverForm = styled.form`
   display: flex;
   flex-direction: column;

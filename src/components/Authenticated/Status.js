@@ -12,6 +12,12 @@ import AppHeader, {
   APP_HEADER_HEIGHT_MOBILE,
   AppHeaderBadge,
 } from '../shared/AppHeader';
+import {
+  MercadoPagoCheckoutModal,
+  MercadoPagoReturnHintModal,
+  markMercadoPagoCheckoutPending,
+  tryConsumeMercadoPagoCheckoutPending,
+} from '../shared/MercadoPagoCheckoutModal.jsx';
 
 const stableSortByCountDesc = (items, getCount) =>
   items
@@ -183,6 +189,8 @@ const ListaParticipantes = () => {
   const [isParticipantModalLoading, setIsParticipantModalLoading] = useState(false);
   const [participantModalError, setParticipantModalError] = useState('');
   const [participantDetailsCache, setParticipantDetailsCache] = useState({});
+  const [mpCheckout, setMpCheckout] = useState({ open: false, url: '' });
+  const [mpReturnHintOpen, setMpReturnHintOpen] = useState(false);
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
   const navigate = useNavigate();
   const isAdmin = useMemo(() => {
@@ -248,6 +256,12 @@ const ListaParticipantes = () => {
   }, [API_URL, selectedAno]);
 
   useEffect(() => {
+    if (tryConsumeMercadoPagoCheckoutPending()) {
+      setMpReturnHintOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isParticipantModalOpen) return undefined;
 
     const handleKeyDown = (event) => {
@@ -260,7 +274,7 @@ const ListaParticipantes = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isParticipantModalOpen]);
 
-  const calcularIdadeEmData = (nascimentoStr, dataRef = '2025-07-19') => {
+  const calcularIdadeEmData = (nascimentoStr, dataRef = '2026-07-04') => {
     const nascimento = new Date(nascimentoStr);
     const ref = new Date(dataRef);
     let idade = ref.getFullYear() - nascimento.getFullYear();
@@ -281,7 +295,7 @@ const ListaParticipantes = () => {
     if (idade <= 14) return 'Semente de Amor';
     if (idade <= 17) return 'Flores de Amor';
     if (idade <= 20) return 'Colheita de Amor';
-    if (idade <= 26) return 'Tafereiros do Bem';
+    if (idade <= 26) return 'Tarefeiros do Bem';
     return 'Pais';
   };
 
@@ -558,6 +572,20 @@ const ListaParticipantes = () => {
       : null);
   const participantCareConditions = getCareConditions(selectedParticipant);
 
+  const openMercadoPagoCheckout = (url) => {
+    const trimmed = String(url || '').trim();
+    if (!trimmed) return;
+    setMpCheckout({ open: true, url: trimmed });
+  };
+
+  const closeMercadoPagoCheckout = () => setMpCheckout({ open: false, url: '' });
+
+  const confirmMercadoPagoCheckout = (url) => {
+    markMercadoPagoCheckoutPending();
+    setMpCheckout({ open: false, url: '' });
+    window.location.href = url;
+  };
+
   return (
     <ThemeProvider theme={appHeaderTheme}>
       <Container>
@@ -720,13 +748,12 @@ const ListaParticipantes = () => {
                               </TableCell>
                               <TableCell $nowrap>
                                 {p.linkPagamento ? (
-                                  <TableLink
-                                    href={p.linkPagamento}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                  <PaymentLinkButton
+                                    type="button"
+                                    onClick={() => openMercadoPagoCheckout(p.linkPagamento)}
                                   >
                                     Acessar
-                                  </TableLink>
+                                  </PaymentLinkButton>
                                 ) : (
                                   'N/A'
                                 )}
@@ -797,13 +824,12 @@ const ListaParticipantes = () => {
                           {p.linkPagamento ? (
                             <MobileInfoRow>
                               <MobileLinkValue>
-                                <TableLink
-                                  href={p.linkPagamento}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                <PaymentLinkButton
+                                  type="button"
+                                  onClick={() => openMercadoPagoCheckout(p.linkPagamento)}
                                 >
                                   Acessar pagamento
-                                </TableLink>
+                                </PaymentLinkButton>
                               </MobileLinkValue>
                             </MobileInfoRow>
                           ) : null}
@@ -1118,6 +1144,18 @@ const ListaParticipantes = () => {
             </ModalOverlay>
           ) : null}
         </ContentWrapper>
+
+        <MercadoPagoCheckoutModal
+          isOpen={mpCheckout.open}
+          initPoint={mpCheckout.url}
+          onCancel={closeMercadoPagoCheckout}
+          onConfirm={confirmMercadoPagoCheckout}
+        />
+
+        <MercadoPagoReturnHintModal
+          isOpen={mpReturnHintOpen}
+          onClose={() => setMpReturnHintOpen(false)}
+        />
       </Container>
     </ThemeProvider>
   );
@@ -1509,6 +1547,24 @@ const TableLink = styled.a`
   color: #2563eb;
   text-decoration: none;
   font-weight: 600;
+  transition: color 0.18s ease;
+
+  &:hover {
+    color: #1d4ed8;
+  }
+`;
+
+const PaymentLinkButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: none;
   transition: color 0.18s ease;
 
   &:hover {

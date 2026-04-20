@@ -46,7 +46,7 @@ const SessaoInfo = () => {
     setNome(nomeArmazenado || 'Usuário Desconectado');
     setEmail(emailArmazenado || 'Usuário desconectado');
 
-    const deadline = new Date('2025-06-15T17:00:00');
+    const deadline = new Date('2026-06-07T23:59:59');
     const intervalo = setInterval(() => {
       const agora = new Date();
       const diferenca = deadline - agora;

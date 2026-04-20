@@ -706,7 +706,8 @@ const formatParticipation = (participant) => {
   }
 
   if (participant?.tipoParticipacao === "Trabalhador") {
-    return participant?.comissao ? `Trabalhador - ${participant.comissao}` : "Trabalhador";
+    const label = "Membro de Equipe / Tarefeiro do Bem";
+    return participant?.comissao ? `${label} (${participant.comissao})` : label;
   }
 
   return participant?.tipoParticipacao || "Nao informado";
@@ -918,8 +919,8 @@ const LegacyPrintLayout = ({ participant, age }) => {
               <span style={{ display: "block", textAlign: "justify", fontSize: "12px", color: "#666" }}>
                 Eu, __________________________________________, portador(a) do documento n° ______________________, responsavel legal pelo(a) menor
                 __________________________________________, autorizo sua participacao na{" "}
-                {fullDisplayName || EVENT.displayName}, a ser realizada nos dias 19 e 20 de
-                julho de 2025.
+                {fullDisplayName || EVENT.displayName}, a ser realizada nos dias 04 e 05 de
+                julho de 2026.
               </span>
             </FieldValue>
           </FieldRow>
