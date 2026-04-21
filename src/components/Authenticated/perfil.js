@@ -5,6 +5,10 @@ import { FiUser, FiMail, FiPhone, FiLock, FiChevronLeft } from "react-icons/fi";
 import InputMask from "react-input-mask";
 import { useEffect } from "react";
 import axios from 'axios';
+import {
+  meetsNewPasswordPolicy,
+  NEW_PASSWORD_POLICY_MESSAGE,
+} from '../../utils/newPasswordPolicy';
 
 // Estilos
 const Container = styled.div`
@@ -388,7 +392,11 @@ const Profile = () => {
     if (newPassword !== confirmPassword) {
       return alert('A nova senha e a confirmação não coincidem.');
     }
-  
+
+    if (newPassword.trim() && !meetsNewPasswordPolicy(newPassword)) {
+      return alert(NEW_PASSWORD_POLICY_MESSAGE);
+    }
+
     try {
       const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');

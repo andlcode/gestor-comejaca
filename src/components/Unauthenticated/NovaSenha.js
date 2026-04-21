@@ -19,6 +19,10 @@ import {
 } from './auth/authStyles';
 import { getSafeApiErrorMessage, getSafeMessage } from '../../utils/safeMessage';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
+import {
+  meetsNewPasswordPolicy,
+  NEW_PASSWORD_POLICY_MESSAGE,
+} from '../../utils/newPasswordPolicy';
 
 const API_URL = getApiBaseUrl();
 const REQUEST_TIMEOUT_MS = 15000;
@@ -188,13 +192,11 @@ const NovaSenha = () => {
 
   const passwordFeedback = useMemo(() => {
     if (!newPassword) return '';
-    if (newPassword.length < 8) return 'Senha deve ter pelo menos 8 caracteres';
-    if (!/[A-Z]/.test(newPassword)) return 'Inclua uma letra maiúscula';
+    if (!meetsNewPasswordPolicy(newPassword)) return NEW_PASSWORD_POLICY_MESSAGE;
     return 'Senha válida ✔';
   }, [newPassword]);
 
-  const passwordIsValid =
-    newPassword.length >= 8 && /[A-Z]/.test(newPassword);
+  const passwordIsValid = meetsNewPasswordPolicy(newPassword);
 
   const confirmPasswordMismatch =
     confirmPassword.length > 0 && newPassword !== confirmPassword;
@@ -293,8 +295,7 @@ const NovaSenha = () => {
     if (!newPassword.trim()) {
       nextFieldErrors.newPassword = 'Senha é obrigatória.';
     } else if (!passwordIsValid) {
-      nextFieldErrors.newPassword =
-        'A senha deve ter pelo menos 8 caracteres e uma letra maiúscula.';
+      nextFieldErrors.newPassword = NEW_PASSWORD_POLICY_MESSAGE;
     }
 
     if (!confirmPassword.trim()) {

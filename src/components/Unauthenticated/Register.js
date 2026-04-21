@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -8,6 +8,7 @@ import {
   faEnvelope,
   faLock,
   faSpinner,
+  faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 
@@ -25,6 +26,7 @@ import {
   AuthPrimaryButton,
 } from './auth/authStyles';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
+import { meetsNewPasswordPolicy } from '../../utils/newPasswordPolicy';
 
 const RegisterContentStack = styled.div`
   display: flex;
@@ -124,13 +126,68 @@ const RegisterSubmitButton = styled(AuthPrimaryButton)`
   }
 `;
 
-const PasswordFeedback = styled.p`
-  margin: 0;
-  padding: 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: ${(props) => (props.$valid ? '#16a34a' : '#6b7280')};
-  font-weight: ${(props) => (props.$valid ? 600 : 500)};
+const PasswordHintsPanel = styled.div`
+  margin-top: 8px;
+  padding: 10px 12px 11px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+
+  @media (max-width: 639px) {
+    padding: 10px 11px 11px;
+    border-radius: 11px;
+  }
+`;
+
+const PasswordHintsTitle = styled.p`
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  line-height: 1.35;
+`;
+
+const RequirementRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: ${({ $met }) => ($met ? '#15803d' : '#64748b')};
+  font-weight: ${({ $met }) => ($met ? 500 : 400)};
+  transition: color 0.2s ease, opacity 0.2s ease;
+
+  & + & {
+    margin-top: 6px;
+  }
+`;
+
+const RequirementIcon = styled.span`
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 10px;
+  color: ${({ $met }) => ($met ? '#fff' : '#94a3b8')};
+  background: ${({ $met }) =>
+    $met ? 'linear-gradient(145deg, #22c55e 0%, #16a34a 100%)' : 'rgba(148, 163, 184, 0.22)'};
+  box-shadow: ${({ $met }) =>
+    $met ? '0 1px 2px rgba(22, 163, 74, 0.25)' : 'none'};
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+  ${({ $met }) =>
+    $met &&
+    `
+    transform: scale(1);
+  `}
 `;
 
 const SubmitButtonContent = styled.span`
@@ -205,48 +262,71 @@ const Register = () => {
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [passwordBlurredOnce, setPasswordBlurredOnce] = useState(false);
+  const [confirmBlurredOnce, setConfirmBlurredOnce] = useState(false);
+  const [passwordSubmitRejected, setPasswordSubmitRejected] = useState(false);
 
   const navigate = useNavigate();
   const API_URL = getApiBaseUrl();
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const getPasswordValidation = (password) => {
-    if (!password) {
-      return { show: false, valid: false, message: '' };
+  const password = formData.password;
+  const confirmPassword = formData.confirmPassword;
+
+  const passwordReqMinLen = useMemo(() => String(password || '').length >= 8, [password]);
+  const passwordReqUppercase = useMemo(() => /[A-Z]/.test(String(password || '')), [password]);
+  const passwordPolicyMet = useMemo(() => meetsNewPasswordPolicy(password), [password]);
+
+  const passwordHintsVisible = passwordFocused || String(password || '').length > 0;
+
+  const passwordShowHardError = useMemo(() => {
+    if (fieldErrors.password) return true;
+    if (
+      passwordSubmitRejected &&
+      !passwordPolicyMet &&
+      String(password || '').length > 0
+    ) {
+      return true;
     }
-
-    if (password.length < 8) {
-      return {
-        show: true,
-        valid: false,
-        message: 'Senha deve ter pelo menos 8 caracteres',
-      };
+    if (
+      !passwordFocused &&
+      passwordBlurredOnce &&
+      String(password || '').length > 0 &&
+      !passwordPolicyMet
+    ) {
+      return true;
     }
+    return false;
+  }, [
+    fieldErrors.password,
+    passwordSubmitRejected,
+    passwordPolicyMet,
+    password,
+    passwordFocused,
+    passwordBlurredOnce,
+  ]);
 
-    if (!/[A-Z]/.test(password)) {
-      return {
-        show: true,
-        valid: false,
-        message: 'Inclua uma letra maiúscula',
-      };
-    }
+  const passwordAriaDescribedBy = useMemo(() => {
+    const ids = [];
+    if (passwordHintsVisible) ids.push('register-password-requirements');
+    if (fieldErrors.password) ids.push('register-password-error');
+    return ids.length ? ids.join(' ') : undefined;
+  }, [passwordHintsVisible, fieldErrors.password]);
 
-    return {
-      show: true,
-      valid: true,
-      message: 'Senha válida ✔',
-    };
-  };
-
-  const passwordValidation = getPasswordValidation(formData.password);
-  const confirmPasswordMismatch =
-    formData.confirmPassword !== '' && formData.confirmPassword !== formData.password;
+  const confirmMismatchActive =
+    String(confirmPassword || '').length > 0 &&
+    confirmPassword !== password &&
+    (confirmBlurredOnce || Boolean(fieldErrors.confirmPassword));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setError(null);
+    if (name === 'password') {
+      setPasswordSubmitRejected(false);
+    }
     setFormData((prevData) => ({ ...prevData, [name]: value }));
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
@@ -254,6 +334,22 @@ const Register = () => {
       ...(name === 'password' ? { confirmPassword: '' } : {}),
     }));
   };
+
+  const handlePasswordFocus = useCallback(() => {
+    setPasswordFocused(true);
+    setPasswordSubmitRejected(false);
+  }, []);
+
+  const handlePasswordBlur = useCallback(() => {
+    setPasswordFocused(false);
+    setPasswordBlurredOnce(true);
+  }, []);
+
+  const handleConfirmBlur = useCallback((e) => {
+    if (String(e?.target?.value ?? '').length > 0) {
+      setConfirmBlurredOnce(true);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -268,6 +364,7 @@ const Register = () => {
     };
 
     setError(null);
+    setPasswordSubmitRejected(false);
     setFieldErrors(nextFieldErrors);
 
     if (!trimmedName) {
@@ -284,20 +381,6 @@ const Register = () => {
       return;
     }
 
-    if (!formData.password.trim()) {
-      nextFieldErrors.password = 'Senha é obrigatória.';
-      setFieldErrors(nextFieldErrors);
-      setError(nextFieldErrors.password);
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      nextFieldErrors.confirmPassword = 'As senhas não coincidem';
-      setFieldErrors(nextFieldErrors);
-      setError('As senhas não coincidem.');
-      return;
-    }
-
     if (!isValidEmail(trimmedEmail)) {
       nextFieldErrors.email = 'Por favor, insira um e-mail válido.';
       setFieldErrors(nextFieldErrors);
@@ -305,11 +388,22 @@ const Register = () => {
       return;
     }
 
-    if (!passwordValidation.valid) {
-      nextFieldErrors.password =
-        passwordValidation.message || 'A senha informada é inválida.';
+    if (!formData.password.trim()) {
+      nextFieldErrors.password = 'Senha é obrigatória.';
       setFieldErrors(nextFieldErrors);
-      setError(passwordValidation.message || 'A senha informada é inválida.');
+      return;
+    }
+
+    if (!meetsNewPasswordPolicy(formData.password)) {
+      setPasswordSubmitRejected(true);
+      setFieldErrors(nextFieldErrors);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      nextFieldErrors.confirmPassword = 'As senhas não coincidem.';
+      setConfirmBlurredOnce(true);
+      setFieldErrors(nextFieldErrors);
       return;
     }
 
@@ -322,6 +416,10 @@ const Register = () => {
         payload: {
           name: trimmedName,
           email: trimmedEmail,
+        },
+        passwordMeta: {
+          present: Boolean(formData.password),
+          length: formData.password ? formData.password.length : 0,
         },
       });
 
@@ -465,23 +563,48 @@ const Register = () => {
                 icon={faLock}
                 value={formData.password}
                 onChange={handleChange}
+                onFocus={handlePasswordFocus}
+                onBlur={handlePasswordBlur}
                 disabled={loading}
                 autoComplete="new-password"
                 placeholder="Digite sua senha"
-                error={Boolean(fieldErrors.password)}
-                aria-invalid={Boolean(fieldErrors.password)}
-                aria-describedby={fieldErrors.password ? 'register-password-error' : undefined}
+                error={passwordShowHardError}
+                aria-invalid={passwordShowHardError}
+                aria-describedby={passwordAriaDescribedBy}
               />
+              {passwordHintsVisible ? (
+                <PasswordHintsPanel
+                  id="register-password-requirements"
+                  role="group"
+                  aria-label="Requisitos da senha"
+                >
+                  <PasswordHintsTitle>Sua senha precisa ter</PasswordHintsTitle>
+                  <RequirementRow $met={passwordReqMinLen}>
+                    <RequirementIcon $met={passwordReqMinLen} aria-hidden>
+                      {passwordReqMinLen ? (
+                        <FontAwesomeIcon icon={faCheck} style={{ fontSize: '0.65rem' }} />
+                      ) : (
+                        <span style={{ fontSize: '0.55rem', opacity: 0.85 }}>•</span>
+                      )}
+                    </RequirementIcon>
+                    <span>Mínimo de 8 caracteres</span>
+                  </RequirementRow>
+                  <RequirementRow $met={passwordReqUppercase}>
+                    <RequirementIcon $met={passwordReqUppercase} aria-hidden>
+                      {passwordReqUppercase ? (
+                        <FontAwesomeIcon icon={faCheck} style={{ fontSize: '0.65rem' }} />
+                      ) : (
+                        <span style={{ fontSize: '0.55rem', opacity: 0.85 }}>•</span>
+                      )}
+                    </RequirementIcon>
+                    <span>Pelo menos 1 letra maiúscula</span>
+                  </RequirementRow>
+                </PasswordHintsPanel>
+              ) : null}
               {fieldErrors.password ? (
                 <AuthPremiumInlineError id="register-password-error" $login role="alert">
                   {fieldErrors.password}
                 </AuthPremiumInlineError>
-              ) : null}
-
-              {passwordValidation.show ? (
-                <PasswordFeedback $valid={passwordValidation.valid}>
-                  {passwordValidation.message}
-                </PasswordFeedback>
               ) : null}
 
               <PremiumAuthField
@@ -492,24 +615,23 @@ const Register = () => {
                 icon={faLock}
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                onBlur={handleConfirmBlur}
                 disabled={loading}
                 autoComplete="new-password"
                 placeholder="Confirme sua senha"
-                error={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
-                aria-invalid={Boolean(fieldErrors.confirmPassword) || confirmPasswordMismatch}
+                error={confirmMismatchActive}
+                aria-invalid={confirmMismatchActive}
                 aria-describedby={
-                  fieldErrors.confirmPassword || confirmPasswordMismatch
-                    ? 'register-confirm-password-error'
-                    : undefined
+                  confirmMismatchActive ? 'register-confirm-password-error' : undefined
                 }
               />
-              {fieldErrors.confirmPassword || confirmPasswordMismatch ? (
+              {confirmMismatchActive ? (
                 <AuthPremiumInlineError
                   id="register-confirm-password-error"
                   $login
                   role="alert"
                 >
-                  {fieldErrors.confirmPassword || 'As senhas não coincidem'}
+                  As senhas não coincidem.
                 </AuthPremiumInlineError>
               ) : null}
             </AuthLoginFieldStack>

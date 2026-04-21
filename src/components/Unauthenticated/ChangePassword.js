@@ -10,6 +10,11 @@ import {
   StyledButton,
   LinkVoltar,
 } from "./SharedAuthStyles"; // ajuste o caminho conforme necessário
+import {
+  meetsNewPasswordPolicy,
+  NEW_PASSWORD_POLICY_MESSAGE,
+} from "../../utils/newPasswordPolicy";
+import { getSafeApiErrorMessage } from "../../utils/safeMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
@@ -36,6 +41,10 @@ const ChangePassword = () => {
       return toast.error("A nova senha e a confirmação não coincidem.");
     }
 
+    if (!meetsNewPasswordPolicy(formData.newPassword)) {
+      return toast.error(NEW_PASSWORD_POLICY_MESSAGE);
+    }
+
     try {
       setLoading(true);
       await axios.post(`${API_URL}/api/auth/change-password`, formData, {
@@ -47,7 +56,7 @@ const ChangePassword = () => {
       navigate("/");
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Erro ao alterar senha."
+        getSafeApiErrorMessage(error, "Erro ao alterar senha.")
       );
     } finally {
       setLoading(false);

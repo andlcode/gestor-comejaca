@@ -1203,26 +1203,21 @@ const Formulario = () => {
     if (!reenrollment || hasAppliedReenrollment) return;
 
     const incoming = reenrollment.prefillData || {};
-    const { camisa: incomingCamisa, ...incomingRest } = incoming;
 
     setFormData((prev) => ({
       ...prev,
-      ...incomingRest,
+      ...incoming,
       dataNascimento: incoming.dataNascimento || prev.dataNascimento,
       primeiraComejaca: false,
       comissao: "",
       comprarCamisa:
-        incomingCamisa === true
+        incoming.camisa === true
           ? "sim"
-          : incomingCamisa === false
+          : incoming.camisa === false
             ? "nao"
             : prev.comprarCamisa || "",
       tamanhoCamisa:
-        incomingCamisa === true
-          ? String(incoming.tamanhoCamisa || prev.tamanhoCamisa || "")
-          : incomingCamisa === false
-            ? ""
-            : prev.tamanhoCamisa || "",
+        incoming.camisa === true ? incoming.tamanhoCamisa || prev.tamanhoCamisa || "" : "",
     }));
 
     if (incoming?.dataNascimento) {
@@ -1664,7 +1659,7 @@ const Formulario = () => {
                               onChange={handleChange}
                               required
                             >
-                              <option value=""></option>
+                              <option value=""> </option>
                               <option value="Confraternista">Confraternista</option>
                               <option value="Trabalhador">Membro de Equipe / Tarefeiro do Bem</option>
                             </PremiumAuthSelect>
