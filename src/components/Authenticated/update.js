@@ -1,31 +1,82 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import styled from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 import axios from "axios";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { ptBR } from "date-fns/locale";
 import {
-  FiCalendar,
-  FiClock,
   FiFileText,
+  FiHeart,
   FiInfo,
   FiLoader,
-  FiMail,
   FiMapPin,
-  FiPhone,
   FiUser,
-  FiChevronLeft,
+  FiArrowLeft,
   FiChevronRight,
 } from "react-icons/fi";
-import { FaWhatsapp } from "react-icons/fa";
-import AppHeader, {
-  APP_HEADER_HEIGHT,
-  APP_HEADER_HEIGHT_MOBILE,
-  AppHeaderBadge,
-} from "../shared/AppHeader";
+import {
+  faUser,
+  faUserTag,
+  faIdBadge,
+  faShieldHalved,
+  faIdCard,
+  faPhone,
+  faVenusMars,
+  faPen,
+  faEnvelope,
+  faPeopleGroup,
+  faSitemap,
+  faMapLocationDot,
+  faSeedling,
+  faCircleInfo,
+  faShirt,
+} from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import AppHeader, { AppHeaderBadge } from "../shared/AppHeader";
+import CamisaModeloGalleryTrigger from "../shared/CamisaModeloGallery";
 import { EVENT } from "../../config/eventConfig";
+import PremiumAuthField, {
+  PremiumAuthSelect,
+  PremiumAuthTextarea,
+} from "../Unauthenticated/auth/PremiumAuthField";
+import {
+  mergeUpdateFormTheme,
+  InscriptionBirthDateField,
+  UpdatePageContainer,
+  UpdatePageContent,
+  UpdateFormCard,
+  UpdateFormHeader,
+  UpdateFormTitle,
+  UpdateFormSubtitle,
+  UpdateErrorBox,
+  UpdateSection,
+  UpdateSectionHeader,
+  UpdateSectionIcon,
+  UpdateSectionTitleWrap,
+  UpdateSectionTitle,
+  UpdateSectionDescription,
+  UpdateFormGrid,
+  UpdateInputGroup,
+  UpdateFullWidthGroup,
+  UpdateStepMetaRow,
+  UpdateStepDots,
+  UpdateStepDot,
+  UpdateFooterActions,
+  UpdateStepBackButton,
+  UpdateFooterPrimaryButton,
+  UpdateReviewGrid,
+  UpdateReviewItem,
+  UpdateReviewLabel,
+  UpdateReviewValue,
+  UpdateLoadingWrap,
+  UpdateLoadingCard,
+  UpdateFirstComejacaBox,
+  UpdateFirstComejacaCheckbox,
+  UpdateFirstComejacaText,
+  UpdateChipsGroup,
+  UpdateChipLabel,
+} from "./inscriptionUpdateVisual";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
@@ -78,6 +129,8 @@ const PARTICIPATION_OPTIONS = [
   { value: "Trabalhador", label: "Membro de Equipe / Tarefeiro do Bem" },
 ];
 
+const CAMISA_TAMANHOS = ["PP", "P", "M", "G", "GG", "XG"];
+
 const COMISSOES = [
   "Alimentação",
   "Atendimento Fraterno",
@@ -111,6 +164,8 @@ const Atualizar = () => {
   const [isMinor, setIsMinor] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
+  const [theme] = useState(() => mergeUpdateFormTheme());
+  const today = new Date();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -141,10 +196,13 @@ const Atualizar = () => {
           ? new Date(data.dataNascimento)
           : null;
 
+        const camisaSim = data.camisa === true;
         setFormData((prev) => ({
           ...prev,
           ...data,
           dataNascimento: formattedBirthDate,
+          camisa: camisaSim,
+          tamanhoCamisa: camisaSim ? (data.tamanhoCamisa || "").trim() : "",
         }));
 
         setInstitutions(institutionsResponse.data || []);
@@ -163,6 +221,11 @@ const Atualizar = () => {
   }, [id]);
 
   const hasResponsavel = useMemo(() => isMinor, [isMinor]);
+
+  const isPagamentoPago = useMemo(() => {
+    const s = String(formData.statusPagamento || "").trim().toLowerCase();
+    return s === "pago";
+  }, [formData.statusPagamento]);
 
   const visibleSteps = useMemo(() => {
     return [
@@ -258,6 +321,15 @@ const Atualizar = () => {
             documentoResponsavel: "",
             telefoneResponsavel: "",
           }),
+    }));
+  };
+
+  const handleCamisaDesejoChange = (e) => {
+    const v = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      camisa: v === "sim",
+      tamanhoCamisa: v === "sim" ? prev.tamanhoCamisa : "",
     }));
   };
 
@@ -377,6 +449,16 @@ const Atualizar = () => {
       if (!formData.vegetariano) {
         validationErrors.push({ message: "Informe a alimentação." });
       }
+
+      if (
+        !isPagamentoPago &&
+        formData.camisa === true &&
+        !String(formData.tamanhoCamisa || "").trim()
+      ) {
+        validationErrors.push({
+          message: "Selecione o tamanho da camisa.",
+        });
+      }
     }
 
     return validationErrors;
@@ -441,7 +523,12 @@ const Atualizar = () => {
           (formData.telefoneResponsavel || "").replace(/\D/g, "") || "",
         comissao: String(formData.comissao || ""),
         camisa: formData.camisa === true || formData.camisa === "true",
-        tamanhoCamisa: formData.tamanhoCamisa || "",
+        tamanhoCamisa: (() => {
+          const quer =
+            formData.camisa === true || formData.camisa === "true";
+          if (!quer) return null;
+          return String(formData.tamanhoCamisa || "").trim() || null;
+        })(),
         cep: (formData.cep || "").replace(/\D/g, ""),
         estado: formData.estado?.trim() || "",
         cidade: formData.cidade?.trim() || "",
@@ -506,19 +593,21 @@ const Atualizar = () => {
   
   if (isLoadingPage) {
     return (
-      <PageShell>
-        <AppHeader
-          showBack
-          onBack={() => navigate(-1)}
-          rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
-        />
-        <LoadingWrap>
-          <LoadingCard>
-            <FiLoader className="spin" />
-            <span>Carregando inscrição...</span>
-          </LoadingCard>
-        </LoadingWrap>
-      </PageShell>
+      <ThemeProvider theme={theme}>
+        <UpdatePageContainer>
+          <AppHeader
+            showBack
+            onBack={() => navigate(-1)}
+            rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
+          />
+          <UpdateLoadingWrap>
+            <UpdateLoadingCard>
+              <FiLoader className="spin" />
+              <span>Carregando inscrição...</span>
+            </UpdateLoadingCard>
+          </UpdateLoadingWrap>
+        </UpdatePageContainer>
+      </ThemeProvider>
     );
   }
 
@@ -526,1263 +615,842 @@ const Atualizar = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-      <PageShell>
-        <AppHeader
-          showBack
-          onBack={() => navigate(-1)}
-          rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
-        />
+      <ThemeProvider theme={theme}>
+        <UpdatePageContainer>
+          <AppHeader
+            showBack
+            onBack={() => navigate(-1)}
+            rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
+          />
 
-        <PageContent>
-          <FormCard onSubmit={handleUpdate}>
-            <PageHeader>
-              <Hero>
-                <HeroTitle>Atualização de inscrição</HeroTitle>
-                <HeroSubtitle>
+          <UpdatePageContent>
+            <UpdateFormCard onSubmit={handleUpdate}>
+              <UpdateFormHeader>
+                <UpdateFormTitle>Atualização de inscrição</UpdateFormTitle>
+                <UpdateFormSubtitle>
                   {participantName
                     ? `Revise e atualize os dados de ${participantName}.`
                     : "Revise e atualize suas informações."}
-                </HeroSubtitle>
-              </Hero>
+                </UpdateFormSubtitle>
 
-              <StepHeader>
-                <StepMeta>
-                  <StepEyebrow>
-                    Etapa {currentStep} de {totalSteps}
-                  </StepEyebrow>
-                  <StepTitle>{currentStepTitle}</StepTitle>
-                </StepMeta>
+                <div style={{ marginTop: 8 }}>
+                  <CamisaModeloGalleryTrigger apiBaseUrl={API_URL} />
+                </div>
 
-                <StepDots>
-                  {visibleSteps.map((step, index) => {
-                    const stepNumber = index + 1;
-                    const isActive = stepNumber === currentStep;
-                    const isDone = stepNumber < currentStep;
+                <UpdateStepMetaRow>
+                  <UpdateSectionTitleWrap>
+                    <UpdateSectionDescription style={{ margin: 0, fontWeight: 600, color: "#111827" }}>
+                      Passo {currentStep} de {totalSteps} — {currentStepTitle}
+                    </UpdateSectionDescription>
+                  </UpdateSectionTitleWrap>
+                  <UpdateStepDots>
+                    {visibleSteps.map((step, index) => {
+                      const stepNumber = index + 1;
+                      const isActive = stepNumber === currentStep;
+                      const isDone = stepNumber < currentStep;
 
-                    return (
-                      <StepDot
-                        key={step.id}
-                        $active={isActive}
-                        $done={isDone}
-                      />
-                    );
-                  })}
-                </StepDots>
-              </StepHeader>
+                      return (
+                        <UpdateStepDot
+                          key={step.id}
+                          $active={isActive}
+                          $done={isDone}
+                          aria-hidden
+                        />
+                      );
+                    })}
+                  </UpdateStepDots>
+                </UpdateStepMetaRow>
 
-              {errors.length > 0 && (
-                <AlertBox>
-                  {errors.map((err, index) => (
-                    <AlertItem key={index}>⚠ {err.message}</AlertItem>
-                  ))}
-                </AlertBox>
-              )}
-            </PageHeader>
+                {errors.length > 0 ? (
+                  <UpdateErrorBox>
+                    {errors.map((err, index) => (
+                      <div key={index}>⚠️ {err.message}</div>
+                    ))}
+                  </UpdateErrorBox>
+                ) : null}
+              </UpdateFormHeader>
 
             {currentStep === 1 && (
-              <Section>
-                <SectionHeader>
-                  <SectionIcon>
+              <UpdateSection>
+                <UpdateSectionHeader>
+                  <UpdateSectionIcon>
                     <FiUser />
-                  </SectionIcon>
-                  <div>
-                    <SectionTitle>Dados pessoais</SectionTitle>
-                    <SectionSubtitle>
+                  </UpdateSectionIcon>
+                  <UpdateSectionTitleWrap>
+                    <UpdateSectionTitle>Dados pessoais</UpdateSectionTitle>
+                    <UpdateSectionDescription>
                       Informações principais do participante.
-                    </SectionSubtitle>
-                  </div>
-                </SectionHeader>
+                    </UpdateSectionDescription>
+                  </UpdateSectionTitleWrap>
+                </UpdateSectionHeader>
 
-            <FormGrid>
-                  <Field>
-                    <Label><FiUser /> Nome completo *</Label>
-                    <Input
-                  name="nomeCompleto"
-                  value={formData.nomeCompleto}
-                  onChange={handleChange}
-                      placeholder="Digite seu nome completo"
-                  required
-                />
-                  </Field>
-
-                  <Field>
-                    <Label><FiUser /> Nome social</Label>
-                    <Input
-                  name="nomeSocial"
-                  value={formData.nomeSocial}
-                  onChange={handleChange}
-                      placeholder="Digite seu nome social"
+                <UpdateFormGrid>
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-nomeCompleto"
+                      name="nomeCompleto"
+                      label="Nome completo *"
+                      icon={faUser}
+                      value={formData.nomeCompleto}
+                      onChange={handleChange}
+                      required
+                      autoComplete="name"
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiUser /> Nome no crachá *</Label>
-                    <Input
-                  name="nomeCracha"
-                  value={formData.nomeCracha}
-                  onChange={handleChange}
-                      placeholder="Digite o nome que aparecerá no crachá"
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-nomeSocial"
+                      name="nomeSocial"
+                      label="Nome social"
+                      icon={faUserTag}
+                      value={formData.nomeSocial}
+                      onChange={handleChange}
+                      autoComplete="nickname"
+                    />
+                  </UpdateInputGroup>
+
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-nomeCracha"
+                      name="nomeCracha"
+                      label="Nome no crachá *"
+                      icon={faIdBadge}
+                      value={formData.nomeCracha}
+                      onChange={handleChange}
                       required
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiCalendar /> Data de nascimento *</Label>
-                    <DateFieldWrap>
-                <StyledDatePicker
-                  value={formData.dataNascimento}
-                  onChange={handleDateChange}
-                  format="dd/MM/yyyy"
-                        maxDate={new Date()}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            placeholder: "DD/MM/AAAA",
-                          },
-                        }}
-                      />
-                    </DateFieldWrap>
-                  </Field>
-
-                  <Field>
-                    <Label><FiUser /> Gênero *</Label>
-                <Select
-                  name="sexo"
-                  value={formData.sexo}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Feminino">Feminino</option>
-                      <option value="prefironaoresponder">
-                        Prefiro não responder
-                      </option>
-                  <option value="outro">Outro</option>
-                </Select>
-                  </Field>
-
-     {formData.sexo === "outro" && (
-                    <Field>
-                      <Label><FiInfo /> Especifique</Label>
-                      <Input
-            name="outroGenero"
-            value={formData.outroGenero}
-            onChange={handleChange}
-                        placeholder="Digite seu gênero"
-                      />
-                    </Field>
-                  )}
-
-                  <Field>
-                    <Label><FaWhatsapp /> WhatsApp *</Label>
-                    <Input
-         name="telefone"
-         value={formData.telefone}
-         onChange={handleChange}
-         placeholder="Digite seu telefone"
-         required
+                  <UpdateInputGroup>
+                    <InscriptionBirthDateField
+                      id="upd-dataNascimento"
+                      label="Data de nascimento *"
+                      value={formData.dataNascimento}
+                      onChange={handleDateChange}
+                      maxDate={today}
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMail /> E-mail *</Label>
-                    <Input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                      placeholder="nome@dominio.com"
-                  required
-                />
-                  </Field>
+                  <UpdateInputGroup>
+                    <PremiumAuthSelect
+                      id="upd-sexo"
+                      name="sexo"
+                      label="Gênero *"
+                      icon={faVenusMars}
+                      value={formData.sexo}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value=""> </option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Feminino">Feminino</option>
+                      <option value="prefironaoresponder">Prefiro não responder</option>
+                      <option value="outro">Outro</option>
+                    </PremiumAuthSelect>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiInfo /> Tipo de participação *</Label>
-                <Select
-                  name="tipoParticipacao"
-                  value={formData.tipoParticipacao}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione</option>
+                  {formData.sexo === "outro" ? (
+                    <UpdateInputGroup>
+                      <PremiumAuthField
+                        id="upd-outroGenero"
+                        type="text"
+                        name="outroGenero"
+                        label="Especifique *"
+                        icon={faPen}
+                        value={formData.outroGenero}
+                        onChange={handleChange}
+                        placeholder="Digite seu gênero"
+                        required
+                      />
+                    </UpdateInputGroup>
+                  ) : null}
+
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-telefone"
+                      name="telefone"
+                      label="WhatsApp *"
+                      icon={faWhatsapp}
+                      value={formData.telefone}
+                      onChange={handleChange}
+                      inputMode="tel"
+                      autoComplete="tel"
+                      required
+                    />
+                  </UpdateInputGroup>
+
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-email"
+                      type="email"
+                      name="email"
+                      label="E-mail *"
+                      icon={faEnvelope}
+                      value={formData.email}
+                      onChange={handleChange}
+                      autoComplete="email"
+                      inputMode="email"
+                      required
+                    />
+                  </UpdateInputGroup>
+
+                  <UpdateInputGroup>
+                    <PremiumAuthSelect
+                      id="upd-tipoParticipacao"
+                      name="tipoParticipacao"
+                      label="Tipo de participação *"
+                      icon={faPeopleGroup}
+                      value={formData.tipoParticipacao}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value=""> </option>
                       {PARTICIPATION_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
-                </Select>
-                  </Field>
+                    </PremiumAuthSelect>
+                  </UpdateInputGroup>
 
-                  {formData.tipoParticipacao === "Trabalhador" && (
-                    <Field>
-                      <Label><FiInfo /> Comissão *</Label>
-                  <Select
-                    name="comissao"
-                    value={formData.comissao}
-                    onChange={handleChange}
+                  {formData.tipoParticipacao === "Trabalhador" ? (
+                    <UpdateInputGroup>
+                      <PremiumAuthSelect
+                        id="upd-comissao"
+                        name="comissao"
+                        label="Comissão *"
+                        icon={faSitemap}
+                        value={formData.comissao}
+                        onChange={handleChange}
                         required
-                  >
-                    <option value="">Selecione</option>
+                      >
+                        <option value=""> </option>
                         {COMISSOES.map((comissao) => (
                           <option key={comissao} value={comissao}>
                             {comissao}
                           </option>
                         ))}
-                  </Select>
-                    </Field>
-                  )}
-                </FormGrid>
-              </Section>
+                      </PremiumAuthSelect>
+                    </UpdateInputGroup>
+                  ) : null}
+                </UpdateFormGrid>
+              </UpdateSection>
             )}
 
             {hasResponsavel && currentStep === 2 && (
-              <Section $highlight>
-                <SectionHeader>
-                  <SectionIcon>
+              <UpdateSection>
+                <UpdateSectionHeader>
+                  <UpdateSectionIcon>
                     <FiFileText />
-                  </SectionIcon>
-                  <div>
-                    <SectionTitle>Responsável</SectionTitle>
-                    <SectionSubtitle>
+                  </UpdateSectionIcon>
+                  <UpdateSectionTitleWrap>
+                    <UpdateSectionTitle>Responsável</UpdateSectionTitle>
+                    <UpdateSectionDescription>
                       Dados obrigatórios para participantes menores de idade.
-                    </SectionSubtitle>
-                  </div>
-                </SectionHeader>
+                    </UpdateSectionDescription>
+                  </UpdateSectionTitleWrap>
+                </UpdateSectionHeader>
 
-                <FormGrid>
-                  <Field>
-                    <Label><FiUser /> Nome do responsável *</Label>
-                    <Input
+                <UpdateFormGrid>
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-nomeCompletoResponsavel"
                       name="nomeCompletoResponsavel"
+                      label="Nome do responsável *"
+                      icon={faShieldHalved}
                       value={formData.nomeCompletoResponsavel}
                       onChange={handleChange}
-                      placeholder="Digite o nome do responsável"
+                      autoComplete="name"
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiFileText /> Documento do responsável</Label>
-                    <Input
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-documentoResponsavel"
                       name="documentoResponsavel"
+                      label="Documento do responsável"
+                      icon={faIdCard}
                       value={formData.documentoResponsavel}
                       onChange={handleChange}
-                      placeholder="Digite o documento do responsável"
                       maxLength={14}
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiPhone /> Telefone do responsável *</Label>
-                    <Input
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-telefoneResponsavel"
                       name="telefoneResponsavel"
+                      label="Telefone do responsável *"
+                      icon={faPhone}
                       value={formData.telefoneResponsavel}
                       onChange={handleChange}
-                      placeholder="Digite o telefone do responsável"
+                      inputMode="tel"
+                      autoComplete="tel"
                     />
-                  </Field>
-                </FormGrid>
-              </Section>
+                  </UpdateInputGroup>
+                </UpdateFormGrid>
+              </UpdateSection>
             )}
 
             {currentStep === (hasResponsavel ? 3 : 2) && (
-              <Section>
-                <SectionHeader>
-                  <SectionIcon>
+              <UpdateSection>
+                <UpdateSectionHeader>
+                  <UpdateSectionIcon>
                     <FiMapPin />
-                  </SectionIcon>
-                  <div>
-                    <SectionTitle>Endereço e instituição</SectionTitle>
-                    <SectionSubtitle>
+                  </UpdateSectionIcon>
+                  <UpdateSectionTitleWrap>
+                    <UpdateSectionTitle>Endereço e instituição</UpdateSectionTitle>
+                    <UpdateSectionDescription>
                       Confirme seus dados de localização e vínculo espírita.
-                    </SectionSubtitle>
-                  </div>
-                </SectionHeader>
+                    </UpdateSectionDescription>
+                  </UpdateSectionTitleWrap>
+                </UpdateSectionHeader>
 
-                <FormGrid>
-                  <Field>
-                    <Label><FiMapPin /> CEP *</Label>
-                    <Input
-                  name="cep"
-                  value={formData.cep}
-                  onChange={handleCepChange}
-                      placeholder="Digite seu CEP"
-                  required
-                />
-                  </Field>
+                <UpdateFormGrid>
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-cep"
+                      name="cep"
+                      label="CEP *"
+                      icon={faMapLocationDot}
+                      value={formData.cep}
+                      onChange={handleCepChange}
+                      inputMode="numeric"
+                      required
+                    />
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMapPin /> Estado *</Label>
-                    <Input
-                  name="estado"
-                  value={formData.estado}
-              onChange={handleChange}
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-estado"
+                      name="estado"
+                      label="Estado *"
+                      icon={faMapLocationDot}
+                      value={formData.estado}
+                      onChange={handleChange}
                       disabled
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMapPin /> Cidade *</Label>
-                    <Input
-                  name="cidade"
-                  value={formData.cidade}
-                  onChange={handleChange}
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-cidade"
+                      name="cidade"
+                      label="Cidade *"
+                      icon={faMapLocationDot}
+                      value={formData.cidade}
+                      onChange={handleChange}
                       disabled
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMapPin /> Bairro *</Label>
-                    <Input
-                  name="bairro"
-                  value={formData.bairro}
-                  onChange={handleChange}
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-bairro"
+                      name="bairro"
+                      label="Bairro *"
+                      icon={faMapLocationDot}
+                      value={formData.bairro}
+                      onChange={handleChange}
                       disabled
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMapPin /> Logradouro *</Label>
-                    <Input
-                  name="logradouro"
-                  value={formData.logradouro}
-                  onChange={handleChange}
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-logradouro"
+                      name="logradouro"
+                      label="Logradouro *"
+                      icon={faMapLocationDot}
+                      value={formData.logradouro}
+                      onChange={handleChange}
                       disabled
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMapPin /> Número *</Label>
-                    <Input
-                  name="numero"
-                  value={formData.numero}
-                  onChange={handleChange}
-                      placeholder="Digite o número"
-                  required
-                />
-                  </Field>
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-numero"
+                      name="numero"
+                      label="Número *"
+                      icon={faMapLocationDot}
+                      value={formData.numero}
+                      onChange={handleChange}
+                      required
+                    />
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMapPin /> Complemento</Label>
-                    <Input
-                  name="complemento"
-                  value={formData.complemento}
-                  onChange={handleChange}
-                      placeholder="Apartamento, bloco, referência..."
-                />
-                  </Field>
+                  <UpdateInputGroup>
+                    <PremiumAuthField
+                      id="upd-complemento"
+                      name="complemento"
+                      label="Complemento"
+                      icon={faMapLocationDot}
+                      value={formData.complemento}
+                      onChange={handleChange}
+                    />
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiMapPin /> Instituição espírita *</Label>
-                <Select
-                  name="IE"
-                  value={formData.IE}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione</option>
+                  <UpdateInputGroup>
+                    <PremiumAuthSelect
+                      id="upd-IE"
+                      name="IE"
+                      label="Instituição espírita *"
+                      icon={faSitemap}
+                      value={formData.IE}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value=""> </option>
                       {institutions.map((inst) => (
                         <option key={inst.id} value={inst.nome}>
                           {inst.nome}
                         </option>
-                  ))}
+                      ))}
                       <option value="outro">Outro</option>
-                </Select>
-                  </Field>
+                    </PremiumAuthSelect>
+                  </UpdateInputGroup>
 
-                  {formData.IE === "outro" && (
-                    <Field fullWidth>
-                      <Label><FiMapPin /> Nome da instituição</Label>
-                      <Input
-            name="otherInstitution"
-            value={formData.otherInstitution}
-            onChange={handleChange}
-            placeholder="Digite o nome da instituição"
+                  {formData.IE === "outro" ? (
+                    <UpdateFullWidthGroup>
+                      <PremiumAuthField
+                        id="upd-otherInstitution"
+                        name="otherInstitution"
+                        label="Nome da instituição"
+                        icon={faMapLocationDot}
+                        value={formData.otherInstitution}
+                        onChange={handleChange}
                       />
-                    </Field>
-                  )}
-                </FormGrid>
-              </Section>
+                    </UpdateFullWidthGroup>
+                  ) : null}
+                </UpdateFormGrid>
+              </UpdateSection>
             )}
 
             {currentStep === (hasResponsavel ? 4 : 3) && (
-              <Section $highlight>
-                <SectionHeader>
-                  <SectionIcon>
-                    <FiClock />
-                  </SectionIcon>
-                  <div>
-                    <SectionTitle>Acolhimento e cuidados</SectionTitle>
-                    <SectionSubtitle>
+              <UpdateSection>
+                <UpdateSectionHeader>
+                  <UpdateSectionIcon>
+                    <FiHeart />
+                  </UpdateSectionIcon>
+                  <UpdateSectionTitleWrap>
+                    <UpdateSectionTitle>Acolhimento e cuidados</UpdateSectionTitle>
+                    <UpdateSectionDescription>
                       Essas informações ajudam no acolhimento durante o evento.
-                    </SectionSubtitle>
-                  </div>
-                </SectionHeader>
+                    </UpdateSectionDescription>
+                  </UpdateSectionTitleWrap>
+                </UpdateSectionHeader>
 
-                <FormGrid>
-                  <Field>
-                    <Label><FiClock /> É sua primeira {EVENT.name}? *</Label>
-                    <CheckRow>
-                      <CheckInput
-      type="checkbox"
-      name="primeiraComejaca"
-      checked={formData.primeiraComejaca}
-      onChange={handleChange}
-    />
-                      <CheckText>
+                <UpdateFormGrid>
+                  <UpdateFullWidthGroup>
+                    <UpdateSectionDescription
+                      style={{
+                        marginBottom: 10,
+                        fontWeight: 600,
+                        color: "#111827",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <FiInfo aria-hidden />
+                      É sua primeira {EVENT.name}? *
+                    </UpdateSectionDescription>
+                    <UpdateFirstComejacaBox>
+                      <UpdateFirstComejacaCheckbox
+                        type="checkbox"
+                        name="primeiraComejaca"
+                        checked={formData.primeiraComejaca}
+                        onChange={handleChange}
+                      />
+                      <UpdateFirstComejacaText>
                         Sim, esta é minha primeira {EVENT.name}.
-                      </CheckText>
-                    </CheckRow>
-                  </Field>
+                      </UpdateFirstComejacaText>
+                    </UpdateFirstComejacaBox>
+                  </UpdateFullWidthGroup>
 
-                  <Field>
-                    <Label><FiInfo /> Alimentação *</Label>
-                    <Select
+                  <UpdateInputGroup>
+                    <PremiumAuthSelect
+                      id="upd-vegetariano"
                       name="vegetariano"
-                  value={formData.vegetariano}
-                  onChange={handleChange}
+                      label="Alimentação *"
+                      icon={faSeedling}
+                      value={formData.vegetariano}
+                      onChange={handleChange}
                       required
                     >
                       <option value="">Como é sua alimentação?</option>
-                  <option value="Não">Não</option>
-                  <option value="Vegetariano">Vegetariano</option>
-                  <option value="Vegano">Vegano</option>
-                </Select>
-                  </Field>
+                      <option value="Não">Não</option>
+                      <option value="Vegetariano">Vegetariano</option>
+                      <option value="Vegano">Vegano</option>
+                    </PremiumAuthSelect>
+                  </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiInfo /> Alergias ou restrições alimentares</Label>
-                <TextArea
-                  name="alergia"
-                  value={formData.alergia}
-                  onChange={handleChange}
-                      placeholder="Se houver algo que a equipe precise considerar, conte aqui."
-                />
-                  </Field>
+                  <UpdateFullWidthGroup>
+                    {isPagamentoPago ? (
+                      <UpdateCamisaPagoNotice role="status">
+                        Inscrição com pagamento confirmado: a opção de camisa aparece apenas para
+                        consulta. Alterações podem não ser consideradas na logística do evento —
+                        em caso de dúvida, fale com a organização.
+                      </UpdateCamisaPagoNotice>
+                    ) : null}
+                    <UpdateInputGroup>
+                      <PremiumAuthSelect
+                        id="upd-desejaCamisa"
+                        name="desejaCamisa"
+                        label="Deseja adquirir camisa? *"
+                        icon={faShirt}
+                        value={
+                          formData.camisa === true
+                            ? "sim"
+                            : formData.camisa === false
+                              ? "nao"
+                              : ""
+                        }
+                        onChange={handleCamisaDesejoChange}
+                        disabled={isPagamentoPago}
+                        required={!isPagamentoPago}
+                      >
+                        <option value=""> </option>
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim</option>
+                      </PremiumAuthSelect>
+                    </UpdateInputGroup>
 
-                  <Field>
-                    <Label><FiInfo /> Uso de medicação</Label>
-                <TextArea
-                  name="medicacao"
-                  value={formData.medicacao}
-                  onChange={handleChange}
-                      placeholder="Você faz uso de algum medicamento? Descreva aqui."
+                    <UpdateCamisaSizeReveal $open={formData.camisa === true}>
+                      <UpdateCamisaSizeRevealInner>
+                        {formData.camisa === true ? (
+                          <UpdateInputGroup>
+                            <PremiumAuthSelect
+                              id="upd-tamanhoCamisa"
+                              name="tamanhoCamisa"
+                              label="Tamanho da camisa *"
+                              icon={faShirt}
+                              value={formData.tamanhoCamisa}
+                              onChange={handleChange}
+                              disabled={isPagamentoPago}
+                              required={!isPagamentoPago}
+                            >
+                              <option value=""> </option>
+                              {CAMISA_TAMANHOS.map((t) => (
+                                <option key={t} value={t}>
+                                  {t}
+                                </option>
+                              ))}
+                            </PremiumAuthSelect>
+                          </UpdateInputGroup>
+                        ) : null}
+                      </UpdateCamisaSizeRevealInner>
+                    </UpdateCamisaSizeReveal>
+                  </UpdateFullWidthGroup>
+
+                  <UpdateInputGroup>
+                    <PremiumAuthTextarea
+                      id="upd-alergia"
+                      name="alergia"
+                      label="Alergias ou restrições alimentares"
+                      icon={faCircleInfo}
+                      value={formData.alergia}
+                      onChange={handleChange}
+                      rows={4}
                     />
-                  </Field>
+                  </UpdateInputGroup>
 
-                  <Field fullWidth>
-                    <Label>
-                      <FiInfo /> Existe alguma condição que gostaria que soubéssemos?
-                    </Label>
-                    <CheckGrid>
+                  <UpdateInputGroup>
+                    <PremiumAuthTextarea
+                      id="upd-medicacao"
+                      name="medicacao"
+                      label="Uso de medicação"
+                      icon={faCircleInfo}
+                      value={formData.medicacao}
+                      onChange={handleChange}
+                      rows={4}
+                    />
+                  </UpdateInputGroup>
+
+                  <UpdateFullWidthGroup>
+                    <UpdateSectionDescription
+                      style={{
+                        marginBottom: 10,
+                        fontWeight: 600,
+                        color: "#111827",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <FiInfo aria-hidden />
+                      Existe alguma condição que gostaria que soubéssemos?
+                    </UpdateSectionDescription>
+                    <UpdateChipsGroup>
                       {DEFICIENCIAS.map((item) => (
-                        <CheckPill
+                        <UpdateChipLabel
                           key={item.name}
-                          $active={!!formData[item.name]}
+                          $selected={!!formData[item.name]}
                         >
-                          <CheckInput
-                            $srOnly
-          type="checkbox"
+                          <input
+                            type="checkbox"
                             name={item.name}
                             checked={!!formData[item.name]}
-          onChange={handleChange}
-        />
-                          <span>{item.label}</span>
-                        </CheckPill>
+                            onChange={handleChange}
+                          />
+                          {item.label}
+                        </UpdateChipLabel>
                       ))}
-                    </CheckGrid>
+                    </UpdateChipsGroup>
 
-                    {formData.deficienciaOutra && (
+                    {formData.deficienciaOutra ? (
                       <InlineInputWrap>
-                        <Input
+                        <PremiumAuthField
+                          id="upd-deficienciaOutraDescricao"
+                          type="text"
                           name="deficienciaOutraDescricao"
+                          label="Informe a condição"
+                          icon={faPen}
                           value={formData.deficienciaOutraDescricao}
-          onChange={handleChange}
-                          placeholder="Informe a condição"
+                          onChange={handleChange}
                         />
                       </InlineInputWrap>
-                    )}
-                  </Field>
+                    ) : null}
+                  </UpdateFullWidthGroup>
 
-                  <Field fullWidth>
-                    <Label><FiInfo /> Observações</Label>
-                    <TextArea
+                  <UpdateFullWidthGroup>
+                    <PremiumAuthTextarea
+                      id="upd-outrasInformacoes"
                       name="outrasInformacoes"
+                      label="Observações"
+                      icon={faCircleInfo}
                       value={formData.outrasInformacoes}
-          onChange={handleChange}
-                      placeholder="Caso queira compartilhar alguma informação importante, registre aqui."
+                      onChange={handleChange}
                       rows={5}
                     />
-                  </Field>
-                </FormGrid>
-              </Section>
+                  </UpdateFullWidthGroup>
+                </UpdateFormGrid>
+              </UpdateSection>
             )}
 
             {currentStep === totalSteps && (
-              <Section>
-                <SectionHeader>
-                  <SectionIcon>
+              <UpdateSection>
+                <UpdateSectionHeader>
+                  <UpdateSectionIcon>
                     <FiInfo />
-                  </SectionIcon>
-                  <div>
-                    <SectionTitle>Revisão</SectionTitle>
-                    <SectionSubtitle>
+                  </UpdateSectionIcon>
+                  <UpdateSectionTitleWrap>
+                    <UpdateSectionTitle>Revisão</UpdateSectionTitle>
+                    <UpdateSectionDescription>
                       Confira as informações antes de salvar.
-                    </SectionSubtitle>
-                  </div>
-                </SectionHeader>
+                    </UpdateSectionDescription>
+                  </UpdateSectionTitleWrap>
+                </UpdateSectionHeader>
 
-                <ReviewGrid>
-                  <ReviewItem>
-                    <ReviewLabel>Nome completo</ReviewLabel>
-                    <ReviewValue>
+                <UpdateReviewGrid>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Nome completo</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.nomeCompleto || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>Nome no crachá</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Nome no crachá</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.nomeCracha || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>Data de nascimento</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Data de nascimento</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.dataNascimento
                         ? new Date(formData.dataNascimento).toLocaleDateString("pt-BR")
                         : "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>WhatsApp</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>WhatsApp</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.telefone || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>E-mail</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>E-mail</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.email || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>Tipo de participação</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Tipo de participação</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.tipoParticipacao || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
                   {formData.tipoParticipacao === "Trabalhador" && (
-                    <ReviewItem>
-                      <ReviewLabel>Comissão</ReviewLabel>
-                      <ReviewValue>
+                    <UpdateReviewItem>
+                      <UpdateReviewLabel>Comissão</UpdateReviewLabel>
+                      <UpdateReviewValue>
                         {formData.comissao || "Não informado"}
-                      </ReviewValue>
-                    </ReviewItem>
+                      </UpdateReviewValue>
+                    </UpdateReviewItem>
                   )}
 
                   {hasResponsavel && (
                     <>
-                      <ReviewItem>
-                        <ReviewLabel>Nome do responsável</ReviewLabel>
-                        <ReviewValue>
+                      <UpdateReviewItem>
+                        <UpdateReviewLabel>Nome do responsável</UpdateReviewLabel>
+                        <UpdateReviewValue>
                           {formData.nomeCompletoResponsavel || "Não informado"}
-                        </ReviewValue>
-                      </ReviewItem>
+                        </UpdateReviewValue>
+                      </UpdateReviewItem>
 
-                      <ReviewItem>
-                        <ReviewLabel>Telefone do responsável</ReviewLabel>
-                        <ReviewValue>
+                      <UpdateReviewItem>
+                        <UpdateReviewLabel>Telefone do responsável</UpdateReviewLabel>
+                        <UpdateReviewValue>
                           {formData.telefoneResponsavel || "Não informado"}
-                        </ReviewValue>
-                      </ReviewItem>
+                        </UpdateReviewValue>
+                      </UpdateReviewItem>
                     </>
                   )}
 
-                  <ReviewItem>
-                    <ReviewLabel>Instituição espírita</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Instituição espírita</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.IE === "outro"
                         ? formData.otherInstitution || "Não informado"
                         : formData.IE || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>CEP</ReviewLabel>
-                    <ReviewValue>{formData.cep || "Não informado"}</ReviewValue>
-                  </ReviewItem>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>CEP</UpdateReviewLabel>
+                    <UpdateReviewValue>{formData.cep || "Não informado"}</UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>Endereço</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Endereço</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {[formData.logradouro, formData.numero, formData.bairro, formData.cidade, formData.estado]
                         .filter(Boolean)
                         .join(", ") || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>Primeira {EVENT.name}</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Primeira {EVENT.name}</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.primeiraComejaca ? "Sim" : "Não"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem>
-                    <ReviewLabel>Alimentação</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Alimentação</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.vegetariano || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem fullWidth>
-                    <ReviewLabel>Alergias / restrições</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem>
+                    <UpdateReviewLabel>Camisa</UpdateReviewLabel>
+                    <UpdateReviewValue>
+                      {formData.camisa === true
+                        ? `Sim${formData.tamanhoCamisa ? ` (${formData.tamanhoCamisa})` : ""}`
+                        : "Não"}
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
+
+                  <UpdateReviewItem fullWidth>
+                    <UpdateReviewLabel>Alergias / restrições</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.alergia || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem fullWidth>
-                    <ReviewLabel>Uso de medicação</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem fullWidth>
+                    <UpdateReviewLabel>Uso de medicação</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.medicacao || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
 
-                  <ReviewItem fullWidth>
-                    <ReviewLabel>Observações</ReviewLabel>
-                    <ReviewValue>
+                  <UpdateReviewItem fullWidth>
+                    <UpdateReviewLabel>Observações</UpdateReviewLabel>
+                    <UpdateReviewValue>
                       {formData.outrasInformacoes || "Não informado"}
-                    </ReviewValue>
-                  </ReviewItem>
-                </ReviewGrid>
-              </Section>
+                    </UpdateReviewValue>
+                  </UpdateReviewItem>
+                </UpdateReviewGrid>
+              </UpdateSection>
             )}
 
-            <FooterActions>
-              <SecondaryButton type="button" onClick={goToPreviousStep}>
-                {currentStep === 1 ? (
-                  <>
-                    <FiChevronLeft />
-                    Voltar
-                  </>
-                ) : (
-                  <>
-                    <FiChevronLeft />
-                    Anterior
-                  </>
-                )}
-              </SecondaryButton>
+            <UpdateFooterActions>
+              <UpdateStepBackButton type="button" onClick={goToPreviousStep}>
+                <FiArrowLeft size={15} />
+                {currentStep === 1 ? "Voltar" : "Anterior"}
+              </UpdateStepBackButton>
 
               {currentStep < totalSteps ? (
-                <PrimaryButton type="button" onClick={goToNextStep}>
+                <UpdateFooterPrimaryButton type="button" $hasBack onClick={goToNextStep}>
                   Próximo
                   <FiChevronRight />
-                </PrimaryButton>
+                </UpdateFooterPrimaryButton>
               ) : (
-                <PrimaryButton type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
+                <UpdateFooterPrimaryButton
+                  type="submit"
+                  disabled={isSubmitting}
+                  $hasBack
+                  aria-busy={isSubmitting ? "true" : undefined}
+                >
+                  {isSubmitting ? (
                     <>
-                    <FiLoader className="spin" />
-                    Salvando...
+                      <FiLoader className="spin" />
+                      Salvando...
                     </>
-                ) : (
+                  ) : (
                     <>
-                    <FiFileText />
-                    Salvar informações
+                      <FiFileText />
+                      Salvar informações
                     </>
-                )}
-                </PrimaryButton>
+                  )}
+                </UpdateFooterPrimaryButton>
               )}
-            </FooterActions>
-          </FormCard>
-        </PageContent>
-      </PageShell>
+            </UpdateFooterActions>
+            </UpdateFormCard>
+          </UpdatePageContent>
+        </UpdatePageContainer>
+      </ThemeProvider>
     </LocalizationProvider>
   );
 };
 
 export default Atualizar;
 
-/* =========================
-   Styled Components
-========================= */
-
-const PageShell = styled.div`
-  min-height: 100vh;
-  background: #f5f7fb;
-  color: #0f172a;
-  padding-top: calc(${APP_HEADER_HEIGHT} + 24px);
-
-  @media (max-width: 768px) {
-    padding-top: calc(${APP_HEADER_HEIGHT_MOBILE} + 16px);
-  }
-`;
-
-const PageContent = styled.div`
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0 1.5rem 2.5rem;
-
-  @media (max-width: 768px) {
-    padding: 0 0 1.5rem;
-  }
-`;
-
-const FormCard = styled.form`
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 5px;
-  box-shadow:
-    0 24px 54px rgba(15, 23, 42, 0.08),
-    0 8px 18px rgba(15, 23, 42, 0.04);
-  overflow: hidden;
-`;
-
-const PageHeader = styled.div`
-  margin-bottom: 0;
-
-  @media (max-width: 768px) {
-    margin-bottom: 0;
-  }
-`;
-
-const Hero = styled.div`
-  padding: 1.75rem 2.25rem 0;
-  background: #ffffff;
-
-  @media (max-width: 768px) {
-    padding: 1.15rem 1rem 0;
-  }
-`;
-
-const HeroTitle = styled.h1`
-  margin: 0;
-  color: #111827;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-
-  @media (max-width: 768px) {
-    font-size: 22px;
-  }
-`;
-
-const HeroSubtitle = styled.p`
-  margin: 0.55rem 0 0;
-  max-width: 760px;
-  color: #6b7280;
-  font-size: 14px;
-  line-height: 1.6;
-`;
-
-const StepHeader = styled.div`
-  padding: 1.2rem 2rem 1.15rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-
-  @media (max-width: 768px) {
-    padding: 1rem 1rem 1rem;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-`;
-
-const StepMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-`;
-
-const StepEyebrow = styled.span`
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-`;
-
-const StepTitle = styled.span`
-  font-size: 1rem;
-  font-weight: 700;
-  color: #0f172a;
-`;
-
-const StepDots = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-`;
-
-const StepDot = styled.span`
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: ${({ $active, $done }) =>
-    $active ? "#1d4ed8" : $done ? "#94a3b8" : "#dbe2ea"};
-  box-shadow: ${({ $active }) =>
-    $active ? "0 0 0 4px rgba(29, 78, 216, 0.12)" : "none"};
-  transition: all 0.2s ease;
-`;
-
-const AlertBox = styled.div`
-  margin: 0 2rem 1.2rem;
-  border: 1px solid rgba(239, 68, 68, 0.18);
-  border-left: 3px solid rgba(239, 68, 68, 0.4);
-  background: linear-gradient(180deg, #fff9f9 0%, #fef2f2 100%);
-  border-radius: 5px;
-  padding: 0.9rem 1rem;
-  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.06);
-
-  @media (max-width: 768px) {
-    margin: 0 1rem 1rem;
-  }
-`;
-
-const AlertItem = styled.div`
-  color: #7f1d1d;
-  font-size: 0.92rem;
-  line-height: 1.5;
-
-  & + & {
-    margin-top: 0.35rem;
-  }
-`;
-
-const Section = styled.section`
-  padding: 2.15rem 2rem;
-  border-top: 1px solid #eef2f7;
-  background: ${({ $highlight }) =>
-    $highlight
-      ? "linear-gradient(180deg, #fcfdff 0%, #f5f9ff 100%)"
-      : "#ffffff"};
-  box-shadow: ${({ $highlight }) =>
-    $highlight
-      ? "inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 1px rgba(37, 99, 235, 0.03)"
-      : "none"};
-
-  @media (max-width: 768px) {
-    padding: 1.7rem 1rem;
-  }
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 0.9rem;
-  margin-bottom: 1.65rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid #e7edf4;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #fafcff 0%, #f7f9fc 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-
-  @media (max-width: 768px) {
-    padding: 0.85rem 0.9rem;
-    margin-bottom: 1.3rem;
-  }
-`;
-
-const SectionIcon = styled.div`
-  width: 2.3rem;
-  height: 2.3rem;
-  border-radius: 12px;
-  background: #ffffff;
-  border: 1px solid #dbe4ee;
-  color: #475569;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
-
-const SectionTitle = styled.h2`
-  margin: 0;
-  color: #0f172a;
-  font-size: 1.12rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-`;
-
-const SectionSubtitle = styled.p`
-  margin: 0.35rem 0 0;
-  color: #6b7280;
-  font-size: 0.92rem;
-  line-height: 1.6;
-`;
-
-const FormGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.3rem 1rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.05rem;
-  }
-`;
-
-const Field = styled.div`
-  min-width: 0;
-  grid-column: ${({ fullWidth }) => (fullWidth ? "1 / -1" : "auto")};
-`;
-
-const Label = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 0.5rem;
-  color: #1f2937;
-  font-size: 0.9rem;
-  font-weight: 600;
-`;
-
-const baseFieldStyles = `
-  width: 100%;
-  min-height: 52px;
-  padding: 0.95rem 1rem;
-  border: 1px solid #dde5ee;
-  border-radius: 12px;
-  background: #fbfcfe;
-  color: #0f172a;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.96rem;
-  transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease,
-    transform 0.18s ease;
-  box-sizing: border-box;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
-
-  &::placeholder {
-    color: #9ca3af;
-  }
-
-  &:hover {
-    border-color: #ccd6e2;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow:
-      0 0 0 3px rgba(37, 99, 235, 0.1),
-      inset 0 1px 2px rgba(15, 23, 42, 0.03);
-    background: #ffffff;
-  }
-
-  &:disabled {
-    background: #f3f4f6;
-    color: #6b7280;
-    cursor: not-allowed;
-  }
-`;
-
-const Input = styled.input`
-  ${baseFieldStyles}
-`;
-
-const Select = styled.select`
-  ${baseFieldStyles}
-  appearance: none;
-`;
-
-const TextArea = styled.textarea`
-  ${baseFieldStyles}
-  min-height: 138px;
-  padding: 1rem 1rem 1.05rem;
-  line-height: 1.65;
-  resize: vertical;
-`;
-
-const DateFieldWrap = styled.div`
-  .MuiFormControl-root {
-    width: 100%;
-  }
-
-  .MuiInputBase-root {
-    ${baseFieldStyles}
-    padding: 0.15rem 0.2rem 0.15rem 0.75rem;
-  }
-
-  .MuiInputBase-input {
-    padding: 0.8rem 0.5rem;
-    font-family: "Poppins", sans-serif;
-  }
-
-  fieldset {
-    border: none;
-  }
-`;
-
-const StyledDatePicker = styled(DatePicker)``;
-
-const CheckRow = styled.label`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  cursor: pointer;
-  padding: 0.95rem 1rem;
-  border: 1px solid ${({ $emphasis }) => ($emphasis ? "#d7e3f0" : "#e2e8f0")};
-  border-radius: 14px;
-  background: ${({ $emphasis }) =>
-    $emphasis
-      ? "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)"
-      : "#ffffff"};
-  box-shadow: ${({ $emphasis }) =>
-    $emphasis
-      ? "0 14px 28px rgba(37, 99, 235, 0.06)"
-      : "0 10px 20px rgba(15, 23, 42, 0.03)"};
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-
-  &:hover {
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-  }
-`;
-
-const CheckInput = styled.input`
-  width: 18px;
-  height: 18px;
-  accent-color: #1f2937;
-  cursor: pointer;
-
-  ${({ $srOnly }) =>
-    $srOnly &&
-    `
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    `}
-`;
-
-const CheckText = styled.span`
-  color: #334155;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  font-weight: 500;
-`;
-
-const CheckGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-`;
-
-const CheckPill = styled.label`
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.82rem 1rem;
-  border-radius: 999px;
-  border: 1px solid ${({ $active }) => ($active ? "#c7d2fe" : "#dbe5ef")};
-  background: ${({ $active }) =>
-    $active
-      ? "linear-gradient(180deg, #eef4ff 0%, #e3edff 100%)"
-      : "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)"};
-  color: ${({ $active }) => ($active ? "#1e40af" : "#334155")};
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: ${({ $active }) =>
-    $active
-      ? "0 14px 26px rgba(37, 99, 235, 0.1)"
-      : "0 8px 18px rgba(15, 23, 42, 0.04)"};
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
-
-  &::before {
-    content: '';
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: ${({ $active }) => ($active ? "#2563eb" : "#cbd5e1")};
-    box-shadow: ${({ $active }) =>
-      $active ? "0 0 0 4px rgba(37, 99, 235, 0.12)" : "none"};
-    transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-    flex-shrink: 0;
-  }
-
-  &:hover {
-    border-color: ${({ $active }) => ($active ? "#93c5fd" : "#cbd5e1")};
-    transform: translateY(-1px);
-  }
-`;
-
 const InlineInputWrap = styled.div`
   margin-top: 0.8rem;
   max-width: 420px;
 `;
 
-const FooterActions = styled.div`
-  display: flex;
-  gap: 1rem;
-  padding: 1.9rem 2rem 2.3rem;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
-  border-top: 1px solid #eef2f7;
-
-  @media (max-width: 768px) {
-    padding: 1.35rem 1rem 1.75rem;
-    flex-direction: column;
-  }
-
-  .spin {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
+const UpdateCamisaPagoNotice = styled.p`
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
 `;
 
-const ButtonBase = styled.button`
-  min-height: 52px;
-  border-radius: 12px;
-  padding: 0.98rem 1.25rem;
-  border: none;
-  font-family: "Poppins", sans-serif;
-  font-size: 0.96rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-  }
-`;
-
-const PrimaryButton = styled(ButtonBase)`
-  flex: 1;
-  background: linear-gradient(180deg, #2b2d42 0%, #24263a 52%, #1f2133 100%);
-  color: #f8fafc;
-  box-shadow:
-    0 18px 34px rgba(31, 33, 51, 0.22),
-    0 8px 16px rgba(15, 23, 42, 0.12);
-
-  &:hover:not(:disabled) {
-    background: linear-gradient(180deg, #31334a 0%, #2a2c43 52%, #23253a 100%);
-    box-shadow:
-      0 22px 38px rgba(31, 33, 51, 0.24),
-      0 10px 18px rgba(15, 23, 42, 0.14);
-  }
-`;
-
-const SecondaryButton = styled(ButtonBase)`
-  min-width: 160px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  color: #1f2937;
-  border: 1px solid #d7e0ea;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
-
-  &:hover:not(:disabled) {
-    background: #ffffff;
-    border-color: #c3cedb;
-    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
-  }
-`;
-
-const ReviewGrid = styled.div`
+const UpdateCamisaSizeReveal = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-rows: ${({ $open }) => ($open ? "1fr" : "0fr")};
+  transition: grid-template-rows 0.32s ease;
 `;
 
-const ReviewItem = styled.div`
-  grid-column: ${({ fullWidth }) => (fullWidth ? "1 / -1" : "auto")};
-  border: 1px solid #e5e7eb;
-  background: #fbfcfe;
-  border-radius: 12px;
-  padding: 1rem;
-`;
-
-const ReviewLabel = styled.div`
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.35rem;
-`;
-
-const ReviewValue = styled.div`
-  font-size: 0.96rem;
-  color: #0f172a;
-  font-weight: 500;
-  line-height: 1.5;
-  word-break: break-word;
-`;
-
-const LoadingWrap = styled.div`
-  padding: 2rem;
-`;
-
-const LoadingCard = styled.div`
-  max-width: 480px;
-  margin: 2rem auto 0;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 5px;
-  box-shadow:
-    0 20px 40px rgba(15, 23, 42, 0.08),
-    0 6px 14px rgba(15, 23, 42, 0.04);
-  padding: 1.35rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-  color: #1f2937;
-
-  .spin {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
+const UpdateCamisaSizeRevealInner = styled.div`
+  overflow: hidden;
+  min-height: 0;
 `;

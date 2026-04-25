@@ -7,6 +7,11 @@ export const EVENT = {
     process.env.REACT_APP_EVENT_FULL_NAME ||
     "Confraternização das Mocidades Espíritas de Jacarepaguá",
   systemName: process.env.REACT_APP_EVENT_SYSTEM_NAME || "Sistema",
+  /**
+   * URL única (imagem ou .pdf) — `REACT_APP_EVENT_CAMISA_IMAGEM_URL`.
+   * No evento da API: `camisaImagemUrl` = primeira entrada de `camisaImagens`; este .env só entra se a API não tiver URLs.
+   */
+  camisaImagemUrl: (process.env.REACT_APP_EVENT_CAMISA_IMAGEM_URL || "").trim(),
 };
 
 export default EVENT;

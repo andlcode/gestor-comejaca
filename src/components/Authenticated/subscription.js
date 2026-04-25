@@ -48,6 +48,7 @@ import AppHeader, {
   AppHeaderBadge,
 } from "../shared/AppHeader";
 import { EVENT } from "../../config/eventConfig";
+import CamisaModeloGalleryTrigger from "../shared/CamisaModeloGallery";
 import { authTheme } from "../Unauthenticated/auth/authTheme";
 import { AuthGradientLoginButton } from "../Unauthenticated/auth/authStyles";
 import PremiumAuthField, {
@@ -1703,6 +1704,8 @@ const Formulario = () => {
                               </PremiumAuthSelect>
                             </InputGroup>
                           )}
+
+                          <CamisaModeloGalleryTrigger apiBaseUrl={API_URL} />
                         </ParticipationShirtFields>
 
                         <ParticipationInfoCard>

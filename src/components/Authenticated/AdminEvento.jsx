@@ -44,9 +44,13 @@ const INITIAL_FORM = {
   valorTrabalhador: '',
   valorConfraternista: '',
   valorPequenoCompanheiro: '',
+  camisaImagensLinhas: '',
   ativo: true,
   isNew: true,
 };
+
+const camisaImagensArrayToLinhas = (arr) =>
+  Array.isArray(arr) ? arr.map((u) => String(u || '').trim()).filter(Boolean).join('\n') : '';
 
 const FORM_SECTIONS = [
   {
@@ -259,6 +263,48 @@ const FieldsGrid = styled.div`
 
 const FieldSpan = styled.div`
   grid-column: ${({ $fullWidth }) => ($fullWidth ? '1 / -1' : 'auto')};
+`;
+
+const CamisaUrlsTextarea = styled.textarea`
+  width: 100%;
+  min-height: 140px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #111827;
+  resize: vertical;
+  box-sizing: border-box;
+  background: #ffffff;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(100, 128, 247, 0.55);
+    box-shadow: 0 0 0 3px rgba(100, 128, 247, 0.12);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    background: #f9fafb;
+  }
+`;
+
+const CamisaUrlsLabel = styled.label`
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+`;
+
+const CamisaUrlsHint = styled.p`
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
 `;
 
 const TextAreaShell = styled(InputShell)`
@@ -513,9 +559,12 @@ const AdminEvento = () => {
           },
         });
 
+        const raw = response.data?.data || {};
+        const { camisaImagens, ...rest } = raw;
         setFormData({
           ...INITIAL_FORM,
-          ...(response.data?.data || {}),
+          ...rest,
+          camisaImagensLinhas: camisaImagensArrayToLinhas(camisaImagens),
         });
         setIsNewEvent(Boolean(response.data?.data?.isNew));
       } catch (requestError) {
@@ -563,6 +612,11 @@ const AdminEvento = () => {
       return;
     }
 
+    const camisaImagens = formData.camisaImagensLinhas
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     const requestPayload = {
       nome: formData.nome.trim(),
       nomeExibicao: formData.nomeExibicao.trim(),
@@ -576,6 +630,7 @@ const AdminEvento = () => {
       valorTrabalhador: formData.valorTrabalhador,
       valorConfraternista: formData.valorConfraternista,
       valorPequenoCompanheiro: formData.valorPequenoCompanheiro,
+      camisaImagens,
       ativo: true,
     };
     const requestUrl = `${API_URL}/api/evento`;
@@ -605,9 +660,14 @@ const AdminEvento = () => {
         data: response.data,
       });
 
+      const saved = response.data?.data || {};
+      const { camisaImagens: savedCamisas, ...savedRest } = saved;
       setFormData({
         ...INITIAL_FORM,
-        ...(response.data?.data || requestPayload),
+        ...savedRest,
+        camisaImagensLinhas: camisaImagensArrayToLinhas(
+          savedCamisas != null ? savedCamisas : requestPayload.camisaImagens
+        ),
       });
       setIsNewEvent(Boolean(response.data?.data?.isNew));
       setSuccessMessage(response.data?.message || 'Evento salvo com sucesso.');
@@ -698,6 +758,31 @@ const AdminEvento = () => {
                   </FieldsGrid>
                 </Section>
               ))}
+
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Imagens da camisa</SectionTitle>
+                  <SectionText>
+                    URLs públicas (ex.: Cloudinary), uma por linha. São exibidas na galeria &quot;Ver modelo da
+                    camisa&quot; na inscrição.
+                  </SectionText>
+                </SectionHeader>
+                <FieldSpan $fullWidth>
+                  <CamisaUrlsLabel htmlFor="evento-camisa-imagens">
+                    URLs das imagens (opcional)
+                  </CamisaUrlsLabel>
+                  <CamisaUrlsTextarea
+                    id="evento-camisa-imagens"
+                    name="camisaImagensLinhas"
+                    value={formData.camisaImagensLinhas}
+                    onChange={handleChange}
+                    disabled={isDisabled}
+                    placeholder={'https://res.cloudinary.com/...\nhttps://res.cloudinary.com/...'}
+                    autoComplete="off"
+                  />
+                  <CamisaUrlsHint>Máximo de 40 URLs. Linhas vazias são ignoradas.</CamisaUrlsHint>
+                </FieldSpan>
+              </Section>
 
               {loading ? <AlertSuccess>Carregando dados do evento...</AlertSuccess> : null}
               {!loading && !error && isNewEvent ? (
