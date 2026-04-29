@@ -5,6 +5,25 @@ import axios from "axios";
 import { jsPDF } from "jspdf";
 
 import { EVENT } from "../../config/eventConfig";
+import { labelCamisaTipo, labelCamisaCor } from "../../config/camisaParticipante";
+
+function formatCamisaResumoForPrint(participant) {
+  if (!participant?.camisa) return "Nao";
+  const bits = [];
+  if (participant.camisaTipo) {
+    bits.push(`Tipo: ${labelCamisaTipo(participant.camisaTipo)}`);
+  }
+  if (participant.camisaCor) {
+    bits.push(`Cor: ${labelCamisaCor(participant.camisaCor)}`);
+  }
+  if (participant.tamanhoCamisa) {
+    bits.push(`Tamanho: ${participant.tamanhoCamisa}`);
+  }
+  if (bits.length) return `Sim (${bits.join("; ")})`;
+  return participant.tamanhoCamisa
+    ? `Sim (Tamanho: ${participant.tamanhoCamisa})`
+    : "Sim";
+}
 
 const Container = styled.div`
   font-family: "Inter", Arial, sans-serif;
@@ -861,9 +880,7 @@ const LegacyPrintLayout = ({ participant, age }) => {
           </FieldRow>
           <FieldRow>
             <FieldLabel>Camisa</FieldLabel>
-            <FieldValue>
-              {participant.camisa ? `Sim (Tamanho: ${participant.tamanhoCamisa})` : "Nao"}
-            </FieldValue>
+            <FieldValue>{formatCamisaResumoForPrint(participant)}</FieldValue>
           </FieldRow>
         </ResponsiveGrid>
       </Section>
@@ -948,9 +965,7 @@ const CompactPrintLayout = ({ participant, eventInfo, ageAtEvent, isMinor }) => 
     { label: "Participacao", value: formatParticipation(participant) },
     {
       label: "Camisa",
-      value: participant.camisa
-        ? `Sim (${participant.tamanhoCamisa || "Tamanho nao informado"})`
-        : "Nao",
+      value: formatCamisaResumoForPrint(participant),
     },
     {
       label: "Instituicao",

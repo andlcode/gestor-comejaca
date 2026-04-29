@@ -36,6 +36,13 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import AppHeader, { AppHeaderBadge } from "../shared/AppHeader";
 import CamisaModeloGalleryTrigger from "../shared/CamisaModeloGallery";
 import { EVENT } from "../../config/eventConfig";
+import {
+  CAMISA_TAMANHOS,
+  CAMISA_TIPO_OPCOES,
+  CAMISA_COR_OPCOES,
+  labelCamisaTipo,
+  labelCamisaCor,
+} from "../../config/camisaParticipante";
 import PremiumAuthField, {
   PremiumAuthSelect,
   PremiumAuthTextarea,
@@ -50,6 +57,10 @@ import {
   UpdateFormTitle,
   UpdateFormSubtitle,
   UpdateErrorBox,
+  UpdateFormFieldScope,
+  UpdateStepProgressLabel,
+  UpdateFormCalloutLabel,
+  UpdateCamisaSubsection,
   UpdateSection,
   UpdateSectionHeader,
   UpdateSectionIcon,
@@ -107,6 +118,8 @@ const INITIAL_FORM = {
   primeiraComejaca: false,
   vegetariano: "",
   camisa: false,
+  camisaTipo: "",
+  camisaCor: "",
   tamanhoCamisa: "",
   medicacao: "",
   alergia: "",
@@ -128,8 +141,6 @@ const PARTICIPATION_OPTIONS = [
   { value: "Confraternista", label: "Confraternista" },
   { value: "Trabalhador", label: "Membro de Equipe / Tarefeiro do Bem" },
 ];
-
-const CAMISA_TAMANHOS = ["PP", "P", "M", "G", "GG", "XG"];
 
 const COMISSOES = [
   "Alimentação",
@@ -203,6 +214,8 @@ const Atualizar = () => {
           dataNascimento: formattedBirthDate,
           camisa: camisaSim,
           tamanhoCamisa: camisaSim ? (data.tamanhoCamisa || "").trim() : "",
+          camisaTipo: camisaSim ? String(data.camisaTipo || "").trim() : "",
+          camisaCor: camisaSim ? String(data.camisaCor || "").trim() : "",
         }));
 
         setInstitutions(institutionsResponse.data || []);
@@ -330,6 +343,8 @@ const Atualizar = () => {
       ...prev,
       camisa: v === "sim",
       tamanhoCamisa: v === "sim" ? prev.tamanhoCamisa : "",
+      camisaTipo: v === "sim" ? prev.camisaTipo : "",
+      camisaCor: v === "sim" ? prev.camisaCor : "",
     }));
   };
 
@@ -450,14 +465,22 @@ const Atualizar = () => {
         validationErrors.push({ message: "Informe a alimentação." });
       }
 
-      if (
-        !isPagamentoPago &&
-        formData.camisa === true &&
-        !String(formData.tamanhoCamisa || "").trim()
-      ) {
-        validationErrors.push({
-          message: "Selecione o tamanho da camisa.",
-        });
+      if (!isPagamentoPago && formData.camisa === true) {
+        if (!String(formData.camisaTipo || "").trim()) {
+          validationErrors.push({
+            message: "Selecione o tipo da camisa.",
+          });
+        }
+        if (!String(formData.camisaCor || "").trim()) {
+          validationErrors.push({
+            message: "Selecione a cor da camisa.",
+          });
+        }
+        if (!String(formData.tamanhoCamisa || "").trim()) {
+          validationErrors.push({
+            message: "Selecione o tamanho da camisa.",
+          });
+        }
       }
     }
 
@@ -528,6 +551,18 @@ const Atualizar = () => {
             formData.camisa === true || formData.camisa === "true";
           if (!quer) return null;
           return String(formData.tamanhoCamisa || "").trim() || null;
+        })(),
+        camisaTipo: (() => {
+          const quer =
+            formData.camisa === true || formData.camisa === "true";
+          if (!quer) return null;
+          return String(formData.camisaTipo || "").trim() || null;
+        })(),
+        camisaCor: (() => {
+          const quer =
+            formData.camisa === true || formData.camisa === "true";
+          if (!quer) return null;
+          return String(formData.camisaCor || "").trim() || null;
         })(),
         cep: (formData.cep || "").replace(/\D/g, ""),
         estado: formData.estado?.trim() || "",
@@ -633,15 +668,11 @@ const Atualizar = () => {
                     : "Revise e atualize suas informações."}
                 </UpdateFormSubtitle>
 
-                <div style={{ marginTop: 8 }}>
-                  <CamisaModeloGalleryTrigger apiBaseUrl={API_URL} />
-                </div>
-
                 <UpdateStepMetaRow>
                   <UpdateSectionTitleWrap>
-                    <UpdateSectionDescription style={{ margin: 0, fontWeight: 600, color: "#111827" }}>
+                    <UpdateStepProgressLabel>
                       Passo {currentStep} de {totalSteps} — {currentStepTitle}
-                    </UpdateSectionDescription>
+                    </UpdateStepProgressLabel>
                   </UpdateSectionTitleWrap>
                   <UpdateStepDots>
                     {visibleSteps.map((step, index) => {
@@ -670,6 +701,7 @@ const Atualizar = () => {
                 ) : null}
               </UpdateFormHeader>
 
+              <UpdateFormFieldScope>
             {currentStep === 1 && (
               <UpdateSection>
                 <UpdateSectionHeader>
@@ -1044,19 +1076,10 @@ const Atualizar = () => {
 
                 <UpdateFormGrid>
                   <UpdateFullWidthGroup>
-                    <UpdateSectionDescription
-                      style={{
-                        marginBottom: 10,
-                        fontWeight: 600,
-                        color: "#111827",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
+                    <UpdateFormCalloutLabel>
                       <FiInfo aria-hidden />
                       É sua primeira {EVENT.name}? *
-                    </UpdateSectionDescription>
+                    </UpdateFormCalloutLabel>
                     <UpdateFirstComejacaBox>
                       <UpdateFirstComejacaCheckbox
                         type="checkbox"
@@ -1088,61 +1111,106 @@ const Atualizar = () => {
                   </UpdateInputGroup>
 
                   <UpdateFullWidthGroup>
-                    {isPagamentoPago ? (
-                      <UpdateCamisaPagoNotice role="status">
-                        Inscrição com pagamento confirmado: a opção de camisa aparece apenas para
-                        consulta. Alterações podem não ser consideradas na logística do evento —
-                        em caso de dúvida, fale com a organização.
-                      </UpdateCamisaPagoNotice>
-                    ) : null}
-                    <UpdateInputGroup>
-                      <PremiumAuthSelect
-                        id="upd-desejaCamisa"
-                        name="desejaCamisa"
-                        label="Deseja adquirir camisa? *"
-                        icon={faShirt}
-                        value={
-                          formData.camisa === true
-                            ? "sim"
-                            : formData.camisa === false
-                              ? "nao"
-                              : ""
-                        }
-                        onChange={handleCamisaDesejoChange}
-                        disabled={isPagamentoPago}
-                        required={!isPagamentoPago}
-                      >
-                        <option value=""> </option>
-                        <option value="nao">Não</option>
-                        <option value="sim">Sim</option>
-                      </PremiumAuthSelect>
-                    </UpdateInputGroup>
+                    <UpdateCamisaSubsection>
+                      <CamisaModeloGalleryTrigger apiBaseUrl={API_URL} />
+                      {isPagamentoPago ? (
+                        <UpdateCamisaPagoNotice role="status">
+                          Inscrição com pagamento confirmado: a opção de camisa aparece apenas para
+                          consulta. Alterações podem não ser consideradas na logística do evento —
+                          em caso de dúvida, fale com a organização.
+                        </UpdateCamisaPagoNotice>
+                      ) : null}
+                      <UpdateInputGroup>
+                        <PremiumAuthSelect
+                          id="upd-desejaCamisa"
+                          name="desejaCamisa"
+                          label="Deseja adquirir camisa? *"
+                          icon={faShirt}
+                          value={
+                            formData.camisa === true
+                              ? "sim"
+                              : formData.camisa === false
+                                ? "nao"
+                                : ""
+                          }
+                          onChange={handleCamisaDesejoChange}
+                          disabled={isPagamentoPago}
+                          required={!isPagamentoPago}
+                        >
+                          <option value=""> </option>
+                          <option value="nao">Não</option>
+                          <option value="sim">Sim</option>
+                        </PremiumAuthSelect>
+                      </UpdateInputGroup>
 
-                    <UpdateCamisaSizeReveal $open={formData.camisa === true}>
-                      <UpdateCamisaSizeRevealInner>
-                        {formData.camisa === true ? (
-                          <UpdateInputGroup>
-                            <PremiumAuthSelect
-                              id="upd-tamanhoCamisa"
-                              name="tamanhoCamisa"
-                              label="Tamanho da camisa *"
-                              icon={faShirt}
-                              value={formData.tamanhoCamisa}
-                              onChange={handleChange}
-                              disabled={isPagamentoPago}
-                              required={!isPagamentoPago}
-                            >
-                              <option value=""> </option>
-                              {CAMISA_TAMANHOS.map((t) => (
-                                <option key={t} value={t}>
-                                  {t}
-                                </option>
-                              ))}
-                            </PremiumAuthSelect>
-                          </UpdateInputGroup>
-                        ) : null}
-                      </UpdateCamisaSizeRevealInner>
-                    </UpdateCamisaSizeReveal>
+                      <UpdateCamisaSizeReveal $open={formData.camisa === true}>
+                        <UpdateCamisaSizeRevealInner>
+                          {formData.camisa === true ? (
+                            <>
+                              <UpdateCamisaTipoCorRow>
+                                <UpdateInputGroup>
+                                  <PremiumAuthSelect
+                                    id="upd-camisaTipo"
+                                    name="camisaTipo"
+                                    label="Tipo da camisa *"
+                                    icon={faShirt}
+                                    value={formData.camisaTipo}
+                                    onChange={handleChange}
+                                    disabled={isPagamentoPago}
+                                    required={!isPagamentoPago}
+                                  >
+                                    <option value=""> </option>
+                                    {CAMISA_TIPO_OPCOES.map((o) => (
+                                      <option key={o.value} value={o.value}>
+                                        {o.label} — {o.precoLabel}
+                                      </option>
+                                    ))}
+                                  </PremiumAuthSelect>
+                                </UpdateInputGroup>
+                                <UpdateInputGroup>
+                                  <PremiumAuthSelect
+                                    id="upd-camisaCor"
+                                    name="camisaCor"
+                                    label="Cor da camisa *"
+                                    icon={faShirt}
+                                    value={formData.camisaCor}
+                                    onChange={handleChange}
+                                    disabled={isPagamentoPago}
+                                    required={!isPagamentoPago}
+                                  >
+                                    <option value=""> </option>
+                                    {CAMISA_COR_OPCOES.map((o) => (
+                                      <option key={o.value} value={o.value}>
+                                        {o.label}
+                                      </option>
+                                    ))}
+                                  </PremiumAuthSelect>
+                                </UpdateInputGroup>
+                              </UpdateCamisaTipoCorRow>
+                              <UpdateInputGroup>
+                                <PremiumAuthSelect
+                                  id="upd-tamanhoCamisa"
+                                  name="tamanhoCamisa"
+                                  label="Tamanho da camisa *"
+                                  icon={faShirt}
+                                  value={formData.tamanhoCamisa}
+                                  onChange={handleChange}
+                                  disabled={isPagamentoPago}
+                                  required={!isPagamentoPago}
+                                >
+                                  <option value=""> </option>
+                                  {CAMISA_TAMANHOS.map((t) => (
+                                    <option key={t} value={t}>
+                                      {t}
+                                    </option>
+                                  ))}
+                                </PremiumAuthSelect>
+                              </UpdateInputGroup>
+                            </>
+                          ) : null}
+                        </UpdateCamisaSizeRevealInner>
+                      </UpdateCamisaSizeReveal>
+                    </UpdateCamisaSubsection>
                   </UpdateFullWidthGroup>
 
                   <UpdateInputGroup>
@@ -1170,19 +1238,10 @@ const Atualizar = () => {
                   </UpdateInputGroup>
 
                   <UpdateFullWidthGroup>
-                    <UpdateSectionDescription
-                      style={{
-                        marginBottom: 10,
-                        fontWeight: 600,
-                        color: "#111827",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
+                    <UpdateFormCalloutLabel>
                       <FiInfo aria-hidden />
                       Existe alguma condição que gostaria que soubéssemos?
-                    </UpdateSectionDescription>
+                    </UpdateFormCalloutLabel>
                     <UpdateChipsGroup>
                       {DEFICIENCIAS.map((item) => (
                         <UpdateChipLabel
@@ -1357,7 +1416,18 @@ const Atualizar = () => {
                     <UpdateReviewLabel>Camisa</UpdateReviewLabel>
                     <UpdateReviewValue>
                       {formData.camisa === true
-                        ? `Sim${formData.tamanhoCamisa ? ` (${formData.tamanhoCamisa})` : ""}`
+                        ? (() => {
+                            const parts = [];
+                            if (formData.camisaTipo)
+                              parts.push(labelCamisaTipo(formData.camisaTipo));
+                            if (formData.camisaCor)
+                              parts.push(labelCamisaCor(formData.camisaCor));
+                            if (formData.tamanhoCamisa)
+                              parts.push(`Tam. ${formData.tamanhoCamisa}`);
+                            return parts.length
+                              ? `Sim (${parts.join(" · ")})`
+                              : "Sim";
+                          })()
                         : "Não"}
                     </UpdateReviewValue>
                   </UpdateReviewItem>
@@ -1418,6 +1488,7 @@ const Atualizar = () => {
                 </UpdateFooterPrimaryButton>
               )}
             </UpdateFooterActions>
+              </UpdateFormFieldScope>
             </UpdateFormCard>
           </UpdatePageContent>
         </UpdatePageContainer>
@@ -1434,14 +1505,14 @@ const InlineInputWrap = styled.div`
 `;
 
 const UpdateCamisaPagoNotice = styled.p`
-  margin: 0 0 12px;
-  padding: 12px 14px;
-  font-size: 13px;
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12.5px;
   line-height: 1.45;
   color: #92400e;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 8px;
+  background: rgba(254, 252, 232, 0.65);
+  border: 1px solid rgba(253, 230, 138, 0.55);
+  border-radius: 10px;
 `;
 
 const UpdateCamisaSizeReveal = styled.div`
@@ -1453,4 +1524,17 @@ const UpdateCamisaSizeReveal = styled.div`
 const UpdateCamisaSizeRevealInner = styled.div`
   overflow: hidden;
   min-height: 0;
+`;
+
+const UpdateCamisaTipoCorRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
 `;

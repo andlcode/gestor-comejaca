@@ -49,8 +49,63 @@ const INITIAL_FORM = {
   isNew: true,
 };
 
-const camisaImagensArrayToLinhas = (arr) =>
-  Array.isArray(arr) ? arr.map((u) => String(u || '').trim()).filter(Boolean).join('\n') : '';
+/** Array salvo no evento → textarea (uma linha por item; `URL | legenda` quando houver legenda). */
+const camisaImagensArrayToLinhas = (arr) => {
+  if (!Array.isArray(arr)) return '';
+  const lines = [];
+  for (const item of arr) {
+    const s = String(item || '').trim();
+    if (!s) continue;
+    if (s.startsWith('{')) {
+      try {
+        const o = JSON.parse(s);
+        const url = String(o.url || o.href || '').trim();
+        if (!url) continue;
+        const leg = String(o.legenda || o.caption || '').trim();
+        lines.push(leg ? `${url} | ${leg}` : url);
+        continue;
+      } catch {
+        lines.push(s);
+        continue;
+      }
+    }
+    lines.push(s);
+  }
+  return lines.join('\n');
+};
+
+/** Textarea → array enviado ao backend (URLs ou JSON `{ url, legenda }` por linha). */
+const parseCamisaLinhasParaArray = (texto) => {
+  return String(texto || '')
+    .split(/\r?\n/)
+    .map((linha) => {
+      const raw = String(linha || '').trim();
+      if (!raw) return null;
+
+      if (raw.startsWith('{')) {
+        try {
+          const o = JSON.parse(raw);
+          const url = String(o.url || o.href || '').trim();
+          if (!url) return null;
+          const legenda = String(o.legenda || o.caption || '').trim();
+          return JSON.stringify(legenda ? { url, legenda } : { url });
+        } catch {
+          return null;
+        }
+      }
+
+      const pipeIdx = raw.indexOf('|');
+      if (pipeIdx !== -1) {
+        const url = raw.slice(0, pipeIdx).trim();
+        const legenda = raw.slice(pipeIdx + 1).trim();
+        if (!url) return null;
+        return legenda ? JSON.stringify({ url, legenda }) : url;
+      }
+
+      return raw;
+    })
+    .filter(Boolean);
+};
 
 const FORM_SECTIONS = [
   {
@@ -612,10 +667,7 @@ const AdminEvento = () => {
       return;
     }
 
-    const camisaImagens = formData.camisaImagensLinhas
-      .split(/\r?\n/)
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const camisaImagens = parseCamisaLinhasParaArray(formData.camisaImagensLinhas);
 
     const requestPayload = {
       nome: formData.nome.trim(),
@@ -763,8 +815,9 @@ const AdminEvento = () => {
                 <SectionHeader>
                   <SectionTitle>Imagens da camisa</SectionTitle>
                   <SectionText>
-                    URLs públicas (ex.: Cloudinary), uma por linha. São exibidas na galeria &quot;Ver modelo da
-                    camisa&quot; na inscrição.
+                    URLs públicas (ex.: Cloudinary). Uma entrada por linha: só a URL, ou{' '}
+                    <strong>URL | legenda</strong> (pipe opcional). Exibidas na galeria &quot;Ver modelo da
+                    camisa&quot;.
                   </SectionText>
                 </SectionHeader>
                 <FieldSpan $fullWidth>
@@ -777,10 +830,15 @@ const AdminEvento = () => {
                     value={formData.camisaImagensLinhas}
                     onChange={handleChange}
                     disabled={isDisabled}
-                    placeholder={'https://res.cloudinary.com/...\nhttps://res.cloudinary.com/...'}
+                    placeholder={
+                      'https://…/camisa1.png | Camisa preta - algodão\nhttps://…/camisa2.png\nhttps://…/camisa3.png | Camisa branca'
+                    }
                     autoComplete="off"
                   />
-                  <CamisaUrlsHint>Máximo de 40 URLs. Linhas vazias são ignoradas.</CamisaUrlsHint>
+                  <CamisaUrlsHint>
+                    Máximo de 40 linhas. Linhas vazias são ignoradas. Use <code>|</code> para legenda (texto após o
+                    primeiro pipe).
+                  </CamisaUrlsHint>
                 </FieldSpan>
               </Section>
 

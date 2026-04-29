@@ -48,6 +48,11 @@ import AppHeader, {
   AppHeaderBadge,
 } from "../shared/AppHeader";
 import { EVENT } from "../../config/eventConfig";
+import {
+  CAMISA_TAMANHOS,
+  CAMISA_TIPO_OPCOES,
+  CAMISA_COR_OPCOES,
+} from "../../config/camisaParticipante";
 import CamisaModeloGalleryTrigger from "../shared/CamisaModeloGallery";
 import { authTheme } from "../Unauthenticated/auth/authTheme";
 import { AuthGradientLoginButton } from "../Unauthenticated/auth/authStyles";
@@ -366,8 +371,6 @@ const FullWidth = styled.div`
   grid-column: 1 / -1;
 `;
 
-const CAMISA_TAMANHOS = ["PP", "P", "M", "G", "GG", "XG"];
-
 const ParticipationSelectWrap = styled.div`
   grid-column: 1 / -1;
   margin-bottom: 22px;
@@ -385,6 +388,17 @@ const ParticipationShirtFields = styled.div`
   margin-bottom: 8px;
 
   @media (max-width: 768px) {
+    gap: 12px;
+  }
+`;
+
+const ParticipationShirtTipoCorRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 `;
@@ -1127,6 +1141,8 @@ const Formulario = () => {
     telefoneResponsavel: "",
     comissao: "",
     comprarCamisa: "",
+    camisaTipo: "",
+    camisaCor: "",
     tamanhoCamisa: "",
     cep: "",
     estado: "",
@@ -1219,6 +1235,14 @@ const Formulario = () => {
             : prev.comprarCamisa || "",
       tamanhoCamisa:
         incoming.camisa === true ? incoming.tamanhoCamisa || prev.tamanhoCamisa || "" : "",
+      camisaTipo:
+        incoming.camisa === true
+          ? String(incoming.camisaTipo || prev.camisaTipo || "").trim()
+          : "",
+      camisaCor:
+        incoming.camisa === true
+          ? String(incoming.camisaCor || prev.camisaCor || "").trim()
+          : "",
     }));
 
     if (incoming?.dataNascimento) {
@@ -1268,7 +1292,9 @@ const Formulario = () => {
       setFormData((prev) => ({
         ...prev,
         comprarCamisa: value,
-        ...(value !== "sim" ? { tamanhoCamisa: "" } : {}),
+        ...(value !== "sim"
+          ? { tamanhoCamisa: "", camisaTipo: "", camisaCor: "" }
+          : {}),
       }));
       return;
     }
@@ -1372,7 +1398,9 @@ const Formulario = () => {
       const payload = {
         ...restForm,
         camisa: querCamisa,
-        tamanhoCamisa: querCamisa ? String(formData.tamanhoCamisa || "").trim() : "",
+        tamanhoCamisa: querCamisa ? String(formData.tamanhoCamisa || "").trim() : null,
+        camisaTipo: querCamisa ? String(formData.camisaTipo || "").trim() : null,
+        camisaCor: querCamisa ? String(formData.camisaCor || "").trim() : null,
         email: (formData.email || "").trim().toLowerCase(),
         comissao: String(formData.comissao),
         dataNascimento: dataNascimento.toISOString().split("T")[0],
@@ -1684,28 +1712,71 @@ const Formulario = () => {
                             </PremiumAuthSelect>
                           </InputGroup>
 
-                          {formData.comprarCamisa === "sim" && (
-                            <InputGroup>
-                              <PremiumAuthSelect
-                                id="sub-tamanhoCamisa"
-                                name="tamanhoCamisa"
-                                label="Tamanho da camisa *"
-                                icon={faShirt}
-                                value={formData.tamanhoCamisa}
-                                onChange={handleChange}
-                                required
-                              >
-                                <option value=""> </option>
-                                {CAMISA_TAMANHOS.map((t) => (
-                                  <option key={t} value={t}>
-                                    {t}
-                                  </option>
-                                ))}
-                              </PremiumAuthSelect>
-                            </InputGroup>
-                          )}
+                          <CamisaModeloGalleryTrigger
+                            apiBaseUrl={API_URL}
+                            linkPlacement="below"
+                          />
 
-                          <CamisaModeloGalleryTrigger apiBaseUrl={API_URL} />
+                          {formData.comprarCamisa === "sim" && (
+                            <>
+                              <ParticipationShirtTipoCorRow>
+                                <InputGroup>
+                                  <PremiumAuthSelect
+                                    id="sub-camisaTipo"
+                                    name="camisaTipo"
+                                    label="Tipo da camisa *"
+                                    icon={faShirt}
+                                    value={formData.camisaTipo}
+                                    onChange={handleChange}
+                                    required
+                                  >
+                                    <option value=""> </option>
+                                    {CAMISA_TIPO_OPCOES.map((o) => (
+                                      <option key={o.value} value={o.value}>
+                                        {o.label} — {o.precoLabel}
+                                      </option>
+                                    ))}
+                                  </PremiumAuthSelect>
+                                </InputGroup>
+                                <InputGroup>
+                                  <PremiumAuthSelect
+                                    id="sub-camisaCor"
+                                    name="camisaCor"
+                                    label="Cor da camisa *"
+                                    icon={faShirt}
+                                    value={formData.camisaCor}
+                                    onChange={handleChange}
+                                    required
+                                  >
+                                    <option value=""> </option>
+                                    {CAMISA_COR_OPCOES.map((o) => (
+                                      <option key={o.value} value={o.value}>
+                                        {o.label}
+                                      </option>
+                                    ))}
+                                  </PremiumAuthSelect>
+                                </InputGroup>
+                              </ParticipationShirtTipoCorRow>
+                              <InputGroup>
+                                <PremiumAuthSelect
+                                  id="sub-tamanhoCamisa"
+                                  name="tamanhoCamisa"
+                                  label="Tamanho da camisa *"
+                                  icon={faShirt}
+                                  value={formData.tamanhoCamisa}
+                                  onChange={handleChange}
+                                  required
+                                >
+                                  <option value=""> </option>
+                                  {CAMISA_TAMANHOS.map((t) => (
+                                    <option key={t} value={t}>
+                                      {t}
+                                    </option>
+                                  ))}
+                                </PremiumAuthSelect>
+                              </InputGroup>
+                            </>
+                          )}
                         </ParticipationShirtFields>
 
                         <ParticipationInfoCard>

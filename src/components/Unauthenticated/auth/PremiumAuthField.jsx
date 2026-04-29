@@ -398,7 +398,7 @@ export const PremiumAuthSelect = forwardRef(function PremiumAuthSelect(
 
 PremiumAuthSelect.displayName = 'PremiumAuthSelect';
 
-const TextareaShell = styled(InputShell)`
+export const TextareaShell = styled(InputShell)`
   min-height: 128px;
 `;
 
