@@ -48,6 +48,7 @@ export const getPaymentStatusVariant = (status) => {
   const normalized = String(status || '').trim().toLowerCase();
 
   switch (normalized) {
+    case 'paid':
     case 'approved':
     case 'aprovado':
     case 'pago':
@@ -65,6 +66,11 @@ export const getPaymentStatusVariant = (status) => {
     default:
       return 'na';
   }
+};
+
+export const isPagamentoPago = (status) => {
+  const normalized = String(status || '').trim().toLowerCase();
+  return ['paid', 'approved', 'aprovado', 'pago'].includes(normalized);
 };
 
 export const getStatusPagamento = (status, context = 'dashboard') => {

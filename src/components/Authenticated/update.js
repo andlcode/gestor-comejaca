@@ -36,6 +36,7 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import AppHeader, { AppHeaderBadge } from "../shared/AppHeader";
 import CamisaModeloGalleryTrigger from "../shared/CamisaModeloGallery";
 import { EVENT } from "../../config/eventConfig";
+import { isPagamentoPago } from "../../utils/paymentStatus";
 import {
   CAMISA_TAMANHOS,
   CAMISA_TIPO_OPCOES,
@@ -235,10 +236,10 @@ const Atualizar = () => {
 
   const hasResponsavel = useMemo(() => isMinor, [isMinor]);
 
-  const isPagamentoPago = useMemo(() => {
-    const s = String(formData.statusPagamento || "").trim().toLowerCase();
-    return s === "pago";
-  }, [formData.statusPagamento]);
+  const pago = useMemo(
+    () => isPagamentoPago(formData.statusPagamento),
+    [formData.statusPagamento]
+  );
 
   const visibleSteps = useMemo(() => {
     return [
@@ -465,7 +466,7 @@ const Atualizar = () => {
         validationErrors.push({ message: "Informe a alimentação." });
       }
 
-      if (!isPagamentoPago && formData.camisa === true) {
+      if (!pago && formData.camisa === true) {
         if (!String(formData.camisaTipo || "").trim()) {
           validationErrors.push({
             message: "Selecione o tipo da camisa.",
@@ -1113,7 +1114,7 @@ const Atualizar = () => {
                   <UpdateFullWidthGroup>
                     <UpdateCamisaSubsection>
                       <CamisaModeloGalleryTrigger apiBaseUrl={API_URL} />
-                      {isPagamentoPago ? (
+                      {pago ? (
                         <UpdateCamisaPagoNotice role="status">
                           Inscrição com pagamento confirmado: a opção de camisa aparece apenas para
                           consulta. Alterações podem não ser consideradas na logística do evento —
@@ -1134,8 +1135,8 @@ const Atualizar = () => {
                                 : ""
                           }
                           onChange={handleCamisaDesejoChange}
-                          disabled={isPagamentoPago}
-                          required={!isPagamentoPago}
+                          disabled={pago}
+                          required={!pago}
                         >
                           <option value=""> </option>
                           <option value="nao">Não</option>
@@ -1156,8 +1157,8 @@ const Atualizar = () => {
                                     icon={faShirt}
                                     value={formData.camisaTipo}
                                     onChange={handleChange}
-                                    disabled={isPagamentoPago}
-                                    required={!isPagamentoPago}
+                                    disabled={pago}
+                                    required={!pago}
                                   >
                                     <option value=""> </option>
                                     {CAMISA_TIPO_OPCOES.map((o) => (
@@ -1175,8 +1176,8 @@ const Atualizar = () => {
                                     icon={faShirt}
                                     value={formData.camisaCor}
                                     onChange={handleChange}
-                                    disabled={isPagamentoPago}
-                                    required={!isPagamentoPago}
+                                    disabled={pago}
+                                    required={!pago}
                                   >
                                     <option value=""> </option>
                                     {CAMISA_COR_OPCOES.map((o) => (
@@ -1195,8 +1196,8 @@ const Atualizar = () => {
                                   icon={faShirt}
                                   value={formData.tamanhoCamisa}
                                   onChange={handleChange}
-                                  disabled={isPagamentoPago}
-                                  required={!isPagamentoPago}
+                                  disabled={pago}
+                                  required={!pago}
                                 >
                                   <option value=""> </option>
                                   {CAMISA_TAMANHOS.map((t) => (

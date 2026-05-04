@@ -21,7 +21,7 @@ import {
   ACTIVE_REGISTRATION_YEAR,
   getInscricaoLifecycle,
 } from '../../utils/subscriptionCycle';
-import { getPaymentStatusVariant } from '../../utils/paymentStatus';
+import { isPagamentoPago } from '../../utils/paymentStatus';
 import { EVENT } from '../../config/eventConfig';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 import AppHeader, {
@@ -29,11 +29,11 @@ import AppHeader, {
   APP_HEADER_HEIGHT_MOBILE,
 } from '../shared/AppHeader';
 import {
-  MercadoPagoCheckoutModal,
   MercadoPagoReturnHintModal,
   markMercadoPagoCheckoutPending,
   tryConsumeMercadoPagoCheckoutPending,
 } from '../shared/MercadoPagoCheckoutModal.jsx';
+import { PagamentoResumoModal } from '../shared/PagamentoResumoModal.jsx';
 
 const PAGE_MAX_WIDTH = '760px';
 
@@ -546,6 +546,23 @@ const PayAction = styled.div`
     margin-left: 0;
     justify-content: stretch;
   }
+`;
+
+const PaidBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(240, 253, 244, 0.95);
+  border: 1px solid rgba(22, 163, 74, 0.22);
+  color: #166534;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
 `;
 
 const Button = styled.button`
@@ -1295,7 +1312,7 @@ const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pendingReenrollmentItem, setPendingReenrollmentItem] = useState(null);
   const [isReenrollmentLoading, setIsReenrollmentLoading] = useState(false);
-  const [mpCheckout, setMpCheckout] = useState({ open: false, url: '' });
+  const [pagamentoResumo, setPagamentoResumo] = useState(null);
   const [mpReturnHintOpen, setMpReturnHintOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -1365,13 +1382,19 @@ const Dashboard = () => {
         fullResponse: response.data,
       });
 
-      if (response.data?.init_point) {
-        setMpCheckout({ open: true, url: response.data.init_point });
+      const initPoint = response.data?.init_point;
+      const resumo = response.data?.resumo;
+      if (initPoint && resumo) {
+        setPagamentoResumo({ initPoint, resumo });
       } else {
         alert('Não foi possível gerar o link de pagamento.');
       }
-    } catch {
-      alert('Erro ao processar pagamento.');
+    } catch (err) {
+      if (err?.response?.status === 400 && err?.response?.data?.alreadyPaid) {
+        alert('Esta inscrição já está paga.');
+      } else {
+        alert('Erro ao processar pagamento.');
+      }
     } finally {
       setLoadingItemId(null);
     }
@@ -1819,10 +1842,10 @@ const Dashboard = () => {
               ) : groupedSections.active.length > 0 ? (
                 <ActiveGrid>
                   {groupedSections.active.map((item) => {
-                    const statusVariant = getPaymentStatusVariant(item.statusPagamento);
+                    const pago = isPagamentoPago(item.statusPagamento);
                     const institutionLabel = getInstitutionDisplayName(item);
                     const showPay =
-                      item.lifecycle.actions.canPay && statusVariant !== 'pago';
+                      item.lifecycle.actions.canPay && !pago;
 
                     return (
                       <RegistrationCard key={item.id}>
@@ -1872,6 +1895,12 @@ const Dashboard = () => {
                                   </>
                                 )}
                               </Button>
+                            </PayAction>
+                          ) : pago ? (
+                            <PayAction>
+                              <PaidBadge role="status" aria-label="Pagamento confirmado">
+                                Pago
+                              </PaidBadge>
                             </PayAction>
                           ) : null}
                         </CardActionsBar>
@@ -1941,13 +1970,14 @@ const Dashboard = () => {
 
       </Content>
 
-      <MercadoPagoCheckoutModal
-        isOpen={mpCheckout.open}
-        initPoint={mpCheckout.url}
-        onCancel={() => setMpCheckout({ open: false, url: '' })}
-        onConfirm={(url) => {
+      <PagamentoResumoModal
+        isOpen={Boolean(pagamentoResumo)}
+        resumo={pagamentoResumo?.resumo ?? null}
+        initPoint={pagamentoResumo?.initPoint ?? ''}
+        onCancel={() => setPagamentoResumo(null)}
+        onContinue={(url) => {
           markMercadoPagoCheckoutPending();
-          setMpCheckout({ open: false, url: '' });
+          setPagamentoResumo(null);
           window.location.href = url;
         }}
       />

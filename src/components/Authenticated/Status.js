@@ -36,6 +36,34 @@ const formatInstitutionName = (value = '') => {
   return normalizedValue || 'N/A';
 };
 
+const formatMoneyBRLSnapshot = (value) => {
+  if (value === null || value === undefined || value === '') return '—';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+};
+
+const formatCamisaSnapshot = (p) => {
+  if (!p?.tipoCamisaPagamento) return '—';
+  const parts = [p.tipoCamisaPagamento, p.corCamisaPagamento].filter(Boolean);
+  return parts.length ? parts.join(' ') : '—';
+};
+
+/** Texto da camisa na listagem (vem do backend: listagemCamisaDescricao ou snapshot legado). */
+const formatCamisaListagem = (p) => {
+  const d = p?.listagemCamisaDescricao != null ? String(p.listagemCamisaDescricao).trim() : '';
+  if (d) return d;
+  return formatCamisaSnapshot(p);
+};
+
+const formatMercadoPagoIdListagem = (p) => {
+  const pay = p?.mercadoPagoPaymentId ? String(p.mercadoPagoPaymentId).trim() : '';
+  const pref = p?.mercadoPagoPreferenceId ? String(p.mercadoPagoPreferenceId).trim() : '';
+  if (pay) return pay;
+  if (pref) return pref;
+  return '—';
+};
+
 const CARE_FIELDS = [
   'alergia',
   'medicacao',
@@ -686,17 +714,37 @@ const ListaParticipantes = () => {
                   <TableContainer>
                     <MainTable>
                       <colgroup>
-                        <col style={{ width: '22%' }} />
-                        <col style={{ width: '24%' }} />
-                        <col style={{ width: '18%' }} />
-                        <col style={{ width: '14%' }} />
-                        <col style={{ width: '10%' }} />
-                        <col style={{ width: '16%' }} />
+                        <col style={{ width: isAdminTotal ? '14%' : '22%' }} />
+                        <col style={{ width: isAdminTotal ? '12%' : '24%' }} />
+                        <col style={{ width: isAdminTotal ? '8%' : '18%' }} />
+                        {isAdminTotal ? (
+                          <>
+                            <col style={{ width: '8%' }} />
+                            <col style={{ width: '8%' }} />
+                            <col style={{ width: '8%' }} />
+                            <col style={{ width: '8%' }} />
+                            <col style={{ width: '9%' }} />
+                          </>
+                        ) : null}
+                        <col style={{ width: isAdminTotal ? '8%' : '14%' }} />
+                        <col style={{ width: isAdminTotal ? '8%' : '10%' }} />
+                        <col style={{ width: isAdminTotal ? '6%' : '10%' }} />
+                        <col style={{ width: isAdminTotal ? '10%' : '16%' }} />
                       </colgroup>
                       <TableHead>
                         <tr>
                           <TableHeaderCell>Nome</TableHeaderCell>
-                          <TableHeaderCell>Instituição Espírita</TableHeaderCell>
+                          <TableHeaderCell>Casa Espírita / IE</TableHeaderCell>
+                          <TableHeaderCell>Tipo participação</TableHeaderCell>
+                          {isAdminTotal ? (
+                            <>
+                              <TableHeaderCell $nowrap>Valor inscrição</TableHeaderCell>
+                              <TableHeaderCell>Camisa</TableHeaderCell>
+                              <TableHeaderCell $nowrap>Valor camisa</TableHeaderCell>
+                              <TableHeaderCell $nowrap>Total</TableHeaderCell>
+                              <TableHeaderCell $nowrap>ID Mercado Pago</TableHeaderCell>
+                            </>
+                          ) : null}
                           <TableHeaderCell>Comissão</TableHeaderCell>
                           <TableHeaderCell $nowrap>Status Pagamento</TableHeaderCell>
                           <TableHeaderCell $nowrap>Link</TableHeaderCell>
@@ -718,10 +766,38 @@ const ListaParticipantes = () => {
                                   {formatInstitutionName(p.IE)}
                                 </InstitutionNameText>
                               </TableCell>
+                              <TableCell>{p.tipoParticipacao || '—'}</TableCell>
+                              {isAdminTotal ? (
+                                <>
+                                  <TableCell $nowrap>
+                                    {formatMoneyBRLSnapshot(
+                                      p.listagemValorInscricao ?? p.valorInscricaoPagamento
+                                    )}
+                                  </TableCell>
+                                  <TableCell>{formatCamisaListagem(p)}</TableCell>
+                                  <TableCell $nowrap>
+                                    {formatMoneyBRLSnapshot(
+                                      p.listagemValorCamisa ?? p.valorCamisaPagamento
+                                    )}
+                                  </TableCell>
+                                  <TableCell $nowrap>
+                                    {formatMoneyBRLSnapshot(
+                                      p.listagemValorTotal ?? p.valorTotalPagamento
+                                    )}
+                                  </TableCell>
+                                  <TableCell
+                                    $nowrap
+                                    title={formatMercadoPagoIdListagem(p)}
+                                    style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                                  >
+                                    {formatMercadoPagoIdListagem(p)}
+                                  </TableCell>
+                                </>
+                              ) : null}
                               <TableCell>
                                 {p.tipoParticipacao === 'Trabalhador'
-                                  ? p.comissao || 'Sem Comissão'
-                                  : p.tipoParticipacao}
+                                  ? p.comissao || 'Sem comissão'
+                                  : '—'}
                               </TableCell>
                               <TableCell $nowrap>
                                 {isAdminTotal ? (
@@ -814,12 +890,55 @@ const ListaParticipantes = () => {
                           </MobileInfoRow>
 
                           <MobileInfoRow>
-                            <MobileInfoValue>
-                              {p.tipoParticipacao === 'Trabalhador'
-                                ? p.comissao || 'Sem Comissão'
-                                : p.tipoParticipacao}
-                            </MobileInfoValue>
+                            <MobileStatusLabel>Tipo participação</MobileStatusLabel>
+                            <MobileInfoValue>{p.tipoParticipacao || '—'}</MobileInfoValue>
                           </MobileInfoRow>
+
+                          {p.tipoParticipacao === 'Trabalhador' ? (
+                            <MobileInfoRow>
+                              <MobileStatusLabel>Comissão</MobileStatusLabel>
+                              <MobileInfoValue>{p.comissao || 'Sem comissão'}</MobileInfoValue>
+                            </MobileInfoRow>
+                          ) : null}
+
+                          {isAdminTotal ? (
+                            <>
+                              <MobileInfoRow>
+                                <MobileStatusLabel>Valor inscrição</MobileStatusLabel>
+                                <MobileInfoValue>
+                                  {formatMoneyBRLSnapshot(
+                                    p.listagemValorInscricao ?? p.valorInscricaoPagamento
+                                  )}
+                                </MobileInfoValue>
+                              </MobileInfoRow>
+                              <MobileInfoRow>
+                                <MobileStatusLabel>Camisa</MobileStatusLabel>
+                                <MobileInfoValue>{formatCamisaListagem(p)}</MobileInfoValue>
+                              </MobileInfoRow>
+                              <MobileInfoRow>
+                                <MobileStatusLabel>Valor camisa</MobileStatusLabel>
+                                <MobileInfoValue>
+                                  {formatMoneyBRLSnapshot(
+                                    p.listagemValorCamisa ?? p.valorCamisaPagamento
+                                  )}
+                                </MobileInfoValue>
+                              </MobileInfoRow>
+                              <MobileInfoRow>
+                                <MobileStatusLabel>Total</MobileStatusLabel>
+                                <MobileInfoValue>
+                                  {formatMoneyBRLSnapshot(
+                                    p.listagemValorTotal ?? p.valorTotalPagamento
+                                  )}
+                                </MobileInfoValue>
+                              </MobileInfoRow>
+                              <MobileInfoRow>
+                                <MobileStatusLabel>ID Mercado Pago</MobileStatusLabel>
+                                <MobileInfoValue style={{ wordBreak: 'break-all' }}>
+                                  {formatMercadoPagoIdListagem(p)}
+                                </MobileInfoValue>
+                              </MobileInfoRow>
+                            </>
+                          ) : null}
 
                           {p.linkPagamento ? (
                             <MobileInfoRow>
@@ -1775,7 +1894,7 @@ const MobileStatusLabel = styled.span`
 const MobileInfoRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 4px;
 `;
 
 const MobileInfoValue = styled.div`

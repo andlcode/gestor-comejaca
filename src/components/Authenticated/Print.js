@@ -579,62 +579,6 @@ const Footer = styled.div`
   line-height: 1.3;
 `;
 
-const FinalSignatureSection = styled.section`
-  margin-top: 6px;
-`;
-
-const FinalSignatureCard = styled.div`
-  background: #ffffff;
-  padding: 5px 6px 4px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-`;
-
-const FinalSignatureGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 16px;
-  align-items: end;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-
-  @media print {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px 16px !important;
-    align-items: end !important;
-    width: 100%;
-  }
-`;
-
-const SignatureBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-`;
-
-const SignatureIdentityBlock = styled(SignatureBlock)`
-  grid-column: 1 / -1;
-  gap: 1px;
-  padding-bottom: 2px;
-`;
-
-const SignatureLine = styled.div`
-  min-height: 14px;
-  border-bottom: 1px solid #9ca3af;
-`;
-
-const SignatureCaption = styled.span`
-  font-size: 9px;
-  color: #4b5563;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-`;
-
 const getToken = () => localStorage.getItem("token");
 
 const fetchUserData = async (id) => {
@@ -785,9 +729,6 @@ const getDeficiencyItems = (participant) => {
 
   return items;
 };
-
-const getInstitutionName = (participant) =>
-  participant?.IE || participant?.otherInstitution || "________________________________________";
 
 const hasValue = (value) =>
   value !== null &&
@@ -1280,27 +1221,6 @@ const FichaInscricao = () => {
             isMinor={isMinor}
           />
         )}
-        <FinalSignatureSection>
-          <CompactSectionTitle>Assinatura da Instituicao Espirita</CompactSectionTitle>
-          <FinalSignatureCard>
-            <FinalSignatureGrid>
-              <SignatureIdentityBlock>
-                <InlineLabel>Instituicao Espirita:</InlineLabel>
-                <InlineValue>{getInstitutionName(participant)}</InlineValue>
-              </SignatureIdentityBlock>
-
-              <SignatureBlock>
-                <SignatureLine />
-                <SignatureCaption>Assinatura (presidente IE)</SignatureCaption>
-              </SignatureBlock>
-
-              <SignatureBlock>
-                <SignatureLine />
-                <SignatureCaption>Data</SignatureCaption>
-              </SignatureBlock>
-            </FinalSignatureGrid>
-          </FinalSignatureCard>
-        </FinalSignatureSection>
 
         <Footer>
           Documento gerado eletronicamente em {new Date().toLocaleDateString("pt-BR")}
