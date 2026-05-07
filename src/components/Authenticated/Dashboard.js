@@ -34,6 +34,8 @@ import {
   tryConsumeMercadoPagoCheckoutPending,
 } from '../shared/MercadoPagoCheckoutModal.jsx';
 import { PagamentoResumoModal } from '../shared/PagamentoResumoModal.jsx';
+import { toast } from 'react-toastify';
+import { isHttpOrHttpsUrl, PAYMENT_LINK_ERROR } from '../../utils/paymentUrl';
 
 const PAGE_MAX_WIDTH = '760px';
 
@@ -1376,24 +1378,33 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log('[MercadoPago][Dashboard] resposta do backend para pagamento:', {
-        itemId,
-        init_point: response.data?.init_point || null,
-        fullResponse: response.data,
-      });
-
-      const initPoint = response.data?.init_point;
+      const rawPoint = response.data?.init_point ?? response.data?.initPoint;
+      const linkPagamento = String(rawPoint ?? '').trim();
       const resumo = response.data?.resumo;
-      if (initPoint && resumo) {
-        setPagamentoResumo({ initPoint, resumo });
+
+      if (
+        linkPagamento &&
+        isHttpOrHttpsUrl(linkPagamento) &&
+        resumo &&
+        typeof resumo === 'object' &&
+        !Array.isArray(resumo)
+      ) {
+        setPagamentoResumo({ initPoint: linkPagamento, resumo });
       } else {
-        alert('Não foi possível gerar o link de pagamento.');
+        toast.error(PAYMENT_LINK_ERROR);
       }
     } catch (err) {
-      if (err?.response?.status === 400 && err?.response?.data?.alreadyPaid) {
-        alert('Esta inscrição já está paga.');
+      const data = err?.response?.data;
+      const msg =
+        (typeof data?.error === 'string' && data.error) ||
+        (typeof data?.message === 'string' && data.message) ||
+        (typeof err?.message === 'string' && err.message) ||
+        PAYMENT_LINK_ERROR;
+
+      if (err?.response?.status === 400 && data?.alreadyPaid) {
+        toast.info('Esta inscrição já está paga.');
       } else {
-        alert('Erro ao processar pagamento.');
+        toast.error(msg);
       }
     } finally {
       setLoadingItemId(null);
@@ -1976,9 +1987,13 @@ const Dashboard = () => {
         initPoint={pagamentoResumo?.initPoint ?? ''}
         onCancel={() => setPagamentoResumo(null)}
         onContinue={(url) => {
+          const checkoutUrl = String(url ?? '').trim();
+          if (!isHttpOrHttpsUrl(checkoutUrl)) {
+            toast.error(PAYMENT_LINK_ERROR);
+            return;
+          }
           markMercadoPagoCheckoutPending();
-          setPagamentoResumo(null);
-          window.location.href = url;
+          window.location.assign(checkoutUrl);
         }}
       />
 

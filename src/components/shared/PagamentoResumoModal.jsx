@@ -151,10 +151,14 @@ function formatBRL(value) {
 export function PagamentoResumoModal({ isOpen, resumo, initPoint, onCancel, onContinue }) {
   if (!isOpen || !resumo || !initPoint) return null;
 
-  const temCamisaValor = resumo.camisa != null && Number(resumo.camisa.valor) > 0;
+  const camisaObj =
+    resumo.camisa != null && typeof resumo.camisa === 'object' && !Array.isArray(resumo.camisa)
+      ? resumo.camisa
+      : null;
+  const temCamisaValor = camisaObj != null && Number(camisaObj.valor) > 0;
   const camisaLine =
     temCamisaValor &&
-    [resumo.camisa.tipo, resumo.camisa.cor, resumo.camisa.tamanho].filter(Boolean).join(' ').trim();
+    [camisaObj.tipo, camisaObj.cor, camisaObj.tamanho].filter(Boolean).join(' ').trim();
 
   return (
     <Overlay
@@ -186,7 +190,7 @@ export function PagamentoResumoModal({ isOpen, resumo, initPoint, onCancel, onCo
           {temCamisaValor && camisaLine ? (
             <MoneyRow>
               <span>Camisa {camisaLine}</span>
-              <span>{formatBRL(resumo.camisa.valor)}</span>
+              <span>{formatBRL(camisaObj.valor)}</span>
             </MoneyRow>
           ) : null}
           <TotalRow>
@@ -201,7 +205,10 @@ export function PagamentoResumoModal({ isOpen, resumo, initPoint, onCancel, onCo
           <BtnGhost type="button" onClick={onCancel}>
             Cancelar
           </BtnGhost>
-          <BtnPrimary type="button" onClick={() => onContinue(initPoint)}>
+          <BtnPrimary
+            type="button"
+            onClick={() => onContinue(String(initPoint ?? '').trim())}
+          >
             Continuar para pagamento
           </BtnPrimary>
         </Actions>
