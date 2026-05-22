@@ -4,6 +4,7 @@ import styled, { ThemeProvider } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { FiActivity, FiAlertCircle } from 'react-icons/fi';
 import { FaLeaf, FaWheelchair } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import { getPaymentStatusVariant, getStatusPagamento } from '../../utils/paymentStatus';
 import { EVENT } from '../../config/eventConfig';
 import GraficoTrabalhadoresPorComissao from './GraficoTrabalhadoresPorComissao';
@@ -208,6 +209,7 @@ const ListaParticipantes = () => {
   const [loading, setLoading] = useState(true);
   const [selectedAno, setSelectedAno] = useState(getInitialAnoInscricao);
   const [anosDisponiveis, setAnosDisponiveis] = useState([]);
+  const [exporting, setExporting] = useState(false);
   const [filtroIE, setFiltroIE] = useState('');
   const [abaAtiva, setAbaAtiva] = useState('lista');
   const [filtro, setFiltro] = useState('');
@@ -282,6 +284,48 @@ const ListaParticipantes = () => {
       cancelled = true;
     };
   }, [API_URL, selectedAno]);
+
+  const handleExportAnoSelecionado = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const ano = Number(selectedAno);
+      const response = await axios.get(`${API_URL}/api/auth/inscricoes/export/full`, {
+        params: { ano },
+        responseType: 'blob',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        validateStatus: (status) => status >= 200 && status < 500,
+      });
+
+      if (response.status === 404) {
+        toast.info('Nenhum registro encontrado para o ano selecionado.');
+        return;
+      }
+
+      if (response.status >= 400) {
+        toast.error('Não foi possível exportar os registros. Tente novamente.');
+        return;
+      }
+
+      const contentType = response.headers?.['content-type'] || 'text/csv';
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `registros-completos-${ano}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar inscritos:', error);
+      toast.error('Não foi possível exportar os registros. Tente novamente.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (tryConsumeMercadoPagoCheckoutPending()) {
@@ -652,6 +696,12 @@ const ListaParticipantes = () => {
                 ))}
               </YearSelect>
             </FilterGroup>
+            <ExportGroup>
+              <ExportLabel aria-hidden>&nbsp;</ExportLabel>
+              <ExportButton type="button" onClick={handleExportAnoSelecionado} disabled={exporting}>
+                {exporting ? 'Exportando...' : 'Baixar registros'}
+              </ExportButton>
+            </ExportGroup>
           </YearFilterBar>
 
           <Tabs>
@@ -1493,7 +1543,13 @@ const FilterBar = styled.div`
 `;
 
 const YearFilterBar = styled(FilterBar)`
-  max-width: min(100%, 320px);
+  max-width: min(100%, 680px);
+  grid-template-columns: minmax(220px, 320px) minmax(180px, 1fr);
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
 `;
 
 const YearSelect = styled.select`
@@ -1523,6 +1579,48 @@ const FilterGroup = styled.div`
   gap: 8px;
   min-width: min(100%, 320px);
   flex: 1 1 320px;
+`;
+
+const ExportGroup = styled(FilterGroup)`
+  min-width: min(100%, 240px);
+  flex: 0 0 auto;
+`;
+
+const ExportLabel = styled.span`
+  font-size: 0.85rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: transparent;
+  user-select: none;
+`;
+
+const ExportButton = styled.button`
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(17, 24, 39, 0.92);
+  background: rgba(17, 24, 39, 0.92);
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+  box-shadow: 0 14px 30px -22px rgba(17, 24, 39, 0.45);
+
+  &:hover:enabled {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
 `;
 
 const FilterLabel = styled.label`

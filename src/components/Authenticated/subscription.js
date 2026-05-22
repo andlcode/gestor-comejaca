@@ -50,8 +50,14 @@ import AppHeader, {
 import { EVENT } from "../../config/eventConfig";
 import {
   CAMISA_TAMANHOS,
+  CAMISA_TAMANHO_INFANTIL,
+  CAMISA_IDADES_INFANTIL,
   CAMISA_TIPO_OPCOES,
   CAMISA_COR_OPCOES,
+  isTamanhoCamisaInfantil,
+  getIdadeCamisaInfantilValidationError,
+  parseTamanhoCamisaDoBanco,
+  encodeTamanhoCamisaParaPersistencia,
 } from "../../config/camisaParticipante";
 import CamisaModeloGalleryTrigger from "../shared/CamisaModeloGallery";
 import { authTheme } from "../Unauthenticated/auth/authTheme";
@@ -1144,6 +1150,7 @@ const Formulario = () => {
     camisaTipo: "",
     camisaCor: "",
     tamanhoCamisa: "",
+    idadeCamisaInfantil: "",
     cep: "",
     estado: "",
     cidade: "",
@@ -1233,8 +1240,17 @@ const Formulario = () => {
           : incoming.camisa === false
             ? "nao"
             : prev.comprarCamisa || "",
-      tamanhoCamisa:
-        incoming.camisa === true ? incoming.tamanhoCamisa || prev.tamanhoCamisa || "" : "",
+      ...(incoming.camisa === true
+        ? (() => {
+            const parsed = parseTamanhoCamisaDoBanco(
+              incoming.tamanhoCamisa || prev.tamanhoCamisa
+            );
+            return {
+              tamanhoCamisa: parsed.tamanhoCamisa || prev.tamanhoCamisa || "",
+              idadeCamisaInfantil: parsed.idadeCamisaInfantil || prev.idadeCamisaInfantil || "",
+            };
+          })()
+        : { tamanhoCamisa: "", idadeCamisaInfantil: "" }),
       camisaTipo:
         incoming.camisa === true
           ? String(incoming.camisaTipo || prev.camisaTipo || "").trim()
@@ -1293,8 +1309,24 @@ const Formulario = () => {
         ...prev,
         comprarCamisa: value,
         ...(value !== "sim"
-          ? { tamanhoCamisa: "", camisaTipo: "", camisaCor: "" }
+          ? {
+              tamanhoCamisa: "",
+              camisaTipo: "",
+              camisaCor: "",
+              idadeCamisaInfantil: "",
+            }
           : {}),
+      }));
+      return;
+    }
+
+    if (name === "tamanhoCamisa") {
+      setFormData((prev) => ({
+        ...prev,
+        tamanhoCamisa: value,
+        idadeCamisaInfantil: isTamanhoCamisaInfantil(value)
+          ? prev.idadeCamisaInfantil
+          : "",
       }));
       return;
     }
@@ -1392,13 +1424,29 @@ const Formulario = () => {
         return;
       }
 
-      const { comprarCamisa, ...restForm } = formData;
+      const { comprarCamisa, idadeCamisaInfantil: _idadeForm, ...restForm } = formData;
       const querCamisa = comprarCamisa === "sim";
+
+      const idadeInfantilErr = getIdadeCamisaInfantilValidationError(
+        formData.tamanhoCamisa,
+        formData.idadeCamisaInfantil,
+        querCamisa
+      );
+      if (idadeInfantilErr) {
+        setErrors([{ message: idadeInfantilErr }]);
+        setIsSubmitting(false);
+        return;
+      }
 
       const payload = {
         ...restForm,
         camisa: querCamisa,
-        tamanhoCamisa: querCamisa ? String(formData.tamanhoCamisa || "").trim() : null,
+        tamanhoCamisa: querCamisa
+          ? encodeTamanhoCamisaParaPersistencia(
+              formData.tamanhoCamisa,
+              formData.idadeCamisaInfantil
+            ) || null
+          : null,
         camisaTipo: querCamisa ? String(formData.camisaTipo || "").trim() : null,
         camisaCor: querCamisa ? String(formData.camisaCor || "").trim() : null,
         email: (formData.email || "").trim().toLowerCase(),
@@ -1771,10 +1819,36 @@ const Formulario = () => {
                                   {CAMISA_TAMANHOS.map((t) => (
                                     <option key={t} value={t}>
                                       {t}
+                                      {t === 'XXG' || t === 'G1' || t === 'G2'
+                                        ? ' (+R$ 10 plus size)'
+                                        : ''}
                                     </option>
                                   ))}
+                                  <option value={CAMISA_TAMANHO_INFANTIL}>
+                                    {CAMISA_TAMANHO_INFANTIL}
+                                  </option>
                                 </PremiumAuthSelect>
                               </InputGroup>
+                              {isTamanhoCamisaInfantil(formData.tamanhoCamisa) ? (
+                                <InputGroup>
+                                  <PremiumAuthSelect
+                                    id="sub-idadeCamisaInfantil"
+                                    name="idadeCamisaInfantil"
+                                    label="Idade da criança *"
+                                    icon={faShirt}
+                                    value={formData.idadeCamisaInfantil}
+                                    onChange={handleChange}
+                                    required
+                                  >
+                                    <option value=""> </option>
+                                    {CAMISA_IDADES_INFANTIL.map((idade) => (
+                                      <option key={idade} value={String(idade)}>
+                                        {idade} {idade === 1 ? "ano" : "anos"}
+                                      </option>
+                                    ))}
+                                  </PremiumAuthSelect>
+                                </InputGroup>
+                              ) : null}
                             </>
                           )}
                         </ParticipationShirtFields>
