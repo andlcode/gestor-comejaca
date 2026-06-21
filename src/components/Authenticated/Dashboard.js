@@ -23,6 +23,7 @@ import {
 } from '../../utils/subscriptionCycle';
 import { isPagamentoPago } from '../../utils/paymentStatus';
 import { EVENT } from '../../config/eventConfig';
+import { REGISTRATION } from '../../config/registrationConfig';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 import AppHeader, {
   APP_HEADER_HEIGHT,
@@ -269,6 +270,24 @@ const PrimaryButton = styled.button`
       0 4px 10px rgba(108, 99, 255, 0.12),
       0 0 0 3px rgba(90, 141, 238, 0.35),
       0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+    filter: grayscale(0.15);
+    transform: none;
+    box-shadow: none;
+
+    &:hover {
+      filter: grayscale(0.15);
+      transform: none;
+      box-shadow: none;
+    }
+
+    &:active {
+      transform: none;
+    }
   }
 
   @media (max-width: 768px) {
@@ -799,6 +818,18 @@ const ArchiveActionButton = styled.button`
   &:hover {
     background: #ffffff;
     border-color: rgba(15, 23, 42, 0.12);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    background: rgba(248, 250, 252, 0.9);
+    color: #94a3b8;
+
+    &:hover {
+      background: rgba(248, 250, 252, 0.9);
+      border-color: rgba(15, 23, 42, 0.08);
+    }
   }
 `;
 
@@ -1783,17 +1814,33 @@ const Dashboard = () => {
 
         <TopActionBar>
           <MobileOnly>
-            <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
+            <PrimaryButton
+              type="button"
+              disabled={REGISTRATION.closed}
+              onClick={() => {
+                if (!REGISTRATION.closed) {
+                  navigate('/inscrever');
+                }
+              }}
+            >
               <FiPlus size={16} />
-              Nova inscrição
+              {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Nova inscrição'}
             </PrimaryButton>
           </MobileOnly>
 
           <DesktopOnly>
             <DesktopActionGroup>
-              <PrimaryButton type="button" onClick={() => navigate('/inscrever')}>
+              <PrimaryButton
+                type="button"
+                disabled={REGISTRATION.closed}
+                onClick={() => {
+                  if (!REGISTRATION.closed) {
+                    navigate('/inscrever');
+                  }
+                }}
+              >
                 <FiPlus size={16} />
-                Nova inscrição
+                {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Nova inscrição'}
               </PrimaryButton>
 
               {isAdmin && (
@@ -1959,9 +2006,16 @@ const Dashboard = () => {
                             {item.lifecycle.cycleYear === 2025 && (
                               <ArchiveActionButton
                                 type="button"
-                                onClick={() => openReenrollmentConfirm(item)}
+                                disabled={REGISTRATION.closed}
+                                onClick={() => {
+                                  if (!REGISTRATION.closed) {
+                                    openReenrollmentConfirm(item);
+                                  }
+                                }}
                               >
-                                Inscrever {ACTIVE_REGISTRATION_YEAR}
+                                {REGISTRATION.closed
+                                  ? REGISTRATION.closedButtonLabel
+                                  : `Inscrever ${ACTIVE_REGISTRATION_YEAR}`}
                               </ArchiveActionButton>
                             )}
 

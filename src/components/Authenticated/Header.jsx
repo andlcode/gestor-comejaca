@@ -3,6 +3,7 @@ import { useNavigate,useLocation } from "react-router-dom";
 import styled, { ThemeProvider } from 'styled-components';
 import { FiUser, FiLogOut, FiMoon,FiDownload, FiMenu, FiPlus, FiUpload } from "react-icons/fi";
 import { EVENT } from "../../config/eventConfig";
+import { REGISTRATION } from "../../config/registrationConfig";
 
 // Temas otimizados
 export const themes = {
@@ -310,8 +311,15 @@ const HeaderMain = ({className }) => {
           )}
 
           {pathname !== '/inscrever' && (
-            <Button onClick={() => navigate('/inscrever')}>
-              <FiPlus size={20} /> Inscrever
+            <Button
+              disabled={REGISTRATION.closed}
+              onClick={() => {
+                if (!REGISTRATION.closed) {
+                  navigate('/inscrever');
+                }
+              }}
+            >
+              <FiPlus size={20} /> {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Inscrever'}
             </Button>
           )}
 
@@ -360,8 +368,16 @@ const HeaderMain = ({className }) => {
             )}
   {pathname !== '/inscrever' && (
 
-          <Button onClick={() => { navigate('/inscrever'); setIsMenuOpen(false) }}>
-            <FiPlus size={20} /> Inscrever
+          <Button
+            disabled={REGISTRATION.closed}
+            onClick={() => {
+              if (!REGISTRATION.closed) {
+                navigate('/inscrever');
+                setIsMenuOpen(false);
+              }
+            }}
+          >
+            <FiPlus size={20} /> {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Inscrever'}
           </Button>
              )}
            

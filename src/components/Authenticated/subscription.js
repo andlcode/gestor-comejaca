@@ -48,6 +48,7 @@ import AppHeader, {
   AppHeaderBadge,
 } from "../shared/AppHeader";
 import { EVENT } from "../../config/eventConfig";
+import { REGISTRATION } from "../../config/registrationConfig";
 import {
   CAMISA_TAMANHOS,
   CAMISA_TAMANHO_INFANTIL,
@@ -139,6 +140,63 @@ const FormCard = styled.form`
     border-radius: 5px;
     background: ${({ theme }) => theme.cardBackground};
   }
+`;
+
+const ClosedNoticeCard = styled.div`
+  background: ${({ theme }) => theme.cardBackground};
+  border: 1px solid ${({ theme }) => theme.borderColor};
+  border-radius: 12px;
+  padding: 32px 28px;
+  box-shadow: ${({ theme }) => theme.shadow};
+  animation: ${fadeIn} 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    padding: 24px 18px;
+  }
+`;
+
+const ClosedNoticeIcon = styled.div`
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
+`;
+
+const ClosedNoticeTitle = styled.h1`
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.textColor};
+`;
+
+const ClosedNoticeText = styled.p`
+  margin: 0;
+  max-width: 520px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: ${({ theme }) => theme.secondaryText};
+`;
+
+const ClosedNoticeAction = styled.button`
+  margin-top: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #5a8dee 0%, #6c63ff 100%);
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 `;
 
 const Header = styled.header`
@@ -1406,6 +1464,11 @@ const Formulario = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (REGISTRATION.closed) {
+      setErrors([{ message: REGISTRATION.closedUserMessage }]);
+      return;
+    }
+
     if (step !== TOTAL_STEPS) {
       goNextStep();
       return;
@@ -1496,7 +1559,14 @@ const Formulario = () => {
       if (Array.isArray(detalhes)) {
         setErrors(detalhes);
       } else {
-        setErrors([{ message: detalhes || "Não foi possível salvar sua inscrição agora." }]);
+        setErrors([
+          {
+            message:
+              error.response?.data?.message ||
+              detalhes ||
+              "Não foi possível salvar sua inscrição agora.",
+          },
+        ]);
       }
     } finally {
       setIsSubmitting(false);
@@ -1513,6 +1583,35 @@ const Formulario = () => {
   };
 
   const today = new Date();
+
+  if (REGISTRATION.closed) {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+        <ThemeProvider theme={theme}>
+          <Container>
+            <AppHeader
+              showBack
+              onBack={handleBack}
+              rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
+            />
+
+            <Content>
+              <ClosedNoticeCard>
+                <ClosedNoticeIcon>
+                  <FiInfo size={24} />
+                </ClosedNoticeIcon>
+                <ClosedNoticeTitle>{REGISTRATION.closedButtonLabel}</ClosedNoticeTitle>
+                <ClosedNoticeText>{REGISTRATION.closedUserMessage}</ClosedNoticeText>
+                <ClosedNoticeAction type="button" onClick={() => navigate("/painel")}>
+                  Voltar ao painel
+                </ClosedNoticeAction>
+              </ClosedNoticeCard>
+            </Content>
+          </Container>
+        </ThemeProvider>
+      </LocalizationProvider>
+    );
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>

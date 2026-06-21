@@ -35,6 +35,7 @@ import {
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import AppHeader, { AppHeaderBadge } from "../shared/AppHeader";
 import CamisaModeloGalleryTrigger from "../shared/CamisaModeloGallery";
+import AuthRenderErrorBoundary from "../Unauthenticated/auth/AuthRenderErrorBoundary";
 import { EVENT } from "../../config/eventConfig";
 import { isPagamentoPago } from "../../utils/paymentStatus";
 import {
@@ -173,7 +174,39 @@ const DEFICIENCIAS = [
   { name: "deficienciaOutra", label: "Outra" },
 ];
 
-const Atualizar = () => {
+const parseBirthDateSafe = (value) => {
+  if (!value) return null;
+  const parsed = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const normalizeInstitutionsList = (raw) =>
+  Array.isArray(raw) ? raw : [];
+
+/** Evita crash do React ao renderizar `err.message` quando a API devolve formato inesperado. */
+const normalizeUpdateErrors = (error) => {
+  const data = error?.response?.data;
+  const details = data?.details;
+
+  if (Array.isArray(details)) {
+    return details.map((item) => {
+      if (typeof item === "string") return { message: item };
+      if (item && typeof item.message === "string") return { message: item.message };
+      return { message: "Verifique os dados informados." };
+    });
+  }
+
+  const message =
+    (typeof details === "string" && details) ||
+    (typeof data?.detalhes === "string" && data.detalhes) ||
+    (typeof data?.error === "string" && data.error) ||
+    (typeof error?.message === "string" && error.message) ||
+    "Erro ao atualizar inscrição.";
+
+  return [{ message }];
+};
+
+const AtualizarForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -212,9 +245,7 @@ const Atualizar = () => {
         ]);
 
         const data = participantResponse?.data?.data || {};
-        const formattedBirthDate = data.dataNascimento
-          ? new Date(data.dataNascimento)
-          : null;
+        const formattedBirthDate = parseBirthDateSafe(data.dataNascimento);
 
         const camisaSim = data.camisa === true;
         const camisaParsed = camisaSim
@@ -231,7 +262,7 @@ const Atualizar = () => {
           idadeCamisaInfantil: camisaSim ? camisaParsed.idadeCamisaInfantil : "",
         }));
 
-        setInstitutions(institutionsResponse.data || []);
+        setInstitutions(normalizeInstitutionsList(institutionsResponse.data));
 
         if (formattedBirthDate) {
           setIsMinor(calculateAge(formattedBirthDate) < 18);
@@ -265,6 +296,14 @@ const Atualizar = () => {
 
   const totalSteps = visibleSteps.length;
   const participantName = formData.nomeCompleto?.trim();
+
+  // Se o fluxo de passos encolher (ex.: menor → maior), evita currentStep > totalSteps (tela em branco).
+  useEffect(() => {
+    setCurrentStep((prev) => {
+      const max = Math.max(totalSteps, 1);
+      return prev > max ? max : prev;
+    });
+  }, [totalSteps]);
 
   function calculateAge(date) {
     if (!date) return 0;
@@ -554,6 +593,12 @@ const Atualizar = () => {
 
     if (!validateForm()) return;
 
+    const birthDate = parseBirthDateSafe(formData.dataNascimento);
+    if (!birthDate) {
+      setErrors([{ message: "Informe uma data de nascimento válida." }]);
+      return;
+    }
+
     setIsSubmitting(true);
     setErrors([]);
   
@@ -565,7 +610,7 @@ const Atualizar = () => {
         nomeCompleto: formData.nomeCompleto?.trim() || "",
         nomeSocial: formData.nomeSocial?.trim() || "",
         nomeCracha: formData.nomeCracha?.trim() || "",
-        dataNascimento: new Date(formData.dataNascimento).toISOString(),
+        dataNascimento: birthDate.toISOString(),
         sexo: formData.sexo || "",
         outroGenero: formData.outroGenero?.trim() || "",
         email: formData.email?.trim().toLowerCase() || "",
@@ -646,19 +691,23 @@ const Atualizar = () => {
       );
   
       if (response.status === 200) {
-        navigate("/painel");
+        try {
+          navigate("/painel");
+        } catch (navError) {
+          console.error("[update] falha ao navegar para o painel:", navError);
+          setErrors([
+            {
+              message:
+                "Inscrição atualizada, mas não foi possível abrir o painel. Acesse Inscrições pelo menu.",
+            },
+          ]);
+        }
       } else {
         setErrors([{ message: "Erro ao atualizar inscrição." }]);
       }
     } catch (error) {
-      const details = error?.response?.data?.details;
-      if (Array.isArray(details)) {
-        setErrors(details);
-      } else {
-        setErrors([
-          { message: details || "Erro ao atualizar inscrição." },
-        ]);
-      }
+      console.error("[update] erro ao atualizar inscrição:", error);
+      setErrors(normalizeUpdateErrors(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -733,7 +782,9 @@ const Atualizar = () => {
                 {errors.length > 0 ? (
                   <UpdateErrorBox>
                     {errors.map((err, index) => (
-                      <div key={index}>⚠️ {err.message}</div>
+                      <div key={index}>
+                        ⚠️ {typeof err?.message === "string" ? err.message : "Erro ao processar."}
+                      </div>
                     ))}
                   </UpdateErrorBox>
                 ) : null}
@@ -796,7 +847,7 @@ const Atualizar = () => {
                     <InscriptionBirthDateField
                       id="upd-dataNascimento"
                       label="Data de nascimento *"
-                      value={formData.dataNascimento}
+                      value={parseBirthDateSafe(formData.dataNascimento)}
                       onChange={handleDateChange}
                       maxDate={today}
                     />
@@ -1568,6 +1619,12 @@ const Atualizar = () => {
     </LocalizationProvider>
   );
 };
+
+const Atualizar = () => (
+  <AuthRenderErrorBoundary>
+    <AtualizarForm />
+  </AuthRenderErrorBoundary>
+);
 
 export default Atualizar;
 
