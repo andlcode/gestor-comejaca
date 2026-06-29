@@ -47,6 +47,7 @@ const INITIAL_FORM = {
   valorCamisaAlgodao: '',
   valorCamisaPoliester: '',
   camisaImagensLinhas: '',
+  registrationsOpen: false,
   ativo: true,
   isNew: true,
 };
@@ -382,6 +383,45 @@ const CamisaUrlsHint = styled.p`
   color: #64748b;
 `;
 
+const CheckboxField = styled.label`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${({ $disabled }) => ($disabled ? 0.65 : 1)};
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: #6480f7;
+    cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  }
+`;
+
+const CheckboxCopy = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const CheckboxTitle = styled.span`
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+`;
+
+const CheckboxDescription = styled.span`
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+`;
+
 const TextAreaShell = styled(InputShell)`
   min-height: 132px;
 `;
@@ -671,13 +711,13 @@ const AdminEvento = () => {
   );
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
     setError('');
     setSuccessMessage('');
     setFormData((previous) => ({
       ...previous,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -705,6 +745,7 @@ const AdminEvento = () => {
       valorCamisaAlgodao: formData.valorCamisaAlgodao,
       valorCamisaPoliester: formData.valorCamisaPoliester,
       camisaImagens,
+      registrationsOpen: Boolean(formData.registrationsOpen),
       ativo: true,
     };
     const requestUrl = `${API_URL}/api/evento`;
@@ -832,6 +873,34 @@ const AdminEvento = () => {
                   </FieldsGrid>
                 </Section>
               ))}
+
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Inscrições</SectionTitle>
+                  <SectionText>
+                    Controle se novos participantes podem enviar inscrições pelo sistema.
+                  </SectionText>
+                </SectionHeader>
+                <FieldSpan $fullWidth>
+                  <CheckboxField $disabled={isDisabled} htmlFor="evento-registrations-open">
+                    <input
+                      id="evento-registrations-open"
+                      name="registrationsOpen"
+                      type="checkbox"
+                      checked={Boolean(formData.registrationsOpen)}
+                      onChange={handleChange}
+                      disabled={isDisabled}
+                    />
+                    <CheckboxCopy>
+                      <CheckboxTitle>Inscrições abertas</CheckboxTitle>
+                      <CheckboxDescription>
+                        Quando desmarcado, o formulário de inscrição fica bloqueado e novas inscrições não são
+                        aceitas.
+                      </CheckboxDescription>
+                    </CheckboxCopy>
+                  </CheckboxField>
+                </FieldSpan>
+              </Section>
 
               <Section>
                 <SectionHeader>

@@ -48,7 +48,7 @@ import AppHeader, {
   AppHeaderBadge,
 } from "../shared/AppHeader";
 import { EVENT } from "../../config/eventConfig";
-import { REGISTRATION } from "../../config/registrationConfig";
+import { useRegistrationStatus } from "../../hooks/useRegistrationStatus";
 import {
   CAMISA_TAMANHOS,
   CAMISA_TAMANHO_INFANTIL,
@@ -1183,6 +1183,12 @@ const PlanoGeralModal = ({ isOpen, onClose }) => {
 
 const Formulario = () => {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const {
+    loading: registrationLoading,
+    closed: registrationsClosed,
+    closedButtonLabel,
+    closedUserMessage,
+  } = useRegistrationStatus();
   const TOTAL_STEPS = 5;
   const STEP_TITLES = ["Sobre você", "Participação", "Endereço", "Cuidados", "Finalização"];
   const navigate = useNavigate();
@@ -1464,8 +1470,8 @@ const Formulario = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (REGISTRATION.closed) {
-      setErrors([{ message: REGISTRATION.closedUserMessage }]);
+    if (registrationsClosed) {
+      setErrors([{ message: closedUserMessage }]);
       return;
     }
 
@@ -1584,7 +1590,32 @@ const Formulario = () => {
 
   const today = new Date();
 
-  if (REGISTRATION.closed) {
+  if (registrationLoading) {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+        <ThemeProvider theme={theme}>
+          <Container>
+            <AppHeader
+              showBack
+              onBack={handleBack}
+              rightContent={<AppHeaderBadge>{EVENT.displayName}</AppHeaderBadge>}
+            />
+            <Content>
+              <ClosedNoticeCard>
+                <ClosedNoticeIcon>
+                  <FiLoader size={24} />
+                </ClosedNoticeIcon>
+                <ClosedNoticeTitle>Carregando...</ClosedNoticeTitle>
+                <ClosedNoticeText>Verificando status das inscrições.</ClosedNoticeText>
+              </ClosedNoticeCard>
+            </Content>
+          </Container>
+        </ThemeProvider>
+      </LocalizationProvider>
+    );
+  }
+
+  if (registrationsClosed) {
     return (
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
         <ThemeProvider theme={theme}>
@@ -1600,8 +1631,8 @@ const Formulario = () => {
                 <ClosedNoticeIcon>
                   <FiInfo size={24} />
                 </ClosedNoticeIcon>
-                <ClosedNoticeTitle>{REGISTRATION.closedButtonLabel}</ClosedNoticeTitle>
-                <ClosedNoticeText>{REGISTRATION.closedUserMessage}</ClosedNoticeText>
+                <ClosedNoticeTitle>{closedButtonLabel}</ClosedNoticeTitle>
+                <ClosedNoticeText>{closedUserMessage}</ClosedNoticeText>
                 <ClosedNoticeAction type="button" onClick={() => navigate("/painel")}>
                   Voltar ao painel
                 </ClosedNoticeAction>

@@ -3,7 +3,7 @@ import { useNavigate,useLocation } from "react-router-dom";
 import styled, { ThemeProvider } from 'styled-components';
 import { FiUser, FiLogOut, FiMoon,FiDownload, FiMenu, FiPlus, FiUpload } from "react-icons/fi";
 import { EVENT } from "../../config/eventConfig";
-import { REGISTRATION } from "../../config/registrationConfig";
+import { useRegistrationStatus } from "../../hooks/useRegistrationStatus";
 
 // Temas otimizados
 export const themes = {
@@ -266,6 +266,11 @@ const HeaderMain = ({className }) => {
   const estaNaVerificar = pathname === '/verificar';
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const {
+    loading: registrationLoading,
+    closed: registrationsClosed,
+    closedButtonLabel,
+  } = useRegistrationStatus();
 
 
   useEffect(() => {
@@ -312,14 +317,14 @@ const HeaderMain = ({className }) => {
 
           {pathname !== '/inscrever' && (
             <Button
-              disabled={REGISTRATION.closed}
+              disabled={registrationLoading || registrationsClosed}
               onClick={() => {
-                if (!REGISTRATION.closed) {
+                if (!registrationLoading && !registrationsClosed) {
                   navigate('/inscrever');
                 }
               }}
             >
-              <FiPlus size={20} /> {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Inscrever'}
+              <FiPlus size={20} /> {registrationsClosed ? closedButtonLabel : 'Inscrever'}
             </Button>
           )}
 
@@ -369,15 +374,15 @@ const HeaderMain = ({className }) => {
   {pathname !== '/inscrever' && (
 
           <Button
-            disabled={REGISTRATION.closed}
+            disabled={registrationLoading || registrationsClosed}
             onClick={() => {
-              if (!REGISTRATION.closed) {
+              if (!registrationLoading && !registrationsClosed) {
                 navigate('/inscrever');
                 setIsMenuOpen(false);
               }
             }}
           >
-            <FiPlus size={20} /> {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Inscrever'}
+            <FiPlus size={20} /> {registrationsClosed ? closedButtonLabel : 'Inscrever'}
           </Button>
              )}
            

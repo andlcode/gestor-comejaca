@@ -23,7 +23,7 @@ import {
 } from '../../utils/subscriptionCycle';
 import { isPagamentoPago } from '../../utils/paymentStatus';
 import { EVENT } from '../../config/eventConfig';
-import { REGISTRATION } from '../../config/registrationConfig';
+import { useRegistrationStatus } from '../../hooks/useRegistrationStatus';
 import { getApiBaseUrl } from '../../utils/apiBaseUrl';
 import AppHeader, {
   APP_HEADER_HEIGHT,
@@ -1350,6 +1350,11 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const API_URL = getApiBaseUrl();
+  const {
+    loading: registrationLoading,
+    closed: registrationsClosed,
+    closedButtonLabel,
+  } = useRegistrationStatus();
   const isAdmin = useMemo(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -1816,15 +1821,15 @@ const Dashboard = () => {
           <MobileOnly>
             <PrimaryButton
               type="button"
-              disabled={REGISTRATION.closed}
+              disabled={registrationLoading || registrationsClosed}
               onClick={() => {
-                if (!REGISTRATION.closed) {
+                if (!registrationLoading && !registrationsClosed) {
                   navigate('/inscrever');
                 }
               }}
             >
               <FiPlus size={16} />
-              {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Nova inscrição'}
+              {registrationsClosed ? closedButtonLabel : 'Nova inscrição'}
             </PrimaryButton>
           </MobileOnly>
 
@@ -1832,15 +1837,15 @@ const Dashboard = () => {
             <DesktopActionGroup>
               <PrimaryButton
                 type="button"
-                disabled={REGISTRATION.closed}
+                disabled={registrationLoading || registrationsClosed}
                 onClick={() => {
-                  if (!REGISTRATION.closed) {
+                  if (!registrationLoading && !registrationsClosed) {
                     navigate('/inscrever');
                   }
                 }}
               >
                 <FiPlus size={16} />
-                {REGISTRATION.closed ? REGISTRATION.closedButtonLabel : 'Nova inscrição'}
+                {registrationsClosed ? closedButtonLabel : 'Nova inscrição'}
               </PrimaryButton>
 
               {isAdmin && (
@@ -2006,15 +2011,15 @@ const Dashboard = () => {
                             {item.lifecycle.cycleYear === 2025 && (
                               <ArchiveActionButton
                                 type="button"
-                                disabled={REGISTRATION.closed}
+                                disabled={registrationLoading || registrationsClosed}
                                 onClick={() => {
-                                  if (!REGISTRATION.closed) {
+                                  if (!registrationLoading && !registrationsClosed) {
                                     openReenrollmentConfirm(item);
                                   }
                                 }}
                               >
-                                {REGISTRATION.closed
-                                  ? REGISTRATION.closedButtonLabel
+                                {registrationsClosed
+                                  ? closedButtonLabel
                                   : `Inscrever ${ACTIVE_REGISTRATION_YEAR}`}
                               </ArchiveActionButton>
                             )}
